@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, balance %}
+{% block title %}Import preview{% endblock %}
+{% block content %}
+{% set loaded = payload.loaded %}
+<div class="head"><h1>Import preview</h1><a class="btn" href="{{ url_for('importer.upload') }}">Upload another file</a></div>
+<p class="muted">{{ batch.filename }} · balances as of the end of <strong>{{ month_label }}</strong>.
+  Review each dataset and click its Load button. Load them in order.</p>
+
+{% macro done(step) %}{% if loaded[step] %}<div class="flash flash-success">Loaded {{ loaded[step].at.replace('T', ' ') }} UTC by {{ loaded[step].by }}: {{ loaded[step].summary }}</div>{% endif %}{% endmacro %}
+
+<section class="card">
+  <h2>1. Units <span class="muted">{{ payload.units|length }} units</span></h2>
+  <table>
+    <thead><tr><th>Unit</th><th class="num">Ownership share</th><th class="num">Monthly fee</th><th>In the app now</th></tr></thead>
+    <tbody>{% for u in payload.units %}{% set ex = existing.get(u.number) %}
+      <tr><td><strong>{{ u.number }}</strong></td>
+        <td class="num">{{ '%.2f%%'|format((u.share or 0) * 100) }}</td>
+        <td class="num">{{ u.fee_cents|money }}</td>
+        <td>{% if ex %}Exists · fee {{ ex.monthly_fee_cents|money }}{% if ex.ownership_share %} · share {{ '%.2f%%'|format(ex.ownership_share * 100) }}{% endif %}{% else %}<span class="muted">New</span>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+    <tfoot><tr><th>Total</th><th class="num">{{ '%.2f%%'|format(totals.share * 100) }}</th><th class="num">{{ totals.fee|money }}</th><th></th></tr></tfoot>
+  </table>
+  {{ done('units') }}
+  {% if not loaded.units %}
+  <form method="post" action="{{ url_for('importer.load', batch_id=batch.id, step='units') }}" onsubmit="return confirm('Create or update these {{ payload.units|length }} units?')">
+    {{ csrf() }}<button class="btn primary">Load units</button>
+  </form>{% endif %}
+</section>
+
+<section class="card">
+  <h2>2. Owner names</h2>
+  <p class="muted">Names differ between the workbook's sheets. These come from the monthly-fee table; correct them before loading.</p>
+  <form method="post" action="{{ url_for('importer.load', batch_id=batch.id, step='owners') }}" onsubmit="return confirm('Save these owner names?')">
+    {{ csrf() }}
+    <table>
+      <thead><tr><th>Unit</th><th>Owner name</th><th>In the app now</th></tr></thead>
+      <tbody>{% for u in payload.units %}{% set ex = existing.get(u.number) %}
+        <tr><td><strong>{{ u.number }}</strong></td>
+          <td><input name="owner_{{ u.number }}" value="{{ u.owner }}" maxlength="200" {{ 'disabled' if loaded.owners }}></td>
+          <td>{{ ex.owner_name if ex and ex.owner_name else '—' }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    {{ done('owners') }}
+    {% if not loaded.owners %}<button class="btn primary" {{ 'disabled' if not loaded.units and existing|length < payload.units|length }}>Load owner names</button>{% endif %}
+  </form>
+</section>
+
+<section class="card">
+  <h2>3. Opening balances <span class="muted">as of {{ month_end.strftime('%B %d, %Y') }}</span></h2>
+  <p class="muted">Each unit gets one "Opening balance" entry in its statement: positive means the unit owes money, negative means it is in credit.
+    Amounts include late-payment interest. After loading, generate monthly dues only for months <em>after</em> {{ month_label }}, or they will be billed twice.</p>
+  <table>
+    <thead><tr><th>Unit</th><th class="num">Balance</th><th class="num">of which late interest</th><th>Status</th></tr></thead>
+    <tbody>{% for u in payload.units %}
+      <tr><td><strong>{{ u.number }}</strong></td><td class="num">{{ balance(u.balance_cents) }}</td>
+        <td class="num">{{ u.interest_cents|money if u.interest_cents else '' }}</td>
+        <td>{% if u.number in openings %}Already loaded{% elif u.balance_cents == 0 %}<span class="muted">Zero — skipped</span>{% else %}<span class="muted">Will be added</span>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+    <tfoot><tr><th>Totals</th><th class="num">owed {{ totals.owed|money }} · credit {{ totals.credit|money }}</th><th class="num">{{ totals.interest|money }}</th><th></th></tr></tfoot>
+  </table>
+  {{ done('balances') }}
+  {% if not loaded.balances %}
+  <form method="post" action="{{ url_for('importer.load', batch_id=batch.id, step='balances') }}" onsubmit="return confirm('Add these opening balances to the unit statements?')">
+    {{ csrf() }}<button class="btn primary" {{ 'disabled' if not loaded.units and existing|length < payload.units|length }}>Load opening balances</button>
+  </form>{% endif %}
+</section>
+{% endblock %}

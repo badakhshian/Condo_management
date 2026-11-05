@@ -38,6 +38,7 @@ def create_app(test_config=None):
         CONDO_NAME=os.environ.get("CONDO_NAME", "Maple Court Condominiums"),
         SESSION_COOKIE_SECURE=on_vercel,
         REMEMBER_COOKIE_SECURE=on_vercel,
+        MAX_CONTENT_LENGTH=4 * 1024 * 1024,  # Vercel's request body limit is 4.5 MB
         AUTO_INIT_DB=on_vercel or bool(os.environ.get("AUTO_INIT_DB")),
     )
     if test_config:
@@ -49,10 +50,10 @@ def create_app(test_config=None):
     login_manager.init_app(app)
 
     from . import models  # noqa: F401  (register models)
-    from .views import amenities, announcements, auth, billing, dashboard, maintenance, residents, units
+    from .views import amenities, announcements, auth, billing, dashboard, importer, maintenance, residents, units
 
     for bp in (auth.bp, dashboard.bp, units.bp, residents.bp, billing.bp,
-               maintenance.bp, announcements.bp, amenities.bp):
+               maintenance.bp, announcements.bp, amenities.bp, importer.bp):
         app.register_blueprint(bp)
 
     from .cli import register_cli
@@ -69,6 +70,7 @@ def create_app(test_config=None):
     from flask import render_template
 
     messages = {400: "That request could not be processed.",
+                413: "That file is too large (the limit is 4 MB).",
                 403: "You don't have permission to view this page.",
                 404: "We couldn't find that page."}
 

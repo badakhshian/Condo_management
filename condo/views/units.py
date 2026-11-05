@@ -47,6 +47,7 @@ def _apply_form(unit, form):
     unit.bedrooms = bedrooms
     unit.area_sqft = area
     unit.parking_spot = form.get("parking_spot", "").strip() or None
+    unit.owner_name = form.get("owner_name", "").strip()[:200] or None
     unit.monthly_fee_cents = fee
     unit.notes = form.get("notes", "").strip() or None
     return []
@@ -107,6 +108,7 @@ def edit(unit_id):
     form = {
         "number": unit.number, "floor": unit.floor or "", "bedrooms": unit.bedrooms or "",
         "area_sqft": unit.area_sqft or "", "parking_spot": unit.parking_spot or "",
+        "owner_name": unit.owner_name or "",
         "monthly_fee": money(unit.monthly_fee_cents).lstrip("$"), "notes": unit.notes or "",
     }
     return render_template("units/form.html", unit=unit, form=form)

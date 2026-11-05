@@ -14,7 +14,10 @@ def bootstrap():
     """
     import os
 
+    from .migrate import upgrade_schema
+
     db.create_all()
+    upgrade_schema()
     email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
     password = os.environ.get("ADMIN_PASSWORD") or ""
     if not email or len(password) < 8:
@@ -34,9 +37,12 @@ def register_cli(app):
     @click.option("--drop", is_flag=True, help="Drop all existing tables first.")
     def init_db(drop):
         """Create database tables."""
+        from .migrate import upgrade_schema
+
         if drop:
             db.drop_all()
         db.create_all()
+        upgrade_schema()
         click.echo("Database initialised.")
 
     @app.cli.command("create-admin")

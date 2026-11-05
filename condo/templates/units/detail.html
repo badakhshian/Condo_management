@@ -11,6 +11,8 @@
   <section class="card">
     <h2>Details</h2>
     <dl class="props">
+      <dt>Owner</dt><dd>{{ unit.owner_name or '—' }}</dd>
+      <dt>Ownership share</dt><dd>{{ '%.2f%%'|format(unit.ownership_share * 100) if unit.ownership_share else '—' }}</dd>
       <dt>Floor</dt><dd>{{ unit.floor if unit.floor is not none else '—' }}</dd>
       <dt>Bedrooms</dt><dd>{{ unit.bedrooms or '—' }}</dd>
       <dt>Area</dt><dd>{{ (unit.area_sqft ~ ' sq ft') if unit.area_sqft else '—' }}</dd>

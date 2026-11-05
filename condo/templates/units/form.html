@@ -9,6 +9,7 @@
     <label>Unit number <input name="number" required value="{{ form.get('number', '') }}"></label>
     <label>Floor <input name="floor" type="number" min="0" value="{{ form.get('floor', '') }}"></label>
   </div>
+  <label>Owner name <input name="owner_name" maxlength="200" value="{{ form.get('owner_name', '') }}"></label>
   <div class="row">
     <label>Bedrooms <input name="bedrooms" type="number" min="0" value="{{ form.get('bedrooms', '') }}"></label>
     <label>Area (sq ft) <input name="area_sqft" type="number" min="0" value="{{ form.get('area_sqft', '') }}"></label>

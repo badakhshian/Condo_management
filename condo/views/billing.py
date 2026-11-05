@@ -5,7 +5,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import CHARGE_KINDS, PAYMENT_METHODS, Charge, Payment, Unit
+from ..models import CHARGE_KINDS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Payment, Unit
 from ..utils import admin_required, can_access_unit, parse_date, parse_money
 
 bp = Blueprint("billing", __name__, url_prefix="/billing")
@@ -68,6 +68,10 @@ def generate():
     return redirect(url_for("billing.index"))
 
 
+def _manual_kinds():
+    return {k: v for k, v in CHARGE_KINDS.items() if k not in SYSTEM_CHARGE_KINDS}
+
+
 def _units():
     return db.session.scalars(db.select(Unit).order_by(Unit.number)).all()
 
@@ -87,7 +91,7 @@ def new_charge():
         errors = []
         unit = _unit_from_form(errors)
         kind = request.form.get("kind", "other")
-        if kind not in CHARGE_KINDS or kind == "dues":
+        if kind not in CHARGE_KINDS or kind in SYSTEM_CHARGE_KINDS:
             errors.append("Choose a charge type.")
         description = request.form.get("description", "").strip()
         if not description:
@@ -108,10 +112,10 @@ def new_charge():
             return redirect(url_for("billing.ledger", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
-        return render_template("billing/charge_form.html", units=_units(), kinds=CHARGE_KINDS,
+        return render_template("billing/charge_form.html", units=_units(), kinds=_manual_kinds(),
                                form=request.form), 400
     form = {"unit_id": request.args.get("unit_id", ""), "due_date": date.today().isoformat()}
-    return render_template("billing/charge_form.html", units=_units(), kinds=CHARGE_KINDS, form=form)
+    return render_template("billing/charge_form.html", units=_units(), kinds=_manual_kinds(), form=form)
 
 
 @bp.route("/payments/new", methods=["GET", "POST"])

@@ -60,6 +60,8 @@ class Unit(db.Model):
     area_sqft = db.Column(db.Integer)
     parking_spot = db.Column(db.String(20))
     monthly_fee_cents = db.Column(db.Integer, nullable=False, default=0)
+    owner_name = db.Column(db.String(200))
+    ownership_share = db.Column(db.Float)  # fraction of the building, e.g. 0.1161
     notes = db.Column(db.Text)
 
     residents = db.relationship("User", back_populates="unit", order_by="User.name")
@@ -99,7 +101,10 @@ class Unit(db.Model):
         return rows
 
 
-CHARGE_KINDS = {"dues": "Monthly dues", "special": "Special assessment", "fine": "Fine", "other": "Other"}
+CHARGE_KINDS = {"dues": "Monthly dues", "special": "Special assessment", "fine": "Fine", "other": "Other",
+                "opening": "Opening balance"}
+# Kinds created by the system (dues generation, spreadsheet import), never by the manual charge form.
+SYSTEM_CHARGE_KINDS = ("dues", "opening")
 
 
 class Charge(db.Model):
@@ -213,3 +218,14 @@ class Booking(db.Model):
             db.select(Booking).where(Booking.amenity_id == amenity_id,
                                      Booking.start < end, Booking.end > start)
         ).all()
+
+
+class ImportBatch(db.Model):
+    """An uploaded spreadsheet, parsed and waiting for the manager to load each dataset."""
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255))
+    payload = db.Column(db.JSON, nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    created_by = db.relationship("User")

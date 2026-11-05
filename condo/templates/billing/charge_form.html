@@ -8,7 +8,7 @@
   <div class="row">
     <label>Unit <select name="unit_id" required><option value="">Select…</option>
       {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}</select></label>
-    <label>Type <select name="kind">{% for k, label in kinds.items() if k != 'dues' %}<option value="{{ k }}" {{ 'selected' if form.get('kind') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Type <select name="kind">{% for k, label in kinds.items() %}<option value="{{ k }}" {{ 'selected' if form.get('kind') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
   <label>Description <input name="description" required value="{{ form.get('description', '') }}" placeholder="e.g. Roof replacement assessment"></label>
   <div class="row">
