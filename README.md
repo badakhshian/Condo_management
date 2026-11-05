@@ -55,7 +55,7 @@ Then open http://127.0.0.1:5000 and sign in with a demo account:
 
 ## Deploying to Vercel
 
-`api/index.py` exposes the Flask app to Vercel, and `vercel.json` routes every request to it.
+`app.py` exposes the Flask app; Vercel detects it and runs it with its Flask runtime.
 
 1. Import the GitHub repository as a Vercel project.
 2. Under **Storage**, connect a Neon Postgres database to the project. This sets `DATABASE_URL`. Without a database the site still runs, but on a temporary SQLite file in `/tmp` that gets wiped, and a warning banner is shown.
