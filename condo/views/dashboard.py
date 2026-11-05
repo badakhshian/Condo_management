@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 
 from ..extensions import db
 from ..models import ACTIVE_STATUSES, Announcement, Booking, MaintenanceRequest, Owner, Unit
+from .directory import board_members
 from .documents import current_building_insurance
 from .insurance import can_manage
 from .maintenance import can_decide
@@ -50,7 +51,7 @@ def index():
         return render_template("dashboard_admin.html", stats=stats, delinquent=delinquent,
                                open_requests=[r for r in open_requests if not r.awaiting_owner][:5],
                                awaiting=awaiting, announcements=announcements, upcoming=upcoming,
-                               insurance_alerts=insurance_alerts,
+                               insurance_alerts=insurance_alerts, board=board_members(),
                                building=current_building_insurance(current_user))
 
     unit = current_user.unit
@@ -71,4 +72,5 @@ def index():
     my_insurance = [o for o in unit.owners if o.needs_insurance and can_manage(o)] if unit else []
     return render_template("dashboard_resident.html", unit=unit, my_requests=my_requests,
                            my_bookings=my_bookings, announcements=announcements, to_approve=to_approve,
-                           my_insurance=my_insurance, building=current_building_insurance(current_user))
+                           my_insurance=my_insurance, building=current_building_insurance(current_user),
+                           board=board_members())

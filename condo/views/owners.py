@@ -4,7 +4,7 @@ import re
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from ..extensions import db
-from ..models import OWNER_ROLES, Owner, Unit
+from ..models import BOARD_POSITIONS, OWNER_ROLES, SINGLE_HOLDER_POSITIONS, Owner, Unit, allowed_positions
 from ..utils import admin_required
 
 bp = Blueprint("owners", __name__)
@@ -23,6 +23,12 @@ def _apply_form(owner, form):
         errors.append("That email address doesn't look right.")
     if role not in OWNER_ROLES:
         errors.append("Choose a role.")
+    positions = [p for p in form.getlist("positions") if p in BOARD_POSITIONS]
+    not_allowed = [BOARD_POSITIONS[p] for p in positions if p not in allowed_positions(role)]
+    if not_allowed:
+        who = "Tenants" if role == "tenant" else "Outside contacts"
+        errors.append(f"{who} can't be {', '.join(not_allowed)}: only co-owners sit on the board"
+                      + (" (outside contacts can do Accounting)." if role == "contact" else "."))
     if errors:
         return errors
     owner.name = name[:200]
@@ -38,7 +44,22 @@ def _apply_form(owner, form):
     owner.role = role
     owner.is_primary = bool(form.get("is_primary"))
     owner.notes = form.get("notes", "").strip() or None
+    owner.positions = positions
     return []
+
+
+def claim_single_positions(owner):
+    """President, vice-president, treasurer and secretary have one holder: giving one to
+    `owner` takes it from whoever had it. Returns messages describing each move."""
+    moved = []
+    for key in set(owner.positions) & set(SINGLE_HOLDER_POSITIONS):
+        others = db.session.scalars(db.select(Owner).where(Owner.board_roles.like(f"%{key}%"),
+                                                           Owner.id != owner.id)).all()
+        for other in others:
+            if key in other.positions:
+                other.positions = [p for p in other.positions if p != key]
+                moved.append(f"{BOARD_POSITIONS[key]} moved from {other.name} to {owner.name}.")
+    return moved
 
 
 def address_sources(unit, owner=None):
@@ -92,10 +113,10 @@ def new_from_directory(group):
     if request.method == "POST" and unit is None:
         flash("Choose a unit.", "error")
         return render_template("owners/form.html", unit=None, owner=None, units=_units(), sources=address_sources(None),
-                               form=request.form, roles=OWNER_ROLES), 400
+                               form=request.form, roles=OWNER_ROLES, positions=BOARD_POSITIONS), 400
     if unit is None:
         return render_template("owners/form.html", unit=None, owner=None, units=_units(), sources=address_sources(None),
-                               roles=OWNER_ROLES, form={"role": default_role})
+                               roles=OWNER_ROLES, positions=BOARD_POSITIONS, form={"role": default_role})
     return new(unit.id, default_role=default_role, from_directory=True)
 
 
@@ -112,6 +133,9 @@ def new(unit_id, default_role=None, from_directory=False):
             owner.unit = unit
             db.session.add(owner)
             _only_one_primary(owner)
+            db.session.flush()
+            for msg in claim_single_positions(owner):
+                flash(msg, "info")
             db.session.commit()
             flash(f"{owner.name} added to unit {unit.number}.", "success")
             return redirect(_back(owner, unit, from_directory))
@@ -119,9 +143,9 @@ def new(unit_id, default_role=None, from_directory=False):
             flash(e, "error")
         return render_template("owners/form.html", unit=unit, owner=None, units=units,
                                sources=address_sources(unit, None), form=request.form,
-                               roles=OWNER_ROLES), 400
+                               roles=OWNER_ROLES, positions=BOARD_POSITIONS), 400
     return render_template("owners/form.html", unit=unit, owner=None, units=units,
-                           sources=address_sources(unit, None), roles=OWNER_ROLES,
+                           sources=address_sources(unit, None), roles=OWNER_ROLES, positions=BOARD_POSITIONS,
                            form={"role": default_role, "is_primary": owner.is_primary, "unit_id": unit.id})
 
 
@@ -142,6 +166,8 @@ def edit(owner_id):
         errors = _apply_form(owner, request.form)
         if not errors:
             _only_one_primary(owner)
+            for msg in claim_single_positions(owner):
+                flash(msg, "info")
             db.session.commit()
             flash(f"{owner.name} updated.", "success")
             return redirect(_back(owner, owner.unit))
@@ -149,10 +175,11 @@ def edit(owner_id):
         for e in errors:
             flash(e, "error")
         return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=request.form,
-                               roles=OWNER_ROLES), 400
+                               roles=OWNER_ROLES, positions=BOARD_POSITIONS), 400
     form = {k: getattr(owner, k) or "" for k in ("name", "email", "phone", "mailing_address", "role", "notes")}
     form["is_primary"] = owner.is_primary
-    return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=form, roles=OWNER_ROLES)
+    form["positions"] = owner.positions
+    return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=form, roles=OWNER_ROLES, positions=BOARD_POSITIONS)
 
 
 @bp.route("/owners/<int:owner_id>/delete", methods=["POST"])

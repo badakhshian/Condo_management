@@ -2,6 +2,21 @@
 {% from "_macros.html" import csrf %}
 {% block title %}{{ 'Edit ' ~ owner.name if owner else 'Add owner' }} · Unit {{ unit.number }}<script>
   (function () {
+    var role = document.querySelector('[name=role]'), box = document.getElementById('board-positions');
+    if (!role || !box) return;
+    var openToContacts = ['accounting'];
+    function sync() {
+      var r = role.value;
+      box.hidden = r === 'tenant';
+      box.querySelectorAll('[data-position]').forEach(function (el) {
+        var ok = r === 'owner' || r === 'co-owner' || (r === 'contact' && openToContacts.indexOf(el.dataset.position) >= 0);
+        el.hidden = !ok;
+        if (!ok) el.querySelector('input').checked = false;
+      });
+    }
+    role.addEventListener('change', sync); sync();
+  })();
+  (function () {
     var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
     if (!pick || !box) return;
     pick.addEventListener('change', function () {
@@ -39,6 +54,14 @@
     </select></label>
   {% endif %}
   <label>Mailing address <textarea name="mailing_address" id="mailing-address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>
+  <fieldset id="board-positions">
+    <legend>Board of directors</legend>
+    {% set held = form.getlist('positions') if form.getlist is defined else form.get('positions', []) %}
+    <div class="checks">{% for k, label in positions.items() %}
+      <label class="check" data-position="{{ k }}"><input type="checkbox" name="positions" value="{{ k }}" {{ 'checked' if k in held }}> {{ label }}</label>
+    {% endfor %}</div>
+    <p class="muted" id="board-hint">Only co-owners sit on the board. An outside contact can be listed for Accounting.</p>
+  </fieldset>
   <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
   <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
   <button class="btn primary">Save</button>
@@ -53,6 +76,21 @@
 </form>
 {% endif %}
 <script>
+  (function () {
+    var role = document.querySelector('[name=role]'), box = document.getElementById('board-positions');
+    if (!role || !box) return;
+    var openToContacts = ['accounting'];
+    function sync() {
+      var r = role.value;
+      box.hidden = r === 'tenant';
+      box.querySelectorAll('[data-position]').forEach(function (el) {
+        var ok = r === 'owner' || r === 'co-owner' || (r === 'contact' && openToContacts.indexOf(el.dataset.position) >= 0);
+        el.hidden = !ok;
+        if (!ok) el.querySelector('input').checked = false;
+      });
+    }
+    role.addEventListener('change', sync); sync();
+  })();
   (function () {
     var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
     if (!pick || !box) return;

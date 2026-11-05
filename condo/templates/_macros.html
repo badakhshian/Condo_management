@@ -24,6 +24,7 @@
     <div class="person-head">
       <div class="person-name"><strong>{{ o.name }}</strong>
         {% if o.role != 'tenant' %}<span class="tag">{{ o.role_label }}</span>{% endif %}
+        {% for label in o.position_labels %}<span class="badge board">{{ label }}</span>{% endfor %}
         {% if o.is_primary %}<span class="badge status-open">Primary</span>{% endif %}
       </div>
       <div class="person-actions">

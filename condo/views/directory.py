@@ -10,7 +10,7 @@ import io
 from flask import Blueprint, Response, abort, redirect, render_template, request, url_for
 
 from ..extensions import db
-from ..models import INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, Owner, Unit, User
+from ..models import BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, Owner, Unit, User
 from ..utils import admin_required
 
 bp = Blueprint("directory", __name__, url_prefix="/directory")
@@ -20,7 +20,14 @@ GROUPS = {
     "owners": {"title": "Owners", "roles": ("owner", "co-owner", "contact"), "default_role": "owner"},
     "tenants": {"title": "Tenants", "roles": ("tenant",), "default_role": "tenant"},
 }
-TABS = [("owners", "Owners"), ("tenants", "Tenants"), ("accounts", "Accounts")]
+TABS = [("owners", "Owners"), ("tenants", "Tenants"), ("board", "Board"), ("accounts", "Accounts")]
+
+
+def board_members():
+    """[(position key, label, [people])] in board order, including vacant positions."""
+    people = db.session.scalars(db.select(Owner).join(Unit).where(Owner.board_roles.is_not(None))
+                                .order_by(Unit.number, Owner.name)).all()
+    return [(key, label, [p for p in people if key in p.positions]) for key, label in BOARD_POSITIONS.items()]
 
 
 def group_for_role(role):
@@ -55,6 +62,7 @@ def _counts():
     counts = dict(db.session.execute(db.select(Owner.role, db.func.count(Owner.id)).group_by(Owner.role)).all())
     out = {g: sum(counts.get(r, 0) for r in spec["roles"]) for g, spec in GROUPS.items()}
     out["accounts"] = db.session.scalar(db.select(db.func.count(User.id)))
+    out["board"] = db.session.scalar(db.select(db.func.count(Owner.id)).where(Owner.board_roles.is_not(None)))
     return out
 
 
@@ -72,6 +80,15 @@ def accounts():
     emails = sorted({u.email for u in users if u.email and u.active})
     return render_template("directory/accounts.html", users=users, q=q, role=role, roles=ROLE_LABELS,
                            emails=emails, tab="accounts", tabs=TABS, counts=_counts())
+
+
+@bp.route("/board")
+@admin_required
+def board():
+    members = board_members()
+    emails = sorted({p.email for _, _, people in members for p in people if p.email})
+    return render_template("directory/board.html", members=members, emails=emails, tab="board", tabs=TABS,
+                           counts=_counts())
 
 
 @bp.route("/<group>")
@@ -104,11 +121,12 @@ def export(group):
             writer.writerow([u.name, u.role_label, u.unit.number if u.unit else "", u.email, u.phone or "",
                              "yes" if u.active else "no"])
     elif group in GROUPS:
-        writer.writerow(["Unit", "Name", "Role", "Primary contact", "Email", "Phone", "Mailing address",
-                         "Insurance", "Insurer", "Insured until", "Notes"])
+        writer.writerow(["Unit", "Name", "Role", "Board role", "Primary contact", "Email", "Phone",
+                         "Mailing address", "Insurance", "Insurer", "Insured until", "Notes"])
         for o in search_contacts(group, q, role):
             p = o.current_policy
-            writer.writerow([o.unit.number, o.name, o.role_label, "yes" if o.is_primary else "", o.email or "",
+            writer.writerow([o.unit.number, o.name, o.role_label, ", ".join(o.position_labels),
+                             "yes" if o.is_primary else "", o.email or "",
                              o.phone or "", (o.mailing_address or "").replace("\n", ", "),
                              INSURANCE_STATE_LABELS[o.insurance_state] if o.needs_insurance else "",
                              (p.provider or "") if p else "", p.valid_until.isoformat() if p else "", o.notes or ""])

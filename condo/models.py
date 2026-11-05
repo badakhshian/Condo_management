@@ -309,6 +309,26 @@ class Setting(db.Model):
 
 OWNER_ROLES = {"owner": "Owner", "co-owner": "Co-owner", "tenant": "Tenant", "contact": "Other contact"}
 
+# Board of directors of the syndicate. Order = display order.
+BOARD_POSITIONS = {
+    "president": "President",
+    "vice-president": "Vice-president",
+    "treasurer": "Treasurer",
+    "secretary": "Secretary",
+    "accounting": "Accounting",
+    "director": "Director",
+}
+SINGLE_HOLDER_POSITIONS = ("president", "vice-president", "treasurer", "secretary")
+OPEN_TO_CONTACTS = ("accounting",)  # positions an outside contact (not a co-owner) may hold
+
+
+def allowed_positions(role):
+    if role in ("owner", "co-owner"):
+        return tuple(BOARD_POSITIONS)
+    if role == "contact":
+        return OPEN_TO_CONTACTS
+    return ()
+
 
 class Owner(db.Model):
     """A person connected to a unit (usually one of several co-owners), with contact details.
@@ -322,6 +342,7 @@ class Owner(db.Model):
     mailing_address = db.Column(db.Text)  # empty = lives in the unit
     is_primary = db.Column(db.Boolean, nullable=False, default=False)
     notes = db.Column(db.Text)
+    board_roles = db.Column(db.String(200))  # comma-separated BOARD_POSITIONS keys
     origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet's Owners tab
     created_at = db.Column(db.DateTime, default=utcnow)
 
@@ -333,6 +354,20 @@ class Owner(db.Model):
     @property
     def role_label(self):
         return OWNER_ROLES.get(self.role, self.role)
+
+    @property
+    def positions(self):
+        keys = [k.strip() for k in (self.board_roles or "").split(",") if k.strip() in BOARD_POSITIONS]
+        return sorted(set(keys), key=list(BOARD_POSITIONS).index)
+
+    @positions.setter
+    def positions(self, keys):
+        keys = [k for k in BOARD_POSITIONS if k in set(keys or ())]
+        self.board_roles = ",".join(keys) or None
+
+    @property
+    def position_labels(self):
+        return [BOARD_POSITIONS[k] for k in self.positions]
 
     @property
     def current_policy(self):

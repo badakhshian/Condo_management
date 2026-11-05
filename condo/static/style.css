@@ -149,3 +149,7 @@ form .btn.primary + a { margin-left: .8rem; }
 .unit-grid { display: grid; gap: 1.2rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1.2rem; }
 .unit-grid > .card { margin-bottom: 0; }
 @media (max-width: 760px) { .unit-grid { grid-template-columns: 1fr; } }
+.checks { display: flex; flex-wrap: wrap; gap: .2rem 1.2rem; }
+.checks .check { margin-bottom: .5rem; }
+.badge.board { color: #7c4dcc; }
+@media (prefers-color-scheme: dark) { .badge.board { color: #b79bf2; } }

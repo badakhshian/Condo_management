@@ -28,7 +28,7 @@ import urllib.request
 from datetime import date, datetime
 
 from .extensions import db
-from .models import OWNER_ROLES, Charge, Expense, Owner, Payment, Setting, Unit, utcnow
+from .models import OWNER_ROLES, Charge, allowed_positions, Expense, Owner, Payment, Setting, Unit, utcnow
 
 ORIGIN = "sheet"
 UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
@@ -242,6 +242,28 @@ def _owner_role(text):
     return "owner"
 
 
+BOARD_ALIASES = {"president": "president", "présidente": "president", "président": "president",
+                 "vice-president": "vice-president", "vice president": "vice-president", "vp": "vice-president",
+                 "treasurer": "treasurer", "treasury": "treasurer", "trésorier": "treasurer", "trésorière": "treasurer",
+                 "secretary": "secretary", "secrétaire": "secretary", "accounting": "accounting",
+                 "accountant": "accounting", "comptable": "accounting", "director": "director",
+                 "board member": "director", "administrateur": "director", "administratrice": "director"}
+
+
+def _board_positions(text, row, warnings):
+    keys = []
+    for part in re.split(r"[,;/&]| and ", text or ""):
+        part = part.strip().lower()
+        if not part:
+            continue
+        key = BOARD_ALIASES.get(part)
+        if key:
+            keys.append(key)
+        else:
+            warnings.append(f'Owners tab row {row}: unknown board role "{part}"; ignored.')
+    return keys
+
+
 def _parse_owners(rows, warnings):
     """One person per row. Returns a list of contact dicts."""
     if not rows:
@@ -251,6 +273,7 @@ def _parse_owners(rows, warnings):
         "unit": ("unit",), "name": ("name", "owner"), "email": ("email", "e-mail", "courriel"),
         "phone": ("phone", "tel", "mobile", "cell"), "address": ("mailing address", "address", "adresse"),
         "role": ("role",), "primary": ("primary", "main contact"), "notes": ("notes", "note"),
+        "board": ("board role", "board", "position"),
     }.items()}
     if col["unit"] is None or col["name"] is None:
         warnings.append('Owners tab skipped: it needs at least "Unit" and "Name" columns.')
@@ -274,7 +297,8 @@ def _parse_owners(rows, warnings):
             email = ""
         contacts.append({"row": n, "unit": unit, "name": name, "email": email, "phone": get(row, "phone"),
                          "address": get(row, "address"), "role": _owner_role(get(row, "role")),
-                         "primary": get(row, "primary").lower() in TRUTHY, "notes": get(row, "notes")})
+                         "primary": get(row, "primary").lower() in TRUTHY, "notes": get(row, "notes"),
+                         "board": _board_positions(get(row, "board"), n, warnings)})
     _resolve_same_as(contacts, warnings)
     return contacts
 
@@ -416,6 +440,7 @@ def _sync_owners(contacts, units):
         owner.role = c["role"]
         owner.is_primary = is_primary
         owner.notes = c["notes"] or None
+        owner.positions = [p for p in c.get("board", []) if p in allowed_positions(c["role"])]
     for key, owner in current.items():
         if key not in keep:
             db.session.delete(owner)

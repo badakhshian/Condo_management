@@ -19,6 +19,7 @@ ADDED_COLUMNS = [
     ("maintenance_request", "owner_decision_by", "VARCHAR(200)"),
     ("maintenance_request", "owner_decision_at", "TIMESTAMP"),
     ("maintenance_request", "owner_decision_note", "TEXT"),
+    ("owner", "board_roles", "VARCHAR(200)"),
 ]
 
 

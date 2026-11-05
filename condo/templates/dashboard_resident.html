@@ -60,5 +60,15 @@
       {% for b in my_bookings %}<li>{{ b.amenity.name }} — {{ b.start.strftime('%a %b %d, %H:%M') }}–{{ b.end.strftime('%H:%M') }}</li>{% endfor %}
     </ul>{% else %}<p class="muted">No upcoming bookings.</p>{% endif %}
   </section>
+  {% set seated = board|selectattr(2)|list %}
+  {% if seated %}
+  <section class="card">
+    <h2>Board of directors{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('directory.board') }}">Manage</a>{% endif %}</h2>
+    <ul class="list">{% for key, label, people in seated %}{% for o in people %}
+      <li><strong>{{ label }}</strong> · {{ o.name }}
+        {% if o.email %}<div class="excerpt"><a href="mailto:{{ o.email }}">{{ o.email }}</a>{% if o.phone %} · <a href="{{ o.phone|tel }}">{{ o.phone|phone }}</a>{% endif %}</div>{% endif %}</li>
+    {% endfor %}{% endfor %}</ul>
+  </section>
+  {% endif %}
 </div>
 {% endblock %}

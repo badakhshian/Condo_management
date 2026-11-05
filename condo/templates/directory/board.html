@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Board · Directory{% endblock %}
+{% block content %}
+{% include "directory/_tabs.html" %}
+<div class="head">
+  <p class="muted" style="margin:0">The syndicate's board of directors. Give someone a position from their Edit page.</p>
+  {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email the board ({{ emails|length }})</a>{% endif %}
+</div>
+<div class="card">
+<table>
+  <thead><tr><th>Position</th><th>Name</th><th>Unit</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+  <tbody>{% for key, label, people in members %}
+    {% for o in people %}
+    <tr><td>{% if loop.first %}<strong>{{ label }}</strong>{% endif %}</td>
+      <td>{{ o.name }}{% if o.role == 'contact' %} <span class="tag">Outside contact</span>{% endif %}</td>
+      <td><a href="{{ url_for('units.detail', unit_id=o.unit_id) }}">{{ o.unit.number }}</a></td>
+      <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
+      <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
+      <td>{% if o.origin != 'sheet' %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% else %}<span class="tag">from sheet</span>{% endif %}</td></tr>
+    {% else %}
+    {% if key != 'director' %}<tr><td><strong>{{ label }}</strong></td><td colspan="5" class="muted">Vacant</td></tr>{% endif %}
+    {% endfor %}
+  {% endfor %}</tbody>
+</table>
+</div>
+{% endblock %}
