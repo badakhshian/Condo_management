@@ -1,0 +1,166 @@
+import io
+from datetime import date, datetime
+
+import pytest
+from openpyxl import Workbook
+
+from condo import sheet_sync
+from condo.extensions import db
+from condo.models import Charge, Expense, Payment, Setting, Unit
+
+HEADER = ["Date", "Unit", "Owner", "Type", "Amount", "Approved by Mostafa", "Source", "Notes"]
+
+
+def make_sheet(extra_rows=(), balances=None):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Transactions"
+    rows = [
+        [datetime(2026, 9, 23), "#101", "Alice Chen", "Opening balance", 100.0, "n/a", "Update", "Fee balance"],
+        [datetime(2026, 9, 23), "#102", "Bob Okafor", "Opening balance", -20.0, "n/a", "Update", ""],
+        [datetime(2026, 10, 1), "#101", "Alice Chen", "Monthly fee", 400.0, "n/a", "Simulator", "October"],
+        [datetime(2026, 10, 1), "#102", "Bob Okafor", "Monthly fee", 350.0, "n/a", "Simulator", "October"],
+        [datetime(2026, 10, 5), "#101", "Alice Chen", "Fee payment", 400.0, "n/a", "Interac to condo account", None],
+        [datetime(2026, 10, 9), "#102", "Bob", "Purchase (reimbursement)", 30.0, "Implicit", "Email", "Leaf blower"],
+        [datetime(2026, 10, 12), "#101", "Alice Chen", "Special contribution", 50.0, "n/a", "Interac", None],
+        [datetime(2026, 11, 5), None, None, "Purchase", -1954.58, "Yes", "RBC", "Parking heaters"],
+        *extra_rows,
+    ]
+    ws.append(HEADER)
+    for r in rows:
+        ws.append(r)
+    bal = wb.create_sheet("Balances")
+    bal.append(["Unit", "Owner", "Opening balance", "Fees charged", "Payments received", "Purchase credits",
+                "Current balance (owes)"])
+    for unit, owner, cur in balances or [("#101", "Alice Chen", 50.0), ("#102", "Bob Okafor", 300.0)]:
+        bal.append([unit, owner, 0, 0, 0, 0, cur])
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def test_export_url():
+    url = "https://docs.google.com/spreadsheets/d/1ZJ8LTTXgBlY2OprOdyLo8LMyejYC0eG8fQCFc35h8kY/edit?usp=drivesdk"
+    assert sheet_sync.export_url(url).endswith("/d/1ZJ8LTTXgBlY2OprOdyLo8LMyejYC0eG8fQCFc35h8kY/export?format=xlsx")
+    with pytest.raises(sheet_sync.SyncError):
+        sheet_sync.export_url("https://example.com/sheet")
+
+
+def test_parse_classifies_and_cross_checks():
+    plan = sheet_sync.parse(make_sheet())
+    assert plan["counts"] == {"opening": 2, "dues": 2, "payment": 2, "credit": 1, "expense": 1}
+    assert plan["warnings"] == []
+    u101, u102 = plan["units"]
+    assert (u101["balance_cents"], u101["sheet_balance_cents"], u101["fee_cents"]) == (5000, 5000, 40000)
+    assert u102["owner"] == "Bob Okafor"  # Balances tab wins over the transaction row's "Bob"
+
+
+def test_parse_reports_problems():
+    plan = sheet_sync.parse(make_sheet(
+        extra_rows=[[datetime(2026, 11, 1), "#101", "A", "Mystery", 5, "", "", ""],
+                    [datetime(2026, 11, 1), None, None, "Fee payment", 5, "", "", ""]],
+        balances=[("#101", "Alice Chen", 99.0), ("#102", "Bob Okafor", 300.0)]))
+    text = " ".join(plan["warnings"])
+    assert 'unknown type "Mystery"' in text and "needs a unit" in text and "Balances tab says $99.00" in text
+
+
+def test_apply_rebuilds_sheet_entries_and_keeps_manual_ones(app):
+    manual = Payment(unit=db.session.scalar(db.select(Unit).where(Unit.number == "101")),
+                     amount_cents=1000, paid_on=date(2026, 10, 20), method="cash")
+    db.session.add(manual)
+    db.session.commit()
+
+    summary = sheet_sync.apply(sheet_sync.parse(make_sheet()))
+    u101 = db.session.scalar(db.select(Unit).where(Unit.number == "101"))
+    assert u101.owner_name == "Alice Chen" and u101.monthly_fee_cents == 40000
+    assert u101.balance == 5000 - 1000  # sheet balance minus the manual cash payment
+    assert summary["mismatches"] == ["Unit 101: the app shows $40.00 but the sheet's Balances tab says $50.00."]
+    credit = db.session.scalar(db.select(Payment).where(Payment.method == "purchase credit"))
+    assert credit.amount_cents == 3000 and "Leaf blower" in credit.notes
+    expense = db.session.scalar(db.select(Expense))
+    assert expense.amount_cents == -195458 and expense.description == "Parking heaters"
+
+    # Re-sync: same result, nothing duplicated, manual payment still there.
+    sheet_sync.apply(sheet_sync.parse(make_sheet()))
+    assert db.session.scalar(db.select(db.func.count(Charge.id)).where(Charge.origin == "sheet")) == 4
+    assert db.session.scalar(db.select(db.func.count(Expense.id))) == 1
+    assert db.session.get(Payment, manual.id) is not None
+
+
+def test_apply_skips_clash_with_manual_dues(app):
+    from condo.views.billing import generate_dues
+    generate_dues(2026, 10)  # app-generated dues for October
+    summary = sheet_sync.apply(sheet_sync.parse(make_sheet()))
+    assert len(summary["skipped"]) == 2 and "already has a dues entry for 2026-10" in summary["skipped"][0]
+
+
+def test_flow_preview_confirm_auto(admin_client, monkeypatch):
+    monkeypatch.setattr(sheet_sync, "fetch", lambda url: make_sheet())
+    admin_client.post("/sheet/", data={"url": "https://docs.google.com/spreadsheets/d/" + "x" * 30 + "/edit"})
+    # Auto-sync can't be switched on before a confirmed sync.
+    admin_client.post("/sheet/auto", data={"auto": "on"})
+    assert not sheet_sync.config().get("auto")
+
+    resp = admin_client.post("/sheet/preview")
+    assert resp.status_code == 302
+    page = admin_client.get(resp.headers["Location"])
+    assert b"Confirm and load" in page.data and b"Parking heaters" in page.data
+    assert db.session.scalar(db.select(db.func.count(Expense.id))) == 0  # preview writes nothing
+
+    admin_client.post(resp.headers["Location"] + "/apply")
+    assert db.session.scalar(db.select(db.func.count(Expense.id))) == 1
+    admin_client.post("/sheet/auto", data={"auto": "on"})
+    assert sheet_sync.config()["auto"] is True
+    assert b"Synced from Google Sheet" in admin_client.get("/billing/").data
+
+
+def test_preview_from_uploaded_file(admin_client):
+    resp = admin_client.post("/sheet/preview", data={"workbook": (io.BytesIO(make_sheet()), "log.xlsx")},
+                             content_type="multipart/form-data")
+    assert b"log.xlsx" in admin_client.get(resp.headers["Location"]).data
+
+
+def test_sheet_pages_admin_only(alice_client):
+    assert alice_client.get("/sheet/").status_code == 403
+
+
+def test_cron_requires_secret_and_syncs_only_changes(app, client, monkeypatch):
+    monkeypatch.setenv("CRON_SECRET", "s3cret")
+    data = {"sheet": make_sheet()}
+    monkeypatch.setattr(sheet_sync, "fetch", lambda url: data["sheet"])
+    assert client.get("/sheet/cron").status_code == 403
+    assert client.get("/sheet/cron", headers={"Authorization": "Bearer wrong"}).status_code == 403
+    auth = {"Authorization": "Bearer s3cret"}
+    assert client.get("/sheet/cron", headers=auth).json == {"status": "auto-sync is off"}
+
+    Setting.put("sheet", {"url": "https://docs.google.com/spreadsheets/d/" + "x" * 30, "auto": True,
+                          "confirmed": True})
+    db.session.commit()
+    assert client.get("/sheet/cron", headers=auth).json == {"status": "synced"}
+    assert client.get("/sheet/cron", headers=auth).json == {"status": "unchanged"}
+    data["sheet"] = make_sheet(extra_rows=[[datetime(2026, 11, 6), "#102", "Bob", "Fee payment", 300.0,
+                                            "n/a", "Interac", None]],
+                               balances=[("#101", "Alice Chen", 50.0), ("#102", "Bob Okafor", 0.0)])
+    assert client.get("/sheet/cron", headers=auth).json == {"status": "synced"}
+    assert db.session.scalar(db.select(Unit).where(Unit.number == "102")).balance == 0
+
+
+def test_cron_records_fetch_errors(app, client, monkeypatch):
+    monkeypatch.setenv("CRON_SECRET", "s3cret")
+
+    def boom(url):
+        raise sheet_sync.SyncError("Google refused access to the sheet.")
+    monkeypatch.setattr(sheet_sync, "fetch", boom)
+    Setting.put("sheet", {"url": "https://docs.google.com/spreadsheets/d/" + "x" * 30, "auto": True})
+    db.session.commit()
+    resp = client.get("/sheet/cron", headers={"Authorization": "Bearer s3cret"})
+    assert resp.json["status"] == "error"
+    assert "refused" in Setting.get("sheet_last_error")["message"]
+
+
+def test_sheet_entries_cannot_be_removed_in_app(admin_client):
+    sheet_sync.apply(sheet_sync.parse(make_sheet()))
+    pay = db.session.scalar(db.select(Payment).where(Payment.origin == "sheet"))
+    admin_client.post(f"/billing/payments/{pay.id}/delete")
+    assert db.session.get(Payment, pay.id) is not None
+    assert b"from sheet" in admin_client.get(f"/billing/unit/{pay.unit_id}").data

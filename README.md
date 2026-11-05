@@ -49,9 +49,31 @@ Then open http://127.0.0.1:5000 and sign in with a demo account:
 | `DATABASE_URL` | `sqlite:///instance/condo.db` | Any SQLAlchemy database URL |
 | `CONDO_NAME` | `Maple Court Condominiums` | Name shown in the header |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | — | When no manager account exists yet, one is created from these at start-up |
+| `CRON_SECRET` | — | Bearer token Vercel Cron sends to `/sheet/cron` |
 | `AUTO_INIT_DB` | on when running on Vercel | Create tables (and the first manager) at start-up |
 
 `postgres://` and `postgresql://` URLs, including the `POSTGRES_URL` that the Neon integration sets, are used automatically with the psycopg 3 driver.
+
+## Google Sheet sync
+
+Managers can link the condo's transaction log in Google Sheets under **Billing → Google Sheet**. The sheet needs a **Transactions** tab with the columns Date, Unit, Owner, Type, Amount, Approved by, Source and Notes. An optional **Balances** tab (Unit, Owner, …, Current balance (owes)) is used to cross-check the totals.
+
+| Type in the sheet | Loaded as |
+|---|---|
+| Opening balance | opening-balance charge (negative = credit) |
+| Monthly fee | that month's dues |
+| Fee payment, Special contribution | payment |
+| Purchase (reimbursement), with a unit | purchase credit to that unit |
+| Purchase, no unit | building expense |
+
+How a sync works:
+- A sync is previewed and confirmed before anything is written.
+- Each sync replaces every entry that came from the sheet. Entries typed into the app by hand are kept.
+- Entries that came from the sheet can't be removed in the app; change them in the sheet.
+
+**Automatic sync:** once a sync has been confirmed, a manager can turn this on. Vercel Cron (`vercel.json`) calls `/sheet/cron` every 10 minutes, authenticated with `CRON_SECRET`. The app re-syncs only when the sheet's contents have changed.
+
+The website reads the sheet through its `.xlsx` export, so the sheet must be shared as *Anyone with the link → Viewer*. You can also preview a sync from a downloaded copy of the sheet.
 
 ## Deploying to Vercel
 

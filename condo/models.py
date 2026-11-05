@@ -89,14 +89,13 @@ class Unit(db.Model):
 
     def ledger(self):
         """Chronological ledger rows with a running balance."""
-        entries = [(c.due_date, 0, c.id, c.description, c.amount_cents, 0) for c in self.charges]
-        entries += [(p.paid_on, 1, p.id, f"Payment ({p.method})" + (f" #{p.reference}" if p.reference else ""),
-                     0, p.amount_cents) for p in self.payments]
+        entries = [(c.due_date, 0, c.id, c.description, c.amount_cents, 0, c.origin) for c in self.charges]
+        entries += [(p.paid_on, 1, p.id, p.label, 0, p.amount_cents, p.origin) for p in self.payments]
         entries.sort(key=lambda e: (e[0], e[1], e[2]))
         running, rows = 0, []
-        for when, kind, entry_id, desc, charge, payment in entries:
+        for when, kind, entry_id, desc, charge, payment, origin in entries:
             running += charge - payment
-            rows.append({"date": when, "type": "payment" if kind else "charge", "id": entry_id,
+            rows.append({"date": when, "type": "payment" if kind else "charge", "id": entry_id, "origin": origin,
                          "description": desc, "charge": charge, "payment": payment, "balance": running})
         return rows
 
@@ -115,6 +114,7 @@ class Charge(db.Model):
     description = db.Column(db.String(255), nullable=False)
     amount_cents = db.Column(db.Integer, nullable=False)
     due_date = db.Column(db.Date, nullable=False)
+    origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet; None = entered in the app
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="charges")
@@ -122,7 +122,7 @@ class Charge(db.Model):
     __table_args__ = (db.UniqueConstraint("unit_id", "kind", "period", name="uq_charge_unit_kind_period"),)
 
 
-PAYMENT_METHODS = ("check", "bank transfer", "card", "cash", "other")
+PAYMENT_METHODS = ("check", "bank transfer", "card", "cash", "purchase credit", "other")
 
 
 class Payment(db.Model):
@@ -132,11 +132,18 @@ class Payment(db.Model):
     paid_on = db.Column(db.Date, nullable=False)
     method = db.Column(db.String(30), nullable=False, default="check")
     reference = db.Column(db.String(80))
+    notes = db.Column(db.String(255))
+    origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet; None = entered in the app
     recorded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="payments")
     recorded_by = db.relationship("User")
+
+    @property
+    def label(self):
+        text = self.notes or f"Payment ({self.method})"
+        return text + (f" #{self.reference}" if self.reference else "")
 
 
 REQUEST_STATUSES = {"open": "Open", "in_progress": "In progress", "resolved": "Resolved", "closed": "Closed"}
@@ -229,3 +236,36 @@ class ImportBatch(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow)
 
     created_by = db.relationship("User")
+
+
+class Expense(db.Model):
+    """A building-level transaction not tied to a unit (e.g. a contractor invoice).
+    Negative amounts are money paid out of the condo account."""
+    id = db.Column(db.Integer, primary_key=True)
+    spent_on = db.Column(db.Date, nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    amount_cents = db.Column(db.Integer, nullable=False)
+    approved_by = db.Column(db.String(255))
+    source = db.Column(db.String(255))
+    notes = db.Column(db.Text)
+    origin = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+
+class Setting(db.Model):
+    """Small key/value store for app-wide settings (e.g. the linked Google Sheet)."""
+    key = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.JSON)
+
+    @staticmethod
+    def get(key, default=None):
+        row = db.session.get(Setting, key)
+        return row.value if row is not None else default
+
+    @staticmethod
+    def put(key, value):
+        row = db.session.get(Setting, key)
+        if row is None:
+            db.session.add(Setting(key=key, value=value))
+        else:
+            row.value = value

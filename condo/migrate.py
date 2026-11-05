@@ -12,6 +12,9 @@ from .extensions import db
 ADDED_COLUMNS = [
     ("unit", "owner_name", "VARCHAR(200)"),
     ("unit", "ownership_share", "FLOAT"),
+    ("charge", "origin", "VARCHAR(20)"),
+    ("payment", "origin", "VARCHAR(20)"),
+    ("payment", "notes", "VARCHAR(255)"),
 ]
 
 

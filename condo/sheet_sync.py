@@ -1,0 +1,319 @@
+"""Keep the app's ledger in step with the condo's Google Sheet transaction log.
+
+The sheet is the source of truth for everything it contains. A sync rebuilds
+every entry that came from the sheet (origin = "sheet"): opening balances,
+monthly fees, payments, purchase credits and building expenses. Entries typed
+into the app by hand are never touched.
+
+Expected tabs:
+  Transactions  Date | Unit | Owner | Type | Amount | Approved by ... | Source | Notes
+  Balances      Unit | Owner | ... | Current balance (owes)      (optional; used as a cross-check)
+
+Transaction types:
+  Opening balance            charge (may be negative: a credit)
+  Monthly fee                monthly dues charge for that month
+  Fee payment, Special contribution, any "... payment"   payment
+  Purchase (reimbursement)   credit to the unit (owner bought something for the building)
+  Purchase (no unit)         building expense
+"""
+import calendar
+import hashlib
+import io
+import re
+import urllib.error
+import urllib.request
+from datetime import date, datetime
+
+from .extensions import db
+from .models import Charge, Expense, Payment, Setting, Unit, utcnow
+
+ORIGIN = "sheet"
+UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
+SHEET_ID_RE = re.compile(r"/spreadsheets/d/([A-Za-z0-9_-]{20,})")
+FETCH_TIMEOUT = 20
+
+
+class SyncError(ValueError):
+    """The sheet couldn't be fetched or doesn't have the expected layout."""
+
+
+# --- fetching ----------------------------------------------------------------
+
+def export_url(sheet_url):
+    """Turn any Google Sheets link into its .xlsx export URL."""
+    m = SHEET_ID_RE.search(sheet_url or "")
+    if not m:
+        raise SyncError("That doesn't look like a Google Sheets link (…/spreadsheets/d/…).")
+    return f"https://docs.google.com/spreadsheets/d/{m.group(1)}/export?format=xlsx"
+
+
+def fetch(sheet_url):
+    req = urllib.request.Request(export_url(sheet_url), headers={"User-Agent": "condo-management-sync"})
+    try:
+        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as resp:
+            data = resp.read()
+            ctype = resp.headers.get("Content-Type", "")
+    except urllib.error.HTTPError as exc:
+        if exc.code in (401, 403, 404):
+            raise SyncError("Google refused access to the sheet. In the sheet, click Share and set "
+                            "General access to \"Anyone with the link\" (Viewer).") from exc
+        raise SyncError(f"Google returned an error ({exc.code}) for the sheet.") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise SyncError("Couldn't reach Google Sheets. Try again in a minute.") from exc
+    if "html" in ctype or not data.startswith(b"PK"):
+        raise SyncError("Google sent a sign-in page instead of the sheet. Set General access to "
+                        "\"Anyone with the link\" (Viewer).")
+    return data
+
+
+# --- parsing -----------------------------------------------------------------
+
+def _cents(value):
+    if value is None or value == "":
+        return 0
+    if isinstance(value, str):
+        value = value.replace("$", "").replace(",", "").strip() or 0
+    return int(round(float(value) * 100))
+
+
+def _date(value):
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str) and value.strip():
+        try:
+            return date.fromisoformat(value.strip()[:10])
+        except ValueError:
+            pass
+    return None
+
+
+def _text(value):
+    return str(value).strip() if value is not None else ""
+
+
+def _unit(value):
+    m = UNIT_RE.match(_text(value))
+    return m.group(1) if m else None
+
+
+def _header_index(header, *names):
+    """Find a column by (prefix of) its header text, case-insensitively."""
+    lowered = [_text(h).lower() for h in header]
+    for name in names:
+        for i, h in enumerate(lowered):
+            if h == name or h.startswith(name):
+                return i
+    return None
+
+
+def classify(kind, unit):
+    k = kind.lower()
+    if k.startswith("opening"):
+        return "opening"
+    if k.startswith("monthly fee") or k in ("fee", "condo fee", "dues"):
+        return "dues"
+    if "reimbursement" in k or ("purchase" in k and unit):
+        return "credit"
+    if "purchase" in k or "expense" in k:
+        return "expense"
+    if "payment" in k or "contribution" in k or k in ("deposit", "e-transfer"):
+        return "payment"
+    return None
+
+
+def parse(data):
+    """Parse the workbook bytes into a plan dict (JSON-serialisable)."""
+    from openpyxl import load_workbook
+
+    try:
+        wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+    except Exception as exc:
+        raise SyncError("The sheet couldn't be read as a spreadsheet.") from exc
+    names = {n.lower(): n for n in wb.sheetnames}
+    if "transactions" not in names:
+        raise SyncError('The sheet has no "Transactions" tab.')
+    rows = [list(r) for r in wb[names["transactions"]].iter_rows(values_only=True)]
+    balances_rows = ([list(r) for r in wb[names["balances"]].iter_rows(values_only=True)]
+                     if "balances" in names else [])
+    wb.close()
+    if not rows:
+        raise SyncError('The "Transactions" tab is empty.')
+
+    header = rows[0]
+    col = {key: _header_index(header, *names_) for key, names_ in {
+        "date": ("date",), "unit": ("unit",), "owner": ("owner",), "type": ("type",),
+        "amount": ("amount",), "approved": ("approved",), "source": ("source",), "notes": ("notes", "note"),
+    }.items()}
+    missing = [k for k in ("date", "unit", "type", "amount") if col[k] is None]
+    if missing:
+        raise SyncError(f'The "Transactions" tab is missing column(s): {", ".join(missing)}.')
+
+    def get(row, key):
+        i = col[key]
+        return row[i] if i is not None and i < len(row) else None
+
+    entries, warnings, owners = [], [], {}
+    for n, row in enumerate(rows[1:], start=2):
+        if not any(v not in (None, "") for v in row):
+            continue
+        when, unit, kind = _date(get(row, "date")), _unit(get(row, "unit")), _text(get(row, "type"))
+        category = classify(kind, unit)
+        if when is None or not kind:
+            warnings.append(f"Row {n}: skipped (missing date or type).")
+            continue
+        if category is None:
+            warnings.append(f'Row {n}: skipped, unknown type "{kind}".')
+            continue
+        if category != "expense" and unit is None:
+            warnings.append(f'Row {n}: skipped, "{kind}" needs a unit.')
+            continue
+        try:
+            amount = _cents(get(row, "amount"))
+        except ValueError:
+            warnings.append(f"Row {n}: skipped, amount isn't a number.")
+            continue
+        owner = _text(get(row, "owner"))
+        if unit and owner and category in ("opening", "dues"):
+            owners[unit] = owner  # the latest fee/opening row names the current owner
+        entries.append({"row": n, "date": when.isoformat(), "unit": unit, "kind": kind, "category": category,
+                        "amount_cents": amount, "owner": owner, "approved": _text(get(row, "approved")),
+                        "source": _text(get(row, "source")), "notes": _text(get(row, "notes"))})
+
+    expected = {}
+    if balances_rows:
+        bh = balances_rows[0]
+        ui, oi = _header_index(bh, "unit"), _header_index(bh, "owner")
+        bi = _header_index(bh, "current balance", "balance")
+        for row in balances_rows[1:]:
+            unit = _unit(row[ui]) if ui is not None and ui < len(row) else None
+            if unit and bi is not None and bi < len(row) and row[bi] not in (None, ""):
+                expected[unit] = _cents(row[bi])
+                if oi is not None and oi < len(row) and _text(row[oi]):
+                    owners[unit] = _text(row[oi])  # the Balances tab is the cleanest list of owners
+
+    units = sorted({e["unit"] for e in entries if e["unit"]} | set(expected), key=int)
+    fees = {}
+    for e in sorted(entries, key=lambda e: e["date"]):
+        if e["category"] == "dues":
+            fees[e["unit"]] = e["amount_cents"]
+
+    computed = {u: 0 for u in units}
+    for e in entries:
+        if e["unit"]:
+            sign = 1 if e["category"] in ("opening", "dues") else -1
+            computed[e["unit"]] += sign * e["amount_cents"]
+    for u, cents in expected.items():
+        if computed.get(u) != cents:
+            warnings.append(f"Unit {u}: transactions add up to {cents_str(computed.get(u, 0))} "
+                            f"but the Balances tab says {cents_str(cents)}.")
+
+    counts = {c: sum(1 for e in entries if e["category"] == c)
+              for c in ("opening", "dues", "payment", "credit", "expense")}
+    return {"kind": "sheet", "hash": hashlib.sha256(data).hexdigest(), "entries": entries,
+            "units": [{"number": u, "owner": owners.get(u, ""), "fee_cents": fees.get(u),
+                       "balance_cents": computed[u], "sheet_balance_cents": expected.get(u)} for u in units],
+            "counts": counts, "warnings": warnings}
+
+
+def cents_str(cents):
+    sign = "-" if cents < 0 else ""
+    return f"{sign}${abs(cents) / 100:,.2f}"
+
+
+# --- applying ----------------------------------------------------------------
+
+def _truncate(text, n):
+    return text if len(text) <= n else text[: n - 1] + "…"
+
+
+def apply(plan):
+    """Replace all sheet-sourced entries with the plan's. Returns a summary dict."""
+    existing = {u.number: u for u in db.session.scalars(db.select(Unit))}
+    created = []
+    for u in plan["units"]:
+        unit = existing.get(u["number"])
+        if unit is None:
+            unit = Unit(number=u["number"], monthly_fee_cents=u["fee_cents"] or 0)
+            db.session.add(unit)
+            existing[u["number"]] = unit
+            created.append(u["number"])
+        if u["owner"]:
+            unit.owner_name = _truncate(u["owner"], 200)
+        if u["fee_cents"]:
+            unit.monthly_fee_cents = u["fee_cents"]
+    db.session.flush()
+
+    for model in (Charge, Payment, Expense):
+        db.session.execute(db.delete(model).where(model.origin == ORIGIN))
+    db.session.flush()
+
+    # Charges that were entered in the app for the same unit, kind and month would clash.
+    taken = set(db.session.execute(
+        db.select(Charge.unit_id, Charge.kind, Charge.period).where(Charge.period.is_not(None))).all())
+    skipped = []
+    for e in plan["entries"]:
+        when = date.fromisoformat(e["date"])
+        note = " — ".join(x for x in (e["kind"], e["notes"]) if x)
+        if e["category"] == "expense":
+            db.session.add(Expense(spent_on=when, amount_cents=e["amount_cents"], origin=ORIGIN,
+                                   description=_truncate(e["notes"] or e["kind"], 255),
+                                   approved_by=_truncate(e["approved"], 255) or None,
+                                   source=_truncate(e["source"], 255) or None))
+            continue
+        unit = existing[e["unit"]]
+        if e["category"] in ("opening", "dues"):
+            if e["amount_cents"] == 0:
+                continue
+            kind = "opening" if e["category"] == "opening" else "dues"
+            period = when.strftime("%Y-%m")
+            if (unit.id, kind, period) in taken:
+                skipped.append(f"Row {e['row']}: unit {unit.number} already has a {kind} entry for {period}; skipped.")
+                continue
+            taken.add((unit.id, kind, period))
+            db.session.add(Charge(unit=unit, kind=kind, period=period, due_date=when, origin=ORIGIN,
+                                  amount_cents=e["amount_cents"], description=_truncate(note, 255)))
+        else:
+            method = "purchase credit" if e["category"] == "credit" else (
+                "bank transfer" if "interac" in e["source"].lower() else "other")
+            db.session.add(Payment(unit=unit, amount_cents=e["amount_cents"], paid_on=when, method=method,
+                                   origin=ORIGIN, notes=_truncate(note, 255)))
+    db.session.flush()
+
+    mismatches = []
+    for u in plan["units"]:
+        expected = u["sheet_balance_cents"]
+        if expected is not None and existing[u["number"]].balance != expected:
+            mismatches.append(f"Unit {u['number']}: the app shows {cents_str(existing[u['number']].balance)} "
+                              f"but the sheet's Balances tab says {cents_str(expected)}.")
+    summary = {"at": utcnow().isoformat(timespec="seconds"), "hash": plan["hash"], "counts": plan["counts"],
+               "units_created": created, "skipped": skipped, "mismatches": mismatches,
+               "warnings": plan["warnings"]}
+    Setting.put("sheet_last_sync", summary)
+    db.session.commit()
+    return summary
+
+
+def config():
+    return Setting.get("sheet", {}) or {}
+
+
+def run_auto_sync():
+    """Fetch and apply if auto-sync is on and the sheet changed. Returns a short status string."""
+    cfg = config()
+    if not cfg.get("url") or not cfg.get("auto"):
+        return "auto-sync is off"
+    data = fetch(cfg["url"])
+    last = Setting.get("sheet_last_sync") or {}
+    if last.get("hash") == hashlib.sha256(data).hexdigest():
+        Setting.put("sheet_last_check", utcnow().isoformat(timespec="seconds"))
+        db.session.commit()
+        return "unchanged"
+    apply(parse(data))
+    return "synced"
+
+
+def month_name(period):
+    y, m = (int(x) for x in period.split("-"))
+    return f"{calendar.month_name[m]} {y}"

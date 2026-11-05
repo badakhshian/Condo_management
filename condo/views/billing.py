@@ -5,7 +5,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import CHARGE_KINDS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Payment, Unit
+from ..models import CHARGE_KINDS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment, Setting, Unit
 from ..utils import admin_required, can_access_unit, parse_date, parse_money
 
 bp = Blueprint("billing", __name__, url_prefix="/billing")
@@ -46,8 +46,10 @@ def index():
         db.select(Payment).order_by(Payment.paid_on.desc(), Payment.id.desc()).limit(10)
     ).all()
     today = date.today()
-    return render_template("billing/index.html", rows=rows, totals=totals,
-                           recent_payments=recent_payments, today=today)
+    expenses = db.session.scalars(db.select(Expense).order_by(Expense.spent_on.desc()).limit(20)).all()
+    sheet = Setting.get("sheet") or {}
+    return render_template("billing/index.html", rows=rows, totals=totals, recent_payments=recent_payments,
+                           today=today, expenses=expenses, sheet=sheet, last_sync=Setting.get("sheet_last_sync"))
 
 
 @bp.route("/generate", methods=["POST"])
@@ -155,6 +157,9 @@ def new_payment():
 def delete_charge(charge_id):
     charge = db.session.get(Charge, charge_id) or abort(404)
     unit_id = charge.unit_id
+    if charge.origin == "sheet":
+        flash("This entry comes from the Google Sheet. Change it there; the next sync updates the app.", "error")
+        return redirect(url_for("billing.ledger", unit_id=unit_id))
     db.session.delete(charge)
     db.session.commit()
     flash("Charge removed.", "success")
@@ -166,6 +171,9 @@ def delete_charge(charge_id):
 def delete_payment(payment_id):
     payment = db.session.get(Payment, payment_id) or abort(404)
     unit_id = payment.unit_id
+    if payment.origin == "sheet":
+        flash("This entry comes from the Google Sheet. Change it there; the next sync updates the app.", "error")
+        return redirect(url_for("billing.ledger", unit_id=unit_id))
     db.session.delete(payment)
     db.session.commit()
     flash("Payment removed.", "success")

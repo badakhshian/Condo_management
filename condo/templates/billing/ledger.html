@@ -20,7 +20,7 @@
       <td class="num">{{ r.charge|money if r.charge else '' }}</td>
       <td class="num">{{ r.payment|money if r.payment else '' }}</td>
       <td class="num">{{ balance(r.balance) }}</td>
-      {% if current_user.is_admin %}<td>{{ post_button(url_for('billing.delete_' ~ r.type, **{r.type ~ '_id': r.id}), 'Remove', cls='btn small ghost', confirm='Remove this entry?') }}</td>{% endif %}</tr>
+      {% if current_user.is_admin %}<td>{% if r.origin == 'sheet' %}<span class="tag" title="Edit this in the Google Sheet">from sheet</span>{% else %}{{ post_button(url_for('billing.delete_' ~ r.type, **{r.type ~ '_id': r.id}), 'Remove', cls='btn small ghost', confirm='Remove this entry?') }}{% endif %}</td>{% endif %}</tr>
   {% else %}<tr><td colspan="6" class="muted">No activity yet.</td></tr>{% endfor %}
   </tbody>
 </table>

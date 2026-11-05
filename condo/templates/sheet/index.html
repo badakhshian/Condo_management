@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Google Sheet{% endblock %}
+{% block content %}
+<h1>Google Sheet sync</h1>
+<p class="muted">The app can mirror the condo's transaction log in Google Sheets. Opening balances, monthly fees, payments,
+  purchase credits and building expenses come from the sheet's <strong>Transactions</strong> tab; the <strong>Balances</strong> tab is used as a cross-check.
+  Each sync replaces only what came from the sheet. Entries typed into the app by hand are kept.</p>
+
+<div class="grid two">
+  <form method="post" class="card">
+    {{ csrf() }}
+    <h2>1. Link the sheet</h2>
+    <label>Google Sheets link
+      <input name="url" type="url" required placeholder="https://docs.google.com/spreadsheets/d/…" value="{{ cfg.get('url', '') }}"></label>
+    <p class="muted">The sheet must be shared as <em>Anyone with the link → Viewer</em> so the website can read it.</p>
+    <button class="btn">Save link</button>
+  </form>
+
+  <section class="card">
+    <h2>2. Preview and confirm</h2>
+    <p>Nothing changes until you confirm the preview.</p>
+    <form method="post" action="{{ url_for('sheet.preview') }}" class="actions">
+      {{ csrf() }}<button class="btn primary" {{ 'disabled' if not cfg.get('url') }}>Preview from Google Sheet</button>
+    </form>
+    <form method="post" action="{{ url_for('sheet.preview') }}" enctype="multipart/form-data" style="margin-top:1rem">
+      {{ csrf() }}
+      <label>…or preview from a downloaded copy (.xlsx) <input type="file" name="workbook" accept=".xlsx" required></label>
+      <button class="btn">Preview from file</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>3. Automatic sync</h2>
+    {% if cfg.get('auto') %}
+      <p><span class="badge status-resolved">On</span> The website checks the sheet every 10 minutes and updates when it has changed.</p>
+    {% else %}
+      <p><span class="badge status-closed">Off</span> {% if not cfg.get('confirmed') %}Confirm one sync first.{% endif %}</p>
+    {% endif %}
+    {% if not cron_ready %}<p class="flash flash-error">CRON_SECRET isn't set on the server, so scheduled checks can't run yet.</p>{% endif %}
+    {% if last_check %}<p class="muted">Last check: {{ last_check.replace('T', ' ') }} UTC</p>{% endif %}
+    {% if last_error %}<p class="flash flash-error">Last automatic check failed ({{ last_error.at.replace('T', ' ') }} UTC): {{ last_error.message }}</p>{% endif %}
+    <form method="post" action="{{ url_for('sheet.auto') }}">
+      {{ csrf() }}<input type="hidden" name="auto" value="{{ 'off' if cfg.get('auto') else 'on' }}">
+      <button class="btn" {{ 'disabled' if not cfg.get('confirmed') and not cfg.get('auto') }}>{{ 'Turn off' if cfg.get('auto') else 'Turn on' }} automatic sync</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Last sync</h2>
+    {% if last %}
+      <p>{{ last.at.replace('T', ' ') }} UTC · {{ last.counts.opening }} opening balances, {{ last.counts.dues }} monthly fees,
+        {{ last.counts.payment }} payments, {{ last.counts.credit }} purchase credits, {{ last.counts.expense }} building expenses.</p>
+      {% if last.units_created %}<p>New units created: {{ last.units_created|join(', ') }}</p>{% endif %}
+      {% for m in last.mismatches + last.skipped + last.warnings %}<div class="flash flash-error">{{ m }}</div>{% endfor %}
+      {% if not (last.mismatches or last.skipped or last.warnings) %}<p class="credit">Every unit's balance matches the sheet.</p>{% endif %}
+    {% else %}<p class="muted">Never synced.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

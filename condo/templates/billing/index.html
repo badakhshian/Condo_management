@@ -1,13 +1,32 @@
 {% extends "base.html" %}
 {% from "_macros.html" import balance, csrf %}
-{% block title %}Billing{% endblock %}
+{% block title %}Billing<section class="card">
+  <h2>Building expenses</h2>
+  {% if expenses %}<table>
+    <thead><tr><th>Date</th><th>Description</th><th>Approved</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for x in expenses %}
+      <tr><td>{{ x.spent_on.strftime('%Y-%m-%d') }}</td><td>{{ x.description }}{% if x.source %}<div class="excerpt">{{ x.source }}</div>{% endif %}</td>
+        <td class="muted">{{ x.approved_by or '—' }}</td><td class="num">{{ x.amount_cents|money }}</td></tr>
+    {% endfor %}</tbody>
+  </table>{% else %}<p class="muted">No building expenses recorded.</p>{% endif %}
+</section>
+{% endblock %}
 {% block content %}
 <div class="head"><h1>Billing</h1>
   <div class="actions">
+    <a class="btn" href="{{ url_for('sheet.index') }}">Google Sheet</a>
     <a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a>
     <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
     <a class="btn primary" href="{{ url_for('billing.new_payment') }}">Record payment</a>
   </div></div>
+{% if sheet.get('url') %}
+<div class="card inline-form">
+  <strong>Synced from Google Sheet</strong>
+  <span class="muted">{% if last_sync %}Last sync {{ last_sync.at.replace('T', ' ') }} UTC.{% else %}Not synced yet.{% endif %}
+    Monthly fees and payments come from the sheet{% if sheet.get('auto') %} and update automatically{% endif %}, so dues aren't generated here.</span>
+  <a class="btn small" href="{{ url_for('sheet.index') }}">Manage</a>
+</div>
+{% else %}
 <form method="post" action="{{ url_for('billing.generate') }}" class="card inline-form">
   {{ csrf() }}
   <strong>Generate monthly dues</strong>
@@ -15,6 +34,7 @@
   <button class="btn">Generate</button>
   <span class="muted">Bills every unit its monthly dues. Units already billed for that month are skipped.</span>
 </form>
+{% endif %}
 <div class="stats">
   <div class="stat"><span>{{ totals.charged|money }}</span>Total billed</div>
   <div class="stat"><span>{{ totals.paid|money }}</span>Total collected</div>
@@ -39,4 +59,14 @@
   </ul>{% else %}<p class="muted">No payments recorded.</p>{% endif %}
 </section>
 </div>
+<section class="card">
+  <h2>Building expenses</h2>
+  {% if expenses %}<table>
+    <thead><tr><th>Date</th><th>Description</th><th>Approved</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for x in expenses %}
+      <tr><td>{{ x.spent_on.strftime('%Y-%m-%d') }}</td><td>{{ x.description }}{% if x.source %}<div class="excerpt">{{ x.source }}</div>{% endif %}</td>
+        <td class="muted">{{ x.approved_by or '—' }}</td><td class="num">{{ x.amount_cents|money }}</td></tr>
+    {% endfor %}</tbody>
+  </table>{% else %}<p class="muted">No building expenses recorded.</p>{% endif %}
+</section>
 {% endblock %}
