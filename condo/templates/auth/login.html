@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="card narrow login">
+  <h1>{{ condo_name }}</h1>
+  <p class="muted">Resident &amp; management portal</p>
+  <form method="post">
+    {{ csrf() }}
+    <label>Email <input type="email" name="email" required autofocus value="{{ request.form.get('email', '') }}"></label>
+    <label>Password <input type="password" name="password" required></label>
+    <label class="check"><input type="checkbox" name="remember"> Keep me signed in</label>
+    <button class="btn primary full">Sign in</button>
+  </form>
+</div>
+{% endblock %}

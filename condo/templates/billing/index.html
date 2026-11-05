@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import balance, csrf %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<div class="head"><h1>Billing</h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
+    <a class="btn primary" href="{{ url_for('billing.new_payment') }}">Record payment</a>
+  </div></div>
+<form method="post" action="{{ url_for('billing.generate') }}" class="card inline-form">
+  {{ csrf() }}
+  <strong>Generate monthly dues</strong>
+  <input type="month" name="period" value="{{ today.strftime('%Y-%m') }}" required>
+  <button class="btn">Generate</button>
+  <span class="muted">Bills every unit its monthly dues. Units already billed for that month are skipped.</span>
+</form>
+<div class="stats">
+  <div class="stat"><span>{{ totals.charged|money }}</span>Total billed</div>
+  <div class="stat"><span>{{ totals.paid|money }}</span>Total collected</div>
+  <div class="stat"><span class="{{ 'owed' if totals.balance > 0 }}">{{ totals.balance|money }}</span>Net outstanding</div>
+</div>
+<div class="grid two wide-left">
+<section class="card">
+  <h2>Unit balances</h2>
+  <table>
+    <thead><tr><th>Unit</th><th class="num">Billed</th><th class="num">Paid</th><th class="num">Balance</th></tr></thead>
+    <tbody>{% for r in rows %}
+      <tr><td><a href="{{ url_for('billing.ledger', unit_id=r.unit.id) }}">{{ r.unit.number }}</a></td>
+        <td class="num">{{ r.charged|money }}</td><td class="num">{{ r.paid|money }}</td><td class="num">{{ balance(r.balance) }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+</section>
+<section class="card">
+  <h2>Recent payments</h2>
+  {% if recent_payments %}<ul class="list">
+    {% for p in recent_payments %}<li><strong>{{ p.amount_cents|money }}</strong> · Unit {{ p.unit.number }}
+      <span class="muted">· {{ p.paid_on.strftime('%b %d') }} · {{ p.method }}</span></li>{% endfor %}
+  </ul>{% else %}<p class="muted">No payments recorded.</p>{% endif %}
+</section>
+</div>
+{% endblock %}

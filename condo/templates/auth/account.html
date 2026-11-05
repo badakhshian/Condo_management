@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<h1>My profile</h1>
+<div class="grid two">
+  <div class="card">
+    <h2>Details</h2>
+    <dl class="props">
+      <dt>Name</dt><dd>{{ current_user.name }}</dd>
+      <dt>Email</dt><dd>{{ current_user.email }}</dd>
+      <dt>Role</dt><dd>{{ current_user.role_label }}</dd>
+      <dt>Unit</dt><dd>{{ current_user.unit.number if current_user.unit else '—' }}</dd>
+    </dl>
+  </div>
+  <form method="post" class="card">
+    {{ csrf() }}
+    <h2>Update</h2>
+    <label>Phone <input name="phone" value="{{ current_user.phone or '' }}"></label>
+    <fieldset>
+      <legend>Change password (optional)</legend>
+      <label>Current password <input type="password" name="current_password"></label>
+      <label>New password <input type="password" name="new_password" minlength="8"></label>
+      <label>Confirm new password <input type="password" name="confirm_password"></label>
+    </fieldset>
+    <button class="btn primary">Save</button>
+  </form>
+</div>
+{% endblock %}

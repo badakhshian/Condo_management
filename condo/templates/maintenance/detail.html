@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge, priority_badge, post_button %}
+{% block title %}Request #{{ req.id }}{% endblock %}
+{% block content %}
+<div class="head"><h1>#{{ req.id }} · {{ req.title }}</h1>
+  <div>{{ priority_badge(req.priority, priorities) }} {{ status_badge(req.status, statuses) }}</div></div>
+<div class="grid two wide-left">
+  <section>
+    <div class="card">
+      <p class="muted">{{ 'Unit ' ~ req.unit.number if req.unit else 'Common area' }} · {{ req.category }} ·
+        submitted by {{ req.submitted_by.name }} on {{ req.created_at.strftime('%b %d, %Y %H:%M') }}</p>
+      <div class="prose">{{ req.description }}</div>
+    </div>
+    <div class="card">
+      <h2>Updates</h2>
+      {% for c in req.comments %}
+        <div class="comment"><strong>{{ c.author.name }}</strong> <span class="muted">{{ c.created_at.strftime('%b %d, %H:%M') }}</span>
+          <div class="prose">{{ c.body }}</div></div>
+      {% else %}<p class="muted">No updates yet.</p>{% endfor %}
+      <form method="post" action="{{ url_for('maintenance.comment', request_id=req.id) }}">
+        {{ csrf() }}
+        <label>Add a comment <textarea name="body" rows="3" required></textarea></label>
+        <button class="btn">Post comment</button>
+      </form>
+    </div>
+  </section>
+  <aside class="card">
+    {% if current_user.is_admin %}
+      <h2>Manage</h2>
+      <form method="post" action="{{ url_for('maintenance.update_status', request_id=req.id) }}">
+        {{ csrf() }}
+        <label>Status <select name="status">{% for k, label in statuses.items() %}<option value="{{ k }}" {{ 'selected' if req.status == k }}>{{ label }}</option>{% endfor %}</select></label>
+        <label>Priority <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if req.priority == k }}>{{ label }}</option>{% endfor %}</select></label>
+        <button class="btn primary">Update</button>
+      </form>
+    {% elif req.submitted_by_id == current_user.id %}
+      <h2>Actions</h2>
+      {% if req.is_active %}
+        {{ post_button(url_for('maintenance.update_status', request_id=req.id), 'Close request', cls='btn', confirm='Close this request?', extra={'status': 'closed'}) }}
+      {% elif req.status == 'resolved' %}
+        <p class="muted">Not fixed after all?</p>
+        {{ post_button(url_for('maintenance.update_status', request_id=req.id), 'Reopen', cls='btn', extra={'status': 'open'}) }}
+      {% else %}<p class="muted">This request is closed.</p>{% endif %}
+    {% else %}
+      <p class="muted">Last updated {{ req.updated_at.strftime('%b %d, %Y') }}.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'New person' if creating else 'Edit ' ~ user.name }}{% endblock %}
+{% block content %}
+<h1>{{ 'New person' if creating else 'Edit ' ~ user.name }}</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <label>Full name <input name="name" required value="{{ form.get('name', '') }}"></label>
+  <div class="row">
+    <label>Email <input type="email" name="email" required value="{{ form.get('email', '') }}"></label>
+    <label>Phone <input name="phone" value="{{ form.get('phone', '') }}"></label>
+  </div>
+  <div class="row">
+    <label>Role
+      <select name="role">{% for key, label in roles.items() %}<option value="{{ key }}" {{ 'selected' if form.get('role') == key }}>{{ label }}</option>{% endfor %}</select>
+    </label>
+    <label>Unit
+      <select name="unit_id"><option value="">— None —</option>
+        {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <label>{{ 'Password' if creating else 'New password (leave blank to keep)' }}
+    <input type="password" name="password" minlength="8" {{ 'required' if creating }}></label>
+  {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> Account active</label>{% endif %}
+  <button class="btn primary">Save</button>
+  <a href="{{ url_for('residents.index') }}">Cancel</a>
+</form>
+{% endblock %}

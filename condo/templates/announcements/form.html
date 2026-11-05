@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit' if item.id else 'New' }} notice{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if item.id else 'Post a' }} notice</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <label>Title <input name="title" required value="{{ form.get('title', '') }}"></label>
+  <label>Message <textarea name="body" rows="8" required>{{ form.get('body', '') }}</textarea></label>
+  <label class="check"><input type="checkbox" name="pinned" {{ 'checked' if form.get('pinned') }}> Pin to top</label>
+  <button class="btn primary">{{ 'Save' if item.id else 'Post' }}</button>
+  <a href="{{ url_for('announcements.index') }}">Cancel</a>
+</form>
+{% endblock %}

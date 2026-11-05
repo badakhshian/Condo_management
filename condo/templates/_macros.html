@@ -1,0 +1,14 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro status_badge(status, labels) %}<span class="badge status-{{ status }}">{{ labels.get(status, status) }}</span>{% endmacro %}
+
+{% macro priority_badge(p, labels) %}<span class="badge prio-{{ p }}">{{ labels.get(p, p) }}</span>{% endmacro %}
+
+{% macro balance(cents) %}<span class="{{ 'owed' if cents > 0 else 'credit' if cents < 0 else '' }}">{{ cents|money }}</span>{% endmacro %}
+
+{% macro post_button(action, label, cls='btn danger small', confirm=None, extra={}) %}
+<form method="post" action="{{ action }}" class="inline"{% if confirm %} onsubmit="return confirm('{{ confirm }}')"{% endif %}>
+  {{ csrf() }}{% for k, v in extra.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+  <button class="{{ cls }}">{{ label }}</button>
+</form>
+{% endmacro %}

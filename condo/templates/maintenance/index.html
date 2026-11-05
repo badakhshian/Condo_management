@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}Maintenance{% endblock %}
+{% block content %}
+<div class="head"><h1>Maintenance requests</h1><a class="btn primary" href="{{ url_for('maintenance.new') }}">New request</a></div>
+<nav class="tabs">
+  {% for key, label in [('active', 'Active')] + statuses.items()|list + [('all', 'All')] %}
+    <a href="{{ url_for('maintenance.index', status=key) }}" class="{{ 'active' if status == key }}">{{ label }}</a>
+  {% endfor %}
+</nav>
+<div class="card">
+<table>
+  <thead><tr><th>#</th><th>Title</th><th>Location</th><th>Category</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
+  <tbody>
+  {% for r in requests %}
+    <tr><td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a></td>
+      <td>{{ 'Unit ' ~ r.unit.number if r.unit else 'Common area' }}</td><td>{{ r.category }}</td>
+      <td>{{ priority_badge(r.priority, priorities) }}</td><td>{{ status_badge(r.status, statuses) }}</td>
+      <td>{{ r.created_at.strftime('%Y-%m-%d') }} <span class="muted">· {{ r.submitted_by.name }}</span></td></tr>
+  {% else %}<tr><td colspan="7" class="muted">No requests.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

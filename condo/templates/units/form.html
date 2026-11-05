@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit unit ' ~ unit.number if unit.id else 'New unit' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit unit ' ~ unit.number if unit.id else 'New unit' }}</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <div class="row">
+    <label>Unit number <input name="number" required value="{{ form.get('number', '') }}"></label>
+    <label>Floor <input name="floor" type="number" min="0" value="{{ form.get('floor', '') }}"></label>
+  </div>
+  <div class="row">
+    <label>Bedrooms <input name="bedrooms" type="number" min="0" value="{{ form.get('bedrooms', '') }}"></label>
+    <label>Area (sq ft) <input name="area_sqft" type="number" min="0" value="{{ form.get('area_sqft', '') }}"></label>
+  </div>
+  <div class="row">
+    <label>Parking spot <input name="parking_spot" value="{{ form.get('parking_spot', '') }}"></label>
+    <label>Monthly dues ($) <input name="monthly_fee" inputmode="decimal" value="{{ form.get('monthly_fee', '') }}"></label>
+  </div>
+  <label>Notes <textarea name="notes" rows="3">{{ form.get('notes', '') }}</textarea></label>
+  <button class="btn primary">Save</button>
+  <a href="{{ url_for('units.detail', unit_id=unit.id) if unit.id else url_for('units.index') }}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% if announcements %}
+<ul class="list">
+{% for a in announcements %}
+  <li>{% if a.pinned %}<span class="badge pin">Pinned</span> {% endif %}<strong>{{ a.title }}</strong>
+    <span class="muted">· {{ a.created_at.strftime('%b %d') }}</span>
+    <div class="excerpt">{{ a.body|truncate(140) }}</div></li>
+{% endfor %}
+</ul>
+<a href="{{ url_for('announcements.index') }}">All notices →</a>
+{% else %}<p class="muted">No notices.</p>{% endif %}

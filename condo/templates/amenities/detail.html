@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, post_button %}
+{% block title %}{{ amenity.name }}{% endblock %}
+{% block content %}
+<div class="head"><h1>{{ amenity.name }}</h1>{% if current_user.is_admin %}<a class="btn" href="{{ url_for('amenities.edit', amenity_id=amenity.id) }}">Edit</a>{% endif %}</div>
+<p>{{ amenity.description or '' }}</p>
+<p class="muted">Open {{ '%02d:00'|format(amenity.open_hour) }}–{{ '%02d:00'|format(amenity.close_hour) }} · bookings up to {{ amenity.max_hours }} hour(s)</p>
+<div class="grid two">
+  {% if amenity.active %}
+  <form method="post" class="card">
+    {{ csrf() }}
+    <h2>Book</h2>
+    <label>Date <input type="date" name="date" required value="{{ form.get('date', '') }}"></label>
+    <div class="row">
+      <label>From <input type="time" name="start" required step="900" value="{{ form.get('start', '') }}"></label>
+      <label>To <input type="time" name="end" required step="900" value="{{ form.get('end', '') }}"></label>
+    </div>
+    <label>Notes <input name="notes" maxlength="255" value="{{ form.get('notes', '') }}"></label>
+    <button class="btn primary">Book</button>
+  </form>
+  {% else %}<div class="card"><p class="muted">This amenity is not currently available for booking.</p></div>{% endif %}
+  <section class="card">
+    <h2>Upcoming bookings</h2>
+    {% if upcoming %}<table><tbody>
+      {% for b in upcoming %}<tr><td>{{ b.start.strftime('%a %b %d') }}</td><td>{{ b.start.strftime('%H:%M') }}–{{ b.end.strftime('%H:%M') }}</td>
+        <td>{% if current_user.is_admin or b.user_id == current_user.id %}{{ b.user.name }}{% if b.notes %} <span class="muted">· {{ b.notes }}</span>{% endif %}{% else %}<span class="muted">Reserved</span>{% endif %}</td>
+        <td>{% if current_user.is_admin or b.user_id == current_user.id %}{{ post_button(url_for('amenities.cancel', booking_id=b.id), 'Cancel', confirm='Cancel this booking?') }}{% endif %}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<p class="muted">No upcoming bookings — it's all yours.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

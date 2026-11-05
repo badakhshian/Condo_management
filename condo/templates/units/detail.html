@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import balance, post_button %}
+{% block title %}Unit {{ unit.number }}{% endblock %}
+{% block content %}
+<div class="head"><h1>Unit {{ unit.number }}</h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('units.edit', unit_id=unit.id) }}">Edit</a>
+    {{ post_button(url_for('units.delete', unit_id=unit.id), 'Delete', confirm='Delete this unit?') }}
+  </div></div>
+<div class="grid two">
+  <section class="card">
+    <h2>Details</h2>
+    <dl class="props">
+      <dt>Floor</dt><dd>{{ unit.floor if unit.floor is not none else '—' }}</dd>
+      <dt>Bedrooms</dt><dd>{{ unit.bedrooms or '—' }}</dd>
+      <dt>Area</dt><dd>{{ (unit.area_sqft ~ ' sq ft') if unit.area_sqft else '—' }}</dd>
+      <dt>Parking</dt><dd>{{ unit.parking_spot or '—' }}</dd>
+      <dt>Monthly dues</dt><dd>{{ unit.monthly_fee_cents|money }}</dd>
+    </dl>
+    {% if unit.notes %}<p class="prose">{{ unit.notes }}</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Account</h2>
+    <dl class="props">
+      <dt>Total charged</dt><dd>{{ unit.total_charged|money }}</dd>
+      <dt>Total paid</dt><dd>{{ unit.total_paid|money }}</dd>
+      <dt>Balance</dt><dd>{{ balance(unit.balance) }}</dd>
+    </dl>
+    <div class="actions">
+      <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">Statement</a>
+      <a class="btn" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">Record payment</a>
+      <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">Add charge</a>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Residents <a class="btn small" href="{{ url_for('residents.new', unit_id=unit.id) }}">Add</a></h2>
+    {% if unit.residents %}<ul class="list">
+      {% for r in unit.residents %}<li><a href="{{ url_for('residents.edit', user_id=r.id) }}">{{ r.name }}</a>
+        <span class="tag">{{ r.role_label }}</span> <span class="muted">{{ r.email }}{% if r.phone %} · {{ r.phone }}{% endif %}</span>
+        {% if not r.active %}<span class="badge status-closed">Inactive</span>{% endif %}</li>{% endfor %}
+    </ul>{% else %}<p class="muted">Vacant.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

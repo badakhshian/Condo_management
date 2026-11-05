@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}People{% endblock %}
+{% block content %}
+<div class="head"><h1>People</h1><a class="btn primary" href="{{ url_for('residents.new') }}">Add person</a></div>
+<form class="search" method="get"><input name="q" placeholder="Search name, email or unit" value="{{ q }}"><button class="btn">Search</button></form>
+<div class="card">
+<table>
+  <thead><tr><th>Name</th><th>Role</th><th>Unit</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr class="{{ 'inactive' if not u.active }}"><td><strong>{{ u.name }}</strong>{% if not u.active %} <span class="badge status-closed">Inactive</span>{% endif %}</td>
+      <td><span class="tag">{{ u.role_label }}</span></td>
+      <td>{% if u.unit %}<a href="{{ url_for('units.detail', unit_id=u.unit.id) }}">{{ u.unit.number }}</a>{% else %}—{% endif %}</td>
+      <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td><td>{{ u.phone or '—' }}</td>
+      <td><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id) }}">Edit</a></td></tr>
+  {% else %}<tr><td colspan="6" class="muted">No matches.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

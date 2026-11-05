@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import post_button %}
+{% block title %}Notices{% endblock %}
+{% block content %}
+<div class="head"><h1>Notices</h1>
+  {% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('announcements.new') }}">Post notice</a>{% endif %}</div>
+{% for a in items %}
+<article class="card notice{{ ' pinned' if a.pinned }}">
+  <h2>{% if a.pinned %}<span class="badge pin">Pinned</span> {% endif %}{{ a.title }}</h2>
+  <p class="muted">{{ a.created_at.strftime('%B %d, %Y') }}{% if a.author %} · {{ a.author.name }}{% endif %}</p>
+  <div class="prose">{{ a.body }}</div>
+  {% if current_user.is_admin %}<div class="actions">
+    <a class="btn small" href="{{ url_for('announcements.edit', item_id=a.id) }}">Edit</a>
+    {{ post_button(url_for('announcements.delete', item_id=a.id), 'Delete', confirm='Delete this notice?') }}
+  </div>{% endif %}
+</article>
+{% else %}<p class="muted">No notices have been posted.</p>{% endfor %}
+{% endblock %}

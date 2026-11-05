@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Record payment{% endblock %}
+{% block content %}
+<h1>Record a payment</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <div class="row">
+    <label>Unit <select name="unit_id" required><option value="">Select…</option>
+      {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }} (balance {{ u.balance|money }})</option>{% endfor %}</select></label>
+    <label>Amount ($) <input name="amount" inputmode="decimal" required value="{{ form.get('amount', '') }}"></label>
+  </div>
+  <div class="row">
+    <label>Date received <input type="date" name="paid_on" required value="{{ form.get('paid_on', '') }}"></label>
+    <label>Method <select name="method">{% for m in methods %}<option value="{{ m }}" {{ 'selected' if form.get('method') == m }}>{{ m|capitalize }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Reference (check no., transaction ID) <input name="reference" value="{{ form.get('reference', '') }}"></label>
+  <button class="btn primary">Record payment</button>
+  <a href="{{ url_for('billing.index') }}">Cancel</a>
+</form>
+{% endblock %}

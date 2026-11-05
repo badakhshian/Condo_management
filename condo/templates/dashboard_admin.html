@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_macros.html" import balance, status_badge, priority_badge %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Management dashboard</h1>
+<div class="stats">
+  <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>Units ({{ stats.occupied }} occupied)</a>
+  <a class="stat" href="{{ url_for('residents.index') }}"><span>{{ stats.residents }}</span>Residents</a>
+  <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>Outstanding dues</a>
+  <a class="stat" href="{{ url_for('maintenance.index') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
+</div>
+<div class="grid two">
+  <section class="card">
+    <h2>Units with a balance due</h2>
+    {% if delinquent %}
+    <table><thead><tr><th>Unit</th><th>Residents</th><th class="num">Balance</th></tr></thead><tbody>
+    {% for u, b in delinquent %}
+      <tr><td><a href="{{ url_for('billing.ledger', unit_id=u.id) }}">{{ u.number }}</a></td>
+          <td>{{ u.residents|map(attribute='name')|join(', ') or '—' }}</td>
+          <td class="num">{{ balance(b) }}</td></tr>
+    {% endfor %}</tbody></table>
+    {% else %}<p class="muted">All units are paid up.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Active maintenance</h2>
+    {% if open_requests %}
+    <ul class="list">
+    {% for r in open_requests %}
+      <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
+        <span class="muted">· {{ 'Unit ' ~ r.unit.number if r.unit else 'Common area' }}</span>
+        {{ priority_badge(r.priority, PRIORITY_LABELS) }}</li>
+    {% endfor %}
+    </ul>
+    {% else %}<p class="muted">No active requests.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Upcoming bookings</h2>
+    {% if upcoming %}<ul class="list">
+    {% for b in upcoming %}<li>{{ b.amenity.name }} — {{ b.start.strftime('%a %b %d, %H:%M') }}–{{ b.end.strftime('%H:%M') }} <span class="muted">· {{ b.user.name }}</span></li>{% endfor %}
+    </ul>{% else %}<p class="muted">Nothing booked.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Notices <a class="btn small" href="{{ url_for('announcements.new') }}">Post</a></h2>
+    {% include "announcements/_list.html" %}
+  </section>
+</div>
+{% endblock %}

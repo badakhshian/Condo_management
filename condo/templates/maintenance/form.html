@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}New maintenance request{% endblock %}
+{% block content %}
+<h1>New maintenance request</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <label>What's the problem? <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="e.g. Leaking faucet in bathroom"></label>
+  <label>Details <textarea name="description" rows="5" required placeholder="When did it start? Where exactly? Best times to access the unit?">{{ form.get('description', '') }}</textarea></label>
+  <div class="row">
+    <label>Category <select name="category">{% for c in categories %}<option {{ 'selected' if form.get('category') == c }}>{{ c }}</option>{% endfor %}</select></label>
+    <label>Priority <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if form.get('priority') == k }}>{{ label }}</option>{% endfor %}</select></label>
+  </div>
+  <fieldset>
+    <legend>Location</legend>
+    <label class="check"><input type="radio" name="location" value="unit" {{ 'checked' if form.get('location') != 'common' }}>
+      {% if current_user.is_admin %}A unit:{% else %}My unit{% if current_user.unit %} ({{ current_user.unit.number }}){% endif %}{% endif %}</label>
+    {% if current_user.is_admin %}
+      <select name="unit_id"><option value="">Select unit…</option>
+        {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}</select>
+    {% endif %}
+    <label class="check"><input type="radio" name="location" value="common" {{ 'checked' if form.get('location') == 'common' }}> Common area</label>
+  </fieldset>
+  <button class="btn primary">Submit request</button>
+  <a href="{{ url_for('maintenance.index') }}">Cancel</a>
+</form>
+{% endblock %}

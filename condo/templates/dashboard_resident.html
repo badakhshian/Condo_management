@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import balance, status_badge %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ current_user.name.split(' ')[0] }}</h1>
+<div class="grid two">
+  <section class="card">
+    {% if unit %}
+      <h2>Unit {{ unit.number }}</h2>
+      <dl class="props">
+        <dt>Monthly dues</dt><dd>{{ unit.monthly_fee_cents|money }}</dd>
+        <dt>Current balance</dt><dd>{{ balance(unit.balance) }}</dd>
+        {% if unit.parking_spot %}<dt>Parking</dt><dd>{{ unit.parking_spot }}</dd>{% endif %}
+      </dl>
+      <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">View statement</a>
+    {% else %}
+      <h2>No unit linked</h2><p class="muted">Contact the management office to link your account to a unit.</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Notices</h2>
+    {% include "announcements/_list.html" %}
+  </section>
+  <section class="card">
+    <h2>My maintenance requests <a class="btn small primary" href="{{ url_for('maintenance.new') }}">New request</a></h2>
+    {% if my_requests %}<ul class="list">
+      {% for r in my_requests %}<li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
+        {{ status_badge(r.status, STATUS_LABELS) }}</li>{% endfor %}
+    </ul>{% else %}<p class="muted">No requests yet.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>My bookings <a class="btn small" href="{{ url_for('amenities.index') }}">Book an amenity</a></h2>
+    {% if my_bookings %}<ul class="list">
+      {% for b in my_bookings %}<li>{{ b.amenity.name }} — {{ b.start.strftime('%a %b %d, %H:%M') }}–{{ b.end.strftime('%H:%M') }}</li>{% endfor %}
+    </ul>{% else %}<p class="muted">No upcoming bookings.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}
