@@ -10,8 +10,7 @@ Built with Flask, SQLAlchemy and SQLite. It renders pages on the server and need
 |---|---|---|
 | **Dashboard** | Occupancy, outstanding dues, units that owe money, active maintenance, upcoming bookings | Their unit's balance, their requests and bookings, latest notices |
 | **Units** | Create, edit and delete units (floor, bedrooms, area, parking, monthly dues) | — |
-| **Owners** | Several owners and contacts per unit, each with email, phone, mailing address and a primary-contact flag; a searchable directory, "email all" and CSV export | — |
-| **Accounts** | Manage website logins and roles, assign them to units, deactivate them, search | Edit their phone number and password |
+| **Directory** | One menu with three tabs. **Owners**: owners, co-owners and other contacts. **Tenants**: tenants. **Accounts**: website logins for staff (managers) and anyone else given access. Each tab has search, "email all" (BCC) and CSV export. Owners and tenants can have several people per unit, each with email, phone, mailing address (copyable from another person) and a primary-contact flag. | Edit their own phone number and password |
 | **Billing** | Bill monthly dues for every unit in one step (running it twice for the same month bills nobody twice), add special assessments or fines, record payments, see a statement with a running balance | Read their own unit's statement |
 | **Maintenance** | Triage requests by status and priority, comment on them | Submit requests for their unit or a common area, comment, close or reopen their own |
 | **Notices** | Post, pin, edit and delete notices | Read them |

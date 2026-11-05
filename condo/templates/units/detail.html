@@ -34,7 +34,7 @@
     </div>
   </section>
   <section class="card">
-    <h2>Owners &amp; contacts <a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id) }}">Add</a></h2>
+    <h2>Owners &amp; tenants <span class="actions"><a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id) }}">Add owner</a><a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id, role='tenant') }}">Add tenant</a></span></h2>
     {% if unit.owners %}
       {% for o in unit.owners %}
       <div class="comment">
@@ -54,7 +54,7 @@
       </div>
       {% endfor %}
     {% else %}
-      <p class="muted">{% if unit.owner_name %}Recorded as “{{ unit.owner_name }}”, but no contact details yet.{% else %}No owners recorded.{% endif %}</p>
+      <p class="muted">{% if unit.owner_name %}Recorded as “{{ unit.owner_name }}”, but no contact details yet.{% else %}No owners or tenants recorded.{% endif %}</p>
     {% endif %}
   </section>
   <section class="card">

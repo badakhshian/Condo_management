@@ -1,9 +1,7 @@
 """Owner contacts: several people per unit, with email, phone and mailing address."""
-import csv
-import io
 import re
 
-from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from ..extensions import db
 from ..models import OWNER_ROLES, Owner, Unit
@@ -53,7 +51,7 @@ def address_sources(unit, owner=None):
     for o in rows:
         if owner is not None and o.id == owner.id:
             continue
-        group = same if o.unit_id == unit.id else other
+        group = same if unit is not None and o.unit_id == unit.id else other
         key = (group is same, o.mailing_address.strip().lower())
         if key in seen:
             continue
@@ -69,11 +67,45 @@ def _only_one_primary(owner):
                 other.is_primary = False
 
 
+def _units():
+    return db.session.scalars(db.select(Unit).order_by(Unit.number)).all()
+
+
+def _back(owner, unit, from_directory=False):
+    """After saving, return to the Directory tab the person was added or edited from, or to the unit."""
+    if from_directory or request.args.get("next") == "directory":
+        from .directory import group_for_role
+        return url_for("directory.contacts", group=group_for_role(owner.role))
+    return url_for("units.detail", unit_id=unit.id)
+
+
+@bp.route("/directory/<group>/new", methods=["GET", "POST"])
+@admin_required
+def new_from_directory(group):
+    """Add a person from a Directory tab: the unit is picked in the form."""
+    from .directory import GROUPS
+    if group not in GROUPS:
+        abort(404)
+    default_role = GROUPS[group]["default_role"]
+    raw = request.form.get("unit_id", "") if request.method == "POST" else request.args.get("unit_id", "")
+    unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
+    if request.method == "POST" and unit is None:
+        flash("Choose a unit.", "error")
+        return render_template("owners/form.html", unit=None, owner=None, units=_units(), sources=address_sources(None),
+                               form=request.form, roles=OWNER_ROLES), 400
+    if unit is None:
+        return render_template("owners/form.html", unit=None, owner=None, units=_units(), sources=address_sources(None),
+                               roles=OWNER_ROLES, form={"role": default_role})
+    return new(unit.id, default_role=default_role, from_directory=True)
+
+
 @bp.route("/units/<int:unit_id>/owners/new", methods=["GET", "POST"])
 @admin_required
-def new(unit_id):
+def new(unit_id, default_role=None, from_directory=False):
     unit = db.session.get(Unit, unit_id) or abort(404)
-    owner = Owner(role="owner", is_primary=not unit.owners)  # attached to the unit only once valid
+    default_role = default_role or (request.args.get("role") if request.args.get("role") in OWNER_ROLES else "owner")
+    owner = Owner(role=default_role, is_primary=not unit.owners)  # attached to the unit only once valid
+    units = _units() if from_directory else None
     if request.method == "POST":
         errors = _apply_form(owner, request.form)
         if not errors:
@@ -82,13 +114,15 @@ def new(unit_id):
             _only_one_primary(owner)
             db.session.commit()
             flash(f"{owner.name} added to unit {unit.number}.", "success")
-            return redirect(url_for("units.detail", unit_id=unit.id))
+            return redirect(_back(owner, unit, from_directory))
         for e in errors:
             flash(e, "error")
-        return render_template("owners/form.html", unit=unit, owner=None, sources=address_sources(unit, None), form=request.form,
+        return render_template("owners/form.html", unit=unit, owner=None, units=units,
+                               sources=address_sources(unit, None), form=request.form,
                                roles=OWNER_ROLES), 400
-    return render_template("owners/form.html", unit=unit, owner=None, sources=address_sources(unit, None), roles=OWNER_ROLES,
-                           form={"role": "owner", "is_primary": owner.is_primary})
+    return render_template("owners/form.html", unit=unit, owner=None, units=units,
+                           sources=address_sources(unit, None), roles=OWNER_ROLES,
+                           form={"role": default_role, "is_primary": owner.is_primary, "unit_id": unit.id})
 
 
 def _get(owner_id):
@@ -110,7 +144,7 @@ def edit(owner_id):
             _only_one_primary(owner)
             db.session.commit()
             flash(f"{owner.name} updated.", "success")
-            return redirect(url_for("units.detail", unit_id=owner.unit_id))
+            return redirect(_back(owner, owner.unit))
         db.session.rollback()
         for e in errors:
             flash(e, "error")
@@ -135,38 +169,7 @@ def delete(owner_id):
     return redirect(url_for("units.detail", unit_id=unit_id))
 
 
-def _search(q, role):
-    stmt = db.select(Owner).join(Unit).order_by(Unit.number, Owner.is_primary.desc(), Owner.name)
-    if q:
-        like = f"%{q}%"
-        stmt = stmt.where(db.or_(Owner.name.ilike(like), Owner.email.ilike(like), Owner.phone.ilike(like),
-                                 Owner.mailing_address.ilike(like), Unit.number.ilike(like)))
-    if role in OWNER_ROLES:
-        stmt = stmt.where(Owner.role == role)
-    return db.session.scalars(stmt).all()
-
-
 @bp.route("/owners/")
 @admin_required
-def directory():
-    q, role = request.args.get("q", "").strip(), request.args.get("role", "")
-    owners = _search(q, role)
-    emails = sorted({o.email for o in owners if o.email})
-    units_without = db.session.scalars(
-        db.select(Unit).where(~Unit.owners.any()).order_by(Unit.number)).all()
-    return render_template("owners/directory.html", owners=owners, q=q, role=role, roles=OWNER_ROLES,
-                           emails=emails, units_without=units_without)
-
-
-@bp.route("/owners/export.csv")
-@admin_required
-def export():
-    owners = _search(request.args.get("q", "").strip(), request.args.get("role", ""))
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow(["Unit", "Name", "Role", "Primary contact", "Email", "Phone", "Mailing address", "Notes"])
-    for o in owners:
-        writer.writerow([o.unit.number, o.name, o.role_label, "yes" if o.is_primary else "", o.email or "",
-                         o.phone or "", (o.mailing_address or "").replace("\n", ", "), o.notes or ""])
-    return Response(buf.getvalue(), mimetype="text/csv",
-                    headers={"Content-Disposition": "attachment; filename=owners.csv"})
+def old_directory():
+    return redirect(url_for("directory.contacts", group="owners"), code=301)

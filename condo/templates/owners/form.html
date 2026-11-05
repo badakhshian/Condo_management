@@ -12,9 +12,13 @@
 </script>
 {% endblock %}
 {% block content %}
-<h1>{{ 'Edit ' ~ owner.name if owner else 'Add an owner' }} <span class="muted">· Unit {{ unit.number }}</span></h1>
+<h1>{{ 'Edit ' ~ owner.name if owner else ('Add a tenant' if form.get('role') == 'tenant' else 'Add an owner') }}{% if unit %} <span class="muted">· Unit {{ unit.number }}</span>{% endif %}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
+  {% if units %}
+  <label>Unit <select name="unit_id" required><option value="">Choose…</option>
+    {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}{% if u.owner_display %} — {{ u.owner_display }}{% endif %}</option>{% endfor %}</select></label>
+  {% endif %}
   <div class="row">
     <label>Full name <input name="name" required maxlength="200" value="{{ form.get('name', '') }}"></label>
     <label>Role <select name="role">{% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if form.get('role') == k }}>{{ label }}</option>{% endfor %}</select></label>
@@ -28,9 +32,9 @@
   <label>Copy address from
     <select name="copy_address_from" id="copy-address">
       <option value="">— Type a new address —</option>
-      {% if same %}<optgroup label="Unit {{ unit.number }}">{% for o in same %}
+      {% if same and unit %}<optgroup label="Unit {{ unit.number }}">{% for o in same %}
         <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
-      {% if other %}<optgroup label="Other units">{% for o in other %}
+      {% if other %}<optgroup label="{{ 'Other units' if unit else 'Owners and tenants' }}">{% for o in other %}
         <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} (unit {{ o.unit.number }}) — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
     </select></label>
   {% endif %}
@@ -38,7 +42,7 @@
   <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
   <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
   <button class="btn primary">Save</button>
-  <a href="{{ url_for('units.detail', unit_id=unit.id) }}">Cancel</a>
+  <a href="{{ url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index') }}">Cancel</a>
 </form>
 <script>
   (function () {

@@ -24,6 +24,6 @@
     <input type="password" name="password" minlength="8" {{ 'required' if creating }}></label>
   {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> Account active</label>{% endif %}
   <button class="btn primary">Save</button>
-  <a href="{{ url_for('residents.index') }}">Cancel</a>
+  <a href="{{ url_for('directory.accounts') }}">Cancel</a>
 </form>
 {% endblock %}

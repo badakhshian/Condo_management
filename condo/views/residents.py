@@ -67,14 +67,8 @@ def _units():
 @bp.route("/")
 @admin_required
 def index():
-    q = request.args.get("q", "").strip()
-    stmt = db.select(User).order_by(User.name)
-    if q:
-        like = f"%{q}%"
-        stmt = stmt.outerjoin(Unit).where(db.or_(User.name.ilike(like), User.email.ilike(like),
-                                                 Unit.number.ilike(like)))
-    users = db.session.scalars(stmt).all()
-    return render_template("residents/index.html", users=users, q=q)
+    """Old address of the accounts list; it now lives in the Directory."""
+    return redirect(url_for("directory.accounts"), code=301)
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -87,7 +81,7 @@ def new():
             db.session.add(user)
             db.session.commit()
             flash(f"Account for {user.name} created.", "success")
-            return redirect(url_for("residents.index"))
+            return redirect(url_for("directory.accounts"))
         for e in errors:
             flash(e, "error")
         return render_template("residents/form.html", user=user, form=request.form, units=_units(),
@@ -106,7 +100,7 @@ def edit(user_id):
         if not errors:
             db.session.commit()
             flash(f"{user.name} updated.", "success")
-            return redirect(url_for("residents.index"))
+            return redirect(url_for("directory.accounts"))
         db.session.rollback()
         for e in errors:
             flash(e, "error")

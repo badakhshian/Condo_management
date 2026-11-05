@@ -49,16 +49,19 @@ def test_directory_search_and_csv(admin_client):
     db.session.add_all([Owner(unit=u101, name="Alice Chen", email="alice@x.com", role="owner"),
                         Owner(unit=u102, name="Bob Okafor", phone="514-555-0199", role="tenant")])
     db.session.commit()
-    page = admin_client.get("/owners/").data
+    page = admin_client.get("/directory/owners").data
     assert b"Alice Chen" in page and b"mailto:?bcc=alice@x.com" in page
-    assert b"Bob" not in admin_client.get("/owners/?q=alice").data.split(b"<tbody>")[1]
-    csv = admin_client.get("/owners/export.csv?role=tenant")
+    assert b"Bob Okafor" not in page.split(b"<tbody>")[1]  # tenants have their own tab
+    assert b"Bob Okafor" in admin_client.get("/directory/tenants").data
+    assert b"Alice" not in admin_client.get("/directory/owners?q=zzz").data.split(b"<tbody>")[1]
+    csv = admin_client.get("/directory/tenants/export.csv")
     assert csv.mimetype == "text/csv" and b"Bob Okafor" in csv.data and b"Alice" not in csv.data
 
 
 def test_owner_contacts_are_admin_only(alice_client):
-    assert alice_client.get("/owners/").status_code == 403
-    assert alice_client.get("/owners/export.csv").status_code == 403
+    for path in ("/directory/owners", "/directory/tenants", "/directory/accounts",
+                 "/directory/owners/export.csv", "/directory/accounts/export.csv", "/directory/tenants/new"):
+        assert alice_client.get(path).status_code == 403, path
     assert alice_client.get(f"/units/{unit('101').id}/owners/new").status_code == 403
 
 

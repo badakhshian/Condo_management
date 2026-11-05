@@ -75,7 +75,7 @@ def test_resident_cannot_view_other_units_ledger(alice_client):
 
 
 def test_all_main_pages_render(admin_client):
-    for path in ["/", "/units/", "/residents/", "/billing/", "/maintenance/", "/announcements/",
+    for path in ["/", "/units/", "/directory/owners", "/directory/tenants", "/directory/accounts", "/directory/owners/new", "/billing/", "/maintenance/", "/announcements/",
                  "/amenities/", "/account", f"/units/{unit('101').id}", "/maintenance/new",
                  "/billing/charges/new", "/billing/payments/new", f"/billing/unit/{unit('101').id}"]:
         assert admin_client.get(path).status_code == 200, path

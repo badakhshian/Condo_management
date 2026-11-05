@@ -4,7 +4,7 @@ from flask import Blueprint, render_template
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import Announcement, Booking, MaintenanceRequest, Unit, User
+from ..models import Announcement, Booking, MaintenanceRequest, Owner, Unit
 
 bp = Blueprint("dashboard", __name__)
 
@@ -29,8 +29,8 @@ def index():
         ).all()
         stats = {
             "units": len(units),
-            "occupied": sum(1 for u in units if u.residents),
-            "residents": db.session.scalar(db.select(db.func.count(User.id)).where(User.role != "admin")),
+            "occupied": sum(1 for u in units if u.owners or u.residents),
+            "people": db.session.scalar(db.select(db.func.count(Owner.id))),
             "outstanding": outstanding,
             "open_requests": len(open_requests),
         }

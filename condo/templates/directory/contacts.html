@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ spec.title }} · Directory{% endblock %}
+{% block content %}
+{% include "directory/_tabs.html" %}
+<div class="head">
+  <form class="search" method="get" style="margin:0">
+    <input name="q" placeholder="Search name, email, phone, address or unit" value="{{ q }}">
+    {% if roles|length > 1 %}<select name="role" style="width:auto;margin:0"><option value="">All</option>
+      {% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if role == k }}>{{ label }}</option>{% endfor %}</select>{% endif %}
+    <button class="btn">Search</button>
+  </form>
+  <div class="actions">
+    {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email {{ 'these' if q or role else 'all' }} ({{ emails|length }})</a>{% endif %}
+    <a class="btn" href="{{ url_for('directory.export', group=group, q=q, role=role) }}">Download CSV</a>
+    <a class="btn primary" href="{{ url_for('owners.new_from_directory', group=group) }}">Add {{ 'tenant' if group == 'tenants' else 'owner' }}</a>
+  </div>
+</div>
+{% if units_without %}<div class="flash flash-info">No owner recorded yet for unit(s) {{ units_without|map(attribute='number')|join(', ') }}.</div>{% endif %}
+<div class="card">
+<table>
+  <thead><tr><th>Unit</th><th>Name</th><th>Email</th><th>Phone</th><th>Mailing address</th><th></th></tr></thead>
+  <tbody>{% for o in people %}
+    <tr><td><a href="{{ url_for('units.detail', unit_id=o.unit_id) }}">{{ o.unit.number }}</a></td>
+      <td><strong>{{ o.name }}</strong>{% if group == 'owners' %} <span class="tag">{{ o.role_label }}</span>{% endif %}{% if o.is_primary %} <span class="badge status-open">Primary</span>{% endif %}
+        {% if o.notes %}<div class="excerpt">{{ o.notes }}</div>{% endif %}</td>
+      <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
+      <td>{% if o.phone %}<a href="tel:{{ o.phone }}">{{ o.phone }}</a>{% else %}—{% endif %}</td>
+      <td class="prose">{% if o.mailing_address %}{{ o.mailing_address }}{% else %}<span class="muted">In unit</span>{% endif %}</td>
+      <td>{% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>{% else %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">{{ 'No matches.' if q or role else 'Nobody listed yet.' }}</td></tr>{% endfor %}</tbody>
+</table>
+</div>
+{% endblock %}

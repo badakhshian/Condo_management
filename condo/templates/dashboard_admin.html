@@ -5,7 +5,7 @@
 <h1>Management dashboard</h1>
 <div class="stats">
   <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>Units ({{ stats.occupied }} occupied)</a>
-  <a class="stat" href="{{ url_for('residents.index') }}"><span>{{ stats.residents }}</span>Residents</a>
+  <a class="stat" href="{{ url_for('directory.index') }}"><span>{{ stats.people }}</span>Owners &amp; tenants</a>
   <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>Outstanding dues</a>
   <a class="stat" href="{{ url_for('maintenance.index') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
 </div>
