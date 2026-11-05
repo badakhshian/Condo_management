@@ -25,8 +25,8 @@
       <td><strong>{{ o.name }}</strong>{% if group == 'owners' %} <span class="tag">{{ o.role_label }}</span>{% endif %}{% if o.is_primary %} <span class="badge status-open">Primary</span>{% endif %}
         {% if o.notes %}<div class="excerpt">{{ o.notes }}</div>{% endif %}</td>
       <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
-      <td>{% if o.phone %}<a href="tel:{{ o.phone }}">{{ o.phone }}</a>{% else %}—{% endif %}</td>
-      <td class="prose">{% if o.mailing_address %}{{ o.mailing_address }}{% else %}<span class="muted">In unit</span>{% endif %}</td>
+      <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
+      <td>{% if o.mailing_address %}{{ o.mailing_address|one_line }}{% else %}<span class="muted">In unit</span>{% endif %}</td>
       <td>{% if o.needs_insurance %}{{ insurance_badge(o.insurance_state) }}{% if o.current_policy %}<div class="excerpt">until {{ o.current_policy.valid_until.strftime('%Y-%m-%d') }}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
       <td>{% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>{% else %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% endif %}</td></tr>
   {% else %}<tr><td colspan="7" class="muted">{{ 'No matches.' if q or role else 'Nobody listed yet.' }}</td></tr>{% endfor %}</tbody>

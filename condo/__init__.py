@@ -59,8 +59,9 @@ def create_app(test_config=None):
     from .cli import register_cli
     register_cli(app)
 
-    from .utils import money
-    app.jinja_env.filters["money"] = money
+    from .utils import initials, money, one_line, phone_display, phone_href
+    app.jinja_env.filters.update(money=money, phone=phone_display, tel=phone_href, one_line=one_line,
+                                 initials=initials)
 
     @app.context_processor
     def inject_globals():

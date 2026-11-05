@@ -57,3 +57,37 @@ def admin_required(view):
 
 def can_access_unit(unit_id):
     return current_user.is_admin or (unit_id is not None and current_user.unit_id == unit_id)
+
+
+def phone_display(value):
+    """Format North American numbers as (514) 566-4383; leave anything else as typed."""
+    import re
+    if not value:
+        return ""
+    digits = re.sub(r"\D", "", value)
+    if len(digits) == 11 and digits.startswith("1"):
+        digits = digits[1:]
+    if len(digits) == 10:
+        return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+    return value
+
+
+def phone_href(value):
+    import re
+    digits = re.sub(r"[^\d+]", "", value or "")
+    return f"tel:{digits}"
+
+
+def one_line(value):
+    """Join a multi-line address into one line: '1000 Rue Levert, Apt. 715, H3E 0G3 QC, Canada'."""
+    if not value:
+        return ""
+    parts = [p.strip().rstrip(",") for p in str(value).replace("\r", "").split("\n")]
+    return ", ".join(p for p in parts if p)
+
+
+def initials(name):
+    words = [w for w in (name or "").replace("/", " ").split() if w[:1].isalpha()]
+    if not words:
+        return "?"
+    return (words[0][0] + (words[-1][0] if len(words) > 1 else "")).upper()

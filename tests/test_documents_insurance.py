@@ -109,7 +109,7 @@ def test_unit_page_shows_tenants_and_insurance(admin_client):
     u = db.session.get(Unit, u.id)
     assert u.group_insurance("tenants") == "valid" and u.group_insurance("owners") == "expiring"
     page = admin_client.get(f"/units/{u.id}").data.decode()
-    assert "Expiring soon" in page and "certificate" in page
+    assert "Expiring soon" in page and "Certificate" in page
 
     # Renewal keeps history; the latest end date counts.
     add_policy(admin_client, alice, date.today() + timedelta(days=375), start=date.today() + timedelta(days=10))

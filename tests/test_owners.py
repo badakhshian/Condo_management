@@ -90,3 +90,24 @@ def test_edit_form_does_not_offer_own_address(admin_client):
     db.session.add(o)
     db.session.commit()
     assert b"copy_address_from" not in admin_client.get(f"/owners/{o.id}/edit").data
+
+
+def test_person_display_helpers():
+    from condo.utils import initials, one_line, phone_display
+    assert phone_display("5145664383") == "(514) 566-4383"
+    assert phone_display("+1 514-566-4383") == "(514) 566-4383"
+    assert phone_display("+33 1 42 68 53 00") == "+33 1 42 68 53 00"
+    assert one_line("1000 Rue Levert\nApt. 715\r\nH3E 0G3\n\nQC\nCanada") == "1000 Rue Levert, Apt. 715, H3E 0G3, QC, Canada"
+    assert initials("Delara Ahmadi Darani") == "DD" and initials("Danilo / Raquel") == "DR"
+
+
+def test_unit_page_collapses_shared_address(admin_client):
+    u = unit("101")
+    addr = "1000 Rue Levert\nApt. 715\nH3E 0G3\nQC\nCanada"
+    db.session.add_all([Owner(unit=u, name="Mostafa Badakhshian", role="owner", is_primary=True,
+                              phone="5145664383", mailing_address=addr),
+                        Owner(unit=u, name="Delara Ahmadi Darani", role="owner", mailing_address=addr)])
+    db.session.commit()
+    page = admin_client.get(f"/units/{u.id}").data.decode()
+    assert page.count("1000 Rue Levert, Apt. 715") == 1
+    assert "Same address as Mostafa Badakhshian" in page and "(514) 566-4383" in page
