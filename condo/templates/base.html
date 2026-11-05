@@ -34,6 +34,7 @@
   </div>
 </header>
 {% endif %}
+{% if ephemeral_db %}<div class="banner">No database is connected, so changes are temporary and will be lost. Connect a Postgres database (DATABASE_URL) to keep data.</div>{% endif %}
 <main class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}

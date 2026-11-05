@@ -1,0 +1,5 @@
+.venv
+instance
+tests
+__pycache__
+*.db

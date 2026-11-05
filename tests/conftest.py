@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from condo import create_app
@@ -8,7 +10,7 @@ from condo.models import Amenity, Unit, User
 @pytest.fixture
 def app():
     app = create_app({"TESTING": True, "WTF_CSRF_ENABLED": False,
-                      "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "SECRET_KEY": "test"})
+                      "SQLALCHEMY_DATABASE_URI": os.environ.get("TEST_DATABASE_URL", "sqlite:///:memory:"), "SECRET_KEY": "test"})
     with app.app_context():
         db.create_all()
         u1 = Unit(number="101", floor=1, monthly_fee_cents=40000)
@@ -24,6 +26,7 @@ def app():
         db.session.commit()
         yield app
         db.session.remove()
+        db.drop_all()
 
 
 @pytest.fixture

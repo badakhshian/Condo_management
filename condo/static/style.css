@@ -113,3 +113,4 @@ form .btn.primary + a { margin-left: .8rem; }
 .card > :first-child { margin-top: 0; }
 .card > :last-child { margin-bottom: 0; }
 .grid > aside.card { align-self: start; }
+.banner { background: var(--warn); color: #1d1300; text-align: center; padding: .45rem 1rem; font-size: .9rem; }

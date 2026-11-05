@@ -6,6 +6,29 @@ from .extensions import db
 from .models import Amenity, Announcement, Booking, MaintenanceRequest, Payment, Unit, User
 
 
+def bootstrap():
+    """Create tables and, if no manager exists yet, a first manager account
+    from the ADMIN_EMAIL / ADMIN_PASSWORD environment variables.
+
+    Safe to run on every start-up: it never changes existing data.
+    """
+    import os
+
+    db.create_all()
+    email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
+    password = os.environ.get("ADMIN_PASSWORD") or ""
+    if not email or len(password) < 8:
+        return
+    if db.session.scalar(db.select(User).where(User.role == "admin")):
+        return
+    if db.session.scalar(db.select(User).where(User.email == email)):
+        return
+    user = User(email=email, name=os.environ.get("ADMIN_NAME", "Manager"), role="admin")
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+
+
 def register_cli(app):
     @app.cli.command("init-db")
     @click.option("--drop", is_flag=True, help="Drop all existing tables first.")

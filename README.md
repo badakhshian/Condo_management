@@ -22,7 +22,7 @@ Money is stored in integer cents. Every form has CSRF protection, and after logi
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements-dev.txt
 
 # Load demo data (16 units, residents, dues, requests, bookings)
 .venv/bin/flask --app condo seed
@@ -48,8 +48,25 @@ Then open http://127.0.0.1:5000 and sign in with a demo account:
 | `SECRET_KEY` | `dev-change-me` | Session signing key. **Set this in production.** |
 | `DATABASE_URL` | `sqlite:///instance/condo.db` | Any SQLAlchemy database URL |
 | `CONDO_NAME` | `Maple Court Condominiums` | Name shown in the header |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | — | When no manager account exists yet, one is created from these at start-up |
+| `AUTO_INIT_DB` | on when running on Vercel | Create tables (and the first manager) at start-up |
+
+`postgres://` and `postgresql://` URLs, including the `POSTGRES_URL` that the Neon integration sets, are used automatically with the psycopg 3 driver.
+
+## Deploying to Vercel
+
+`api/index.py` exposes the Flask app to Vercel, and `vercel.json` routes every request to it.
+
+1. Import the GitHub repository as a Vercel project.
+2. Under **Storage**, connect a Neon Postgres database to the project. This sets `DATABASE_URL`. Without a database the site still runs, but on a temporary SQLite file in `/tmp` that gets wiped, and a warning banner is shown.
+3. Set `SECRET_KEY`, `CONDO_NAME`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`, then redeploy.
+4. Add the custom domain. If its DNS is hosted elsewhere, create a `CNAME` record pointing to `cname.vercel-dns.com`.
+5. Sign in with the admin account and change its password under **My profile**.
 
 ## Tests
+
+To run the suite against Postgres, set `TEST_DATABASE_URL=postgresql+psycopg://…`.
+
 
 ```bash
 .venv/bin/pytest
