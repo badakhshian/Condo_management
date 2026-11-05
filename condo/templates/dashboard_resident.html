@@ -1,8 +1,26 @@
 {% extends "base.html" %}
-{% from "_macros.html" import balance, status_badge %}
+{% from "_macros.html" import balance, status_badge, insurance_badge %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Welcome, {{ current_user.name.split(' ')[0] }}</h1>
+{% if building %}{% set d = building.doc %}
+<div class="card inline-form building-insurance">
+  <strong>Building insurance</strong> {{ insurance_badge(building.state) }}
+  <span>{{ d.provider or d.title }} · until {{ d.valid_until.strftime('%b %d, %Y') }}</span>
+  <a class="btn small" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">View policy</a>
+</div>
+{% elif current_user.is_admin %}
+<div class="flash flash-error">No building insurance policy is on file. <a href="{{ url_for('documents.new', category='insurance') }}">Upload it in Documents</a> so owners and tenants can see it.</div>
+{% endif %}
+{% if to_approve %}
+<section class="card building-insurance">
+  <h2>Repairs waiting for your approval <span class="muted">{{ to_approve|length }}</span></h2>
+  <p class="muted">Your tenant asked for these. Open one to approve or decline it.</p>
+  <ul class="list">{% for r in to_approve %}
+    <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}"><strong>{{ r.title }}</strong></a>
+      <span class="muted">· asked by {{ r.submitted_by.name }} on {{ r.created_at.strftime('%b %d') }}</span></li>{% endfor %}</ul>
+</section>
+{% endif %}
 <div class="grid two">
   <section class="card">
     {% if unit %}
@@ -13,6 +31,14 @@
         {% if unit.parking_spot %}<dt>Parking</dt><dd>{{ unit.parking_spot }}</dd>{% endif %}
       </dl>
       <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">View statement</a>
+      {% if my_insurance %}
+      <h2 style="margin-top:1.2rem">Home insurance</h2>
+      {% for o in my_insurance %}{% set p = o.current_policy %}
+        <div class="person"><div class="line"><span><strong>{{ o.name }}</strong> <span class="tag">{{ o.role_label }}</span> {{ insurance_badge(o.insurance_state) }}</span>
+          <a class="btn small" href="{{ url_for('insurance.new', owner_id=o.id) }}">{{ 'Upload renewal' if p else 'Upload insurance' }}</a></div>
+          {% if p %}<div class="policy muted">{{ p.provider or 'Policy' }}: {{ p.valid_from.strftime('%b %d, %Y') }} – {{ p.valid_until.strftime('%b %d, %Y') }}
+            {% if p.file %}· <a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">certificate</a>{% endif %}</div>{% endif %}</div>
+      {% endfor %}{% endif %}
     {% else %}
       <h2>No unit linked</h2><p class="muted">Contact the management office to link your account to a unit.</p>
     {% endif %}

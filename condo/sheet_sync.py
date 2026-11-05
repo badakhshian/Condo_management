@@ -336,21 +336,13 @@ def apply(plan):
             unit.monthly_fee_cents = u["fee_cents"]
     db.session.flush()
 
-    models = (Charge, Payment, Expense) + ((Owner,) if plan.get("owners") is not None else ())
-    for model in models:
+    for model in (Charge, Payment, Expense):
         db.session.execute(db.delete(model).where(model.origin == ORIGIN))
     db.session.flush()
     db.session.expire_all()  # bulk deletes bypass the session; drop stale relationship caches
 
-    primary_set = set()
-    for c in plan.get("owners") or []:
-        unit = existing[c["unit"]]
-        is_primary = c["primary"] and c["unit"] not in primary_set
-        if is_primary:
-            primary_set.add(c["unit"])
-        db.session.add(Owner(unit=unit, name=_truncate(c["name"], 200), email=c["email"][:255] or None,
-                             phone=c["phone"][:60] or None, mailing_address=c["address"] or None,
-                             role=c["role"], is_primary=is_primary, notes=c["notes"] or None, origin=ORIGIN))
+    if plan.get("owners") is not None:
+        _sync_owners(plan["owners"], existing)
 
     # Charges that were entered in the app for the same unit, kind and month would clash.
     taken = set(db.session.execute(
@@ -396,6 +388,37 @@ def apply(plan):
     Setting.put("sheet_last_sync", summary)
     db.session.commit()
     return summary
+
+
+def _sync_owners(contacts, units):
+    """Update the sheet's people in place (matched by unit and name) so anything attached
+    to them in the app, such as insurance policies, survives a sync. People no longer in
+    the sheet are removed; people added in the app are never touched."""
+    current = {(o.unit.number, o.name.strip().lower()): o
+               for o in db.session.scalars(db.select(Owner).where(Owner.origin == ORIGIN))}
+    keep, primary_set = set(), set()
+    for c in contacts:
+        key = (c["unit"], c["name"].strip().lower())
+        if key in keep:
+            continue  # duplicate row for the same person
+        keep.add(key)
+        owner = current.get(key)
+        if owner is None:
+            owner = Owner(unit=units[c["unit"]], origin=ORIGIN)
+            db.session.add(owner)
+        is_primary = c["primary"] and c["unit"] not in primary_set
+        if is_primary:
+            primary_set.add(c["unit"])
+        owner.name = _truncate(c["name"], 200)
+        owner.email = c["email"][:255] or None
+        owner.phone = c["phone"][:60] or None
+        owner.mailing_address = c["address"] or None
+        owner.role = c["role"]
+        owner.is_primary = is_primary
+        owner.notes = c["notes"] or None
+    for key, owner in current.items():
+        if key not in keep:
+            db.session.delete(owner)
 
 
 def config():

@@ -1,8 +1,17 @@
 {% extends "base.html" %}
-{% from "_macros.html" import balance, status_badge, priority_badge %}
+{% from "_macros.html" import balance, status_badge, priority_badge, insurance_badge %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Management dashboard</h1>
+{% if building %}{% set d = building.doc %}
+<div class="card inline-form building-insurance">
+  <strong>Building insurance</strong> {{ insurance_badge(building.state) }}
+  <span>{{ d.provider or d.title }} · until {{ d.valid_until.strftime('%b %d, %Y') }}</span>
+  <a class="btn small" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">View policy</a>
+</div>
+{% elif current_user.is_admin %}
+<div class="flash flash-error">No building insurance policy is on file. <a href="{{ url_for('documents.new', category='insurance') }}">Upload it in Documents</a> so owners and tenants can see it.</div>
+{% endif %}
 <div class="stats">
   <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>Units ({{ stats.occupied }} occupied)</a>
   <a class="stat" href="{{ url_for('directory.index') }}"><span>{{ stats.people }}</span>Owners &amp; tenants</a>
@@ -32,6 +41,22 @@
     {% endfor %}
     </ul>
     {% else %}<p class="muted">No active requests.</p>{% endif %}
+  </section>
+  {% if awaiting %}
+  <section class="card">
+    <h2>Waiting for owner approval <span class="muted">{{ awaiting|length }}</span></h2>
+    <ul class="list">{% for r in awaiting %}
+      <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
+        <span class="muted">· Unit {{ r.unit.number }} · asked by {{ r.submitted_by.name }} on {{ r.created_at.strftime('%b %d') }}</span></li>
+    {% endfor %}</ul>
+  </section>
+  {% endif %}
+  <section class="card">
+    <h2>Insurance to follow up <span class="muted">{{ insurance_alerts|length }}</span></h2>
+    {% if insurance_alerts %}<table><tbody>{% for u, label, state in insurance_alerts %}
+      <tr><td><a href="{{ url_for('units.detail', unit_id=u.id) }}">Unit {{ u.number }}</a></td><td>{{ label }}</td><td>{{ insurance_badge(state) }}</td></tr>
+    {% endfor %}</tbody></table>
+    {% else %}<p class="muted">Every owner and tenant on file has valid insurance.</p>{% endif %}
   </section>
   <section class="card">
     <h2>Upcoming bookings</h2>

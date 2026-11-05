@@ -10,7 +10,7 @@ import io
 from flask import Blueprint, Response, abort, redirect, render_template, request, url_for
 
 from ..extensions import db
-from ..models import OWNER_ROLES, ROLE_LABELS, Owner, Unit, User
+from ..models import INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, Owner, Unit, User
 from ..utils import admin_required
 
 bp = Blueprint("directory", __name__, url_prefix="/directory")
@@ -104,10 +104,14 @@ def export(group):
             writer.writerow([u.name, u.role_label, u.unit.number if u.unit else "", u.email, u.phone or "",
                              "yes" if u.active else "no"])
     elif group in GROUPS:
-        writer.writerow(["Unit", "Name", "Role", "Primary contact", "Email", "Phone", "Mailing address", "Notes"])
+        writer.writerow(["Unit", "Name", "Role", "Primary contact", "Email", "Phone", "Mailing address",
+                         "Insurance", "Insurer", "Insured until", "Notes"])
         for o in search_contacts(group, q, role):
+            p = o.current_policy
             writer.writerow([o.unit.number, o.name, o.role_label, "yes" if o.is_primary else "", o.email or "",
-                             o.phone or "", (o.mailing_address or "").replace("\n", ", "), o.notes or ""])
+                             o.phone or "", (o.mailing_address or "").replace("\n", ", "),
+                             INSURANCE_STATE_LABELS[o.insurance_state] if o.needs_insurance else "",
+                             (p.provider or "") if p else "", p.valid_until.isoformat() if p else "", o.notes or ""])
     else:
         abort(404)
     return Response(buf.getvalue(), mimetype="text/csv",

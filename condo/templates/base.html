@@ -22,6 +22,7 @@
     {% endif %}
     <a href="{{ url_for('maintenance.index') }}" class="{{ 'active' if ep.startswith('maintenance') }}">Maintenance</a>
     <a href="{{ url_for('announcements.index') }}" class="{{ 'active' if ep.startswith('announcements') }}">Notices</a>
+    <a href="{{ url_for('documents.index') }}" class="{{ 'active' if ep.startswith('documents') }}">Documents</a>
     <a href="{{ url_for('amenities.index') }}" class="{{ 'active' if ep.startswith('amenities') }}">Amenities</a>
   </nav>
   <div class="user">

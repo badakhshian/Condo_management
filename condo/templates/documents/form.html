@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit document' if doc else 'Upload document' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit “' ~ doc.title ~ '”' if doc else 'Upload a document' }}</h1>
+<form method="post" enctype="multipart/form-data" class="card narrow" id="doc-form">
+  {{ csrf() }}
+  <div class="row">
+    <label>Category <select name="category" id="doc-category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>Visible to <select name="visibility">{% for k, label in visibility.items() %}<option value="{{ k }}" {{ 'selected' if form.get('visibility') == k }}>{{ label }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Title <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="e.g. Declaration of co-ownership, AGM minutes 2026"></label>
+  <div class="only-insurance">
+    <div class="row">
+      <label>Insurer <input name="provider" maxlength="200" value="{{ form.get('provider', '') }}"></label>
+      <label>Policy number <input name="policy_number" maxlength="100" value="{{ form.get('policy_number', '') }}"></label>
+    </div>
+    <div class="row">
+      <label>Policy start <input type="date" name="valid_from" value="{{ form.get('valid_from', '') }}"></label>
+      <label>Policy end <input type="date" name="valid_until" value="{{ form.get('valid_until', '') }}"></label>
+    </div>
+  </div>
+  <label class="not-insurance">Date <span class="muted">(meeting date, adoption date…)</span> <input type="date" name="document_date" value="{{ form.get('document_date', '') }}"></label>
+  <label>Description <textarea name="description" rows="2">{{ form.get('description', '') }}</textarea></label>
+  <label>File (PDF, image, Word or Excel; up to 4 MB){% if doc %} <span class="muted">— current: {{ doc.file.filename }}; choose a file only to replace it</span>{% endif %}
+    <input type="file" name="file" accept="{{ accept }}" {{ 'required' if not doc }}></label>
+  <button class="btn primary">{{ 'Save' if doc else 'Upload' }}</button>
+  <a href="{{ url_for('documents.index') }}">Cancel</a>
+</form>
+<script>
+  (function () {
+    var cat = document.getElementById('doc-category');
+    function sync() {
+      var ins = cat.value === 'insurance';
+      document.querySelectorAll('.only-insurance').forEach(function (el) { el.hidden = !ins; });
+      document.querySelectorAll('.not-insurance').forEach(function (el) { el.hidden = ins; });
+    }
+    cat.addEventListener('change', sync); sync();
+  })();
+</script>
+{% endblock %}

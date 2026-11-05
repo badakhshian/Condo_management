@@ -73,6 +73,23 @@ class Unit(db.Model):
                              order_by="(Owner.is_primary.desc(), Owner.name)")
 
     @property
+    def owner_contacts(self):
+        return [o for o in self.owners if o.role != "tenant"]
+
+    @property
+    def tenants(self):
+        return [o for o in self.owners if o.role == "tenant"]
+
+    def group_insurance(self, group):
+        """Best insurance state among the unit's owners ('owners') or tenants ('tenants').
+        One valid policy covers the household. None when nobody is in the group."""
+        people = [o for o in (self.tenants if group == "tenants" else self.owner_contacts) if o.needs_insurance]
+        if not people:
+            return None
+        rank = {"valid": 0, "expiring": 1, "expired": 2, "missing": 3}
+        return min((o.insurance_state for o in people), key=rank.get)
+
+    @property
     def owner_display(self):
         """Names of the unit's owner contacts, or the plain owner name when none are recorded."""
         names = [o.name for o in self.owners if o.role in ("owner", "co-owner")]
@@ -154,7 +171,9 @@ class Payment(db.Model):
         return text + (f" #{self.reference}" if self.reference else "")
 
 
-REQUEST_STATUSES = {"open": "Open", "in_progress": "In progress", "resolved": "Resolved", "closed": "Closed"}
+REQUEST_STATUSES = {"awaiting_owner": "Awaiting owner approval", "open": "Open", "in_progress": "In progress",
+                    "resolved": "Resolved", "closed": "Closed"}
+ACTIVE_STATUSES = ("awaiting_owner", "open", "in_progress")
 REQUEST_PRIORITIES = {"low": "Low", "normal": "Normal", "high": "High", "urgent": "Urgent"}
 REQUEST_CATEGORIES = ("Plumbing", "Electrical", "HVAC", "Appliance", "Common area", "Security", "Other")
 
@@ -170,6 +189,11 @@ class MaintenanceRequest(db.Model):
     status = db.Column(db.String(20), nullable=False, default="open")
     created_at = db.Column(db.DateTime, default=utcnow)
     updated_at = db.Column(db.DateTime, default=utcnow, onupdate=utcnow)
+    # Tenant requests for their unit need the owner's go-ahead before work starts.
+    owner_approval = db.Column(db.String(20))  # None (not needed), 'pending', 'approved', 'declined'
+    owner_decision_by = db.Column(db.String(200))
+    owner_decision_at = db.Column(db.DateTime)
+    owner_decision_note = db.Column(db.Text)
 
     unit = db.relationship("Unit")
     submitted_by = db.relationship("User")
@@ -178,7 +202,11 @@ class MaintenanceRequest(db.Model):
 
     @property
     def is_active(self):
-        return self.status in ("open", "in_progress")
+        return self.status in ACTIVE_STATUSES
+
+    @property
+    def awaiting_owner(self):
+        return self.status == "awaiting_owner"
 
 
 class MaintenanceComment(db.Model):
@@ -298,7 +326,108 @@ class Owner(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="owners")
+    policies = db.relationship("InsurancePolicy", back_populates="owner", cascade="all, delete-orphan",
+                               passive_deletes=True,
+                               order_by="(InsurancePolicy.valid_until.desc(), InsurancePolicy.id.desc())")
 
     @property
     def role_label(self):
         return OWNER_ROLES.get(self.role, self.role)
+
+    @property
+    def current_policy(self):
+        return self.policies[0] if self.policies else None
+
+    @property
+    def insurance_state(self):
+        p = self.current_policy
+        return insurance_state(p.valid_until if p else None)
+
+    @property
+    def needs_insurance(self):
+        return self.role in ("owner", "co-owner", "tenant")
+
+
+# --- files, documents and insurance ---------------------------------------------
+
+class StoredFile(db.Model):
+    """An uploaded file kept in the database (serverless hosting has no lasting disk).
+    Served only through views that check who may see it."""
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    content_type = db.Column(db.String(100), nullable=False)
+    size = db.Column(db.Integer, nullable=False)
+    data = db.Column(db.LargeBinary, nullable=False)
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    uploaded_by = db.relationship("User")
+
+
+DOCUMENT_CATEGORIES = {
+    "syndicate": "Syndicate documents",
+    "insurance": "Building insurance",
+    "minutes": "Annual meeting minutes",
+    "other": "Other",
+}
+DOCUMENT_VISIBILITY = {"everyone": "Everyone signed in", "owners": "Owners and managers", "managers": "Managers only"}
+
+
+class Document(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(20), nullable=False, default="other")
+    description = db.Column(db.Text)
+    document_date = db.Column(db.Date)   # meeting date, adoption date, issue date
+    valid_from = db.Column(db.Date)      # insurance policy period
+    valid_until = db.Column(db.Date)
+    provider = db.Column(db.String(200))  # insurer
+    policy_number = db.Column(db.String(100))
+    visibility = db.Column(db.String(20), nullable=False, default="everyone")
+    file_id = db.Column(db.Integer, db.ForeignKey("stored_file.id"), nullable=False)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)
+
+    def visible_to(self, user):
+        if user.is_admin or self.visibility == "everyone":
+            return True
+        return self.visibility == "owners" and user.role == "owner"
+
+
+EXPIRING_SOON_DAYS = 30
+
+
+def insurance_state(valid_until, today=None):
+    """'valid', 'expiring', 'expired' or 'missing' for a policy end date."""
+    from datetime import date, timedelta
+    today = today or date.today()
+    if valid_until is None:
+        return "missing"
+    if valid_until < today:
+        return "expired"
+    if valid_until <= today + timedelta(days=EXPIRING_SOON_DAYS):
+        return "expiring"
+    return "valid"
+
+
+INSURANCE_STATE_LABELS = {"valid": "Insured", "expiring": "Expiring soon", "expired": "Expired", "missing": "No insurance"}
+
+
+class InsurancePolicy(db.Model):
+    """A home-insurance policy for an owner or tenant. Renewals add a new row; the latest counts."""
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey("owner.id", ondelete="CASCADE"), nullable=False, index=True)
+    provider = db.Column(db.String(200))
+    policy_number = db.Column(db.String(100))
+    valid_from = db.Column(db.Date, nullable=False)
+    valid_until = db.Column(db.Date, nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey("stored_file.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    owner = db.relationship("Owner", back_populates="policies")
+    file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)
+
+    @property
+    def state(self):
+        return insurance_state(self.valid_until)

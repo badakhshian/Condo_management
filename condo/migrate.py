@@ -15,6 +15,10 @@ ADDED_COLUMNS = [
     ("charge", "origin", "VARCHAR(20)"),
     ("payment", "origin", "VARCHAR(20)"),
     ("payment", "notes", "VARCHAR(255)"),
+    ("maintenance_request", "owner_approval", "VARCHAR(20)"),
+    ("maintenance_request", "owner_decision_by", "VARCHAR(200)"),
+    ("maintenance_request", "owner_decision_at", "TIMESTAMP"),
+    ("maintenance_request", "owner_decision_note", "TEXT"),
 ]
 
 

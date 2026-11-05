@@ -115,3 +115,15 @@ form .btn.primary + a { margin-left: .8rem; }
 .grid > aside.card { align-self: start; }
 .banner { background: var(--warn); color: #1d1300; text-align: center; padding: .45rem 1rem; font-size: .9rem; }
 .tabs a .count { font-size: .75rem; opacity: .7; margin-left: .25rem; }
+.ins-valid { color: var(--ok); }
+.ins-expiring { color: var(--warn); }
+.ins-expired, .ins-missing { color: var(--danger); }
+.prio-awaiting, .status-awaiting_owner { color: var(--warn); }
+.building-insurance { border-left: 4px solid var(--primary); }
+.person { padding: .6rem 0; border-bottom: 1px solid var(--border); }
+.person:last-child { border-bottom: 0; }
+.person .line { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; align-items: baseline; }
+.person .policy { font-size: .88rem; margin-top: .25rem; }
+[hidden] { display: none !important; }
+.grid > aside { align-self: start; }
+.grid > aside > .card:last-child { margin-bottom: 0; }

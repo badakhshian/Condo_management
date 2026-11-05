@@ -12,3 +12,5 @@
   <button class="{{ cls }}">{{ label }}</button>
 </form>
 {% endmacro %}
+
+{% macro insurance_badge(state) %}{% set labels = {'valid': 'Insured', 'expiring': 'Expiring soon', 'expired': 'Expired', 'missing': 'No insurance'} %}<span class="badge ins-{{ state }}">{{ labels.get(state, state) }}</span>{% endmacro %}
