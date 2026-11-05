@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit ' ~ owner.name if owner else 'Add owner' }} · Unit {{ unit.number }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit ' ~ owner.name if owner else 'Add an owner' }} <span class="muted">· Unit {{ unit.number }}</span></h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <div class="row">
+    <label>Full name <input name="name" required maxlength="200" value="{{ form.get('name', '') }}"></label>
+    <label>Role <select name="role">{% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if form.get('role') == k }}>{{ label }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="row">
+    <label>Email <input type="email" name="email" value="{{ form.get('email', '') }}"></label>
+    <label>Phone <input type="tel" name="phone" maxlength="60" value="{{ form.get('phone', '') }}"></label>
+  </div>
+  <label>Mailing address <textarea name="mailing_address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>
+  <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
+  <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
+  <button class="btn primary">Save</button>
+  <a href="{{ url_for('units.detail', unit_id=unit.id) }}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}People{% endblock %}
+{% block title %}Website accounts{% endblock %}
 {% block content %}
-<div class="head"><h1>People</h1><a class="btn primary" href="{{ url_for('residents.new') }}">Add person</a></div>
+<div class="head"><h1>Website accounts</h1><a class="btn primary" href="{{ url_for('residents.new') }}">Add account</a></div>
 <form class="search" method="get"><input name="q" placeholder="Search name, email or unit" value="{{ q }}"><button class="btn">Search</button></form>
 <div class="card">
 <table>

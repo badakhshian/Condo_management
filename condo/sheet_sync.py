@@ -8,6 +8,9 @@ into the app by hand are never touched.
 Expected tabs:
   Transactions  Date | Unit | Owner | Type | Amount | Approved by ... | Source | Notes
   Balances      Unit | Owner | ... | Current balance (owes)      (optional; used as a cross-check)
+  Owners        Unit | Name | Email | Phone | Mailing address | Role | Primary | Notes
+                (optional; one row per person. When the tab exists, the owners it lists
+                replace the ones from the previous sync; owners added in the app are kept.)
 
 Transaction types:
   Opening balance            charge (may be negative: a credit)
@@ -25,7 +28,7 @@ import urllib.request
 from datetime import date, datetime
 
 from .extensions import db
-from .models import Charge, Expense, Payment, Setting, Unit, utcnow
+from .models import OWNER_ROLES, Charge, Expense, Owner, Payment, Setting, Unit, utcnow
 
 ORIGIN = "sheet"
 UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
@@ -137,6 +140,8 @@ def parse(data):
     rows = [list(r) for r in wb[names["transactions"]].iter_rows(values_only=True)]
     balances_rows = ([list(r) for r in wb[names["balances"]].iter_rows(values_only=True)]
                      if "balances" in names else [])
+    owner_rows = ([list(r) for r in wb[names["owners"]].iter_rows(values_only=True)]
+                  if "owners" in names else None)
     wb.close()
     if not rows:
         raise SyncError('The "Transactions" tab is empty.')
@@ -193,7 +198,10 @@ def parse(data):
                 if oi is not None and oi < len(row) and _text(row[oi]):
                     owners[unit] = _text(row[oi])  # the Balances tab is the cleanest list of owners
 
-    units = sorted({e["unit"] for e in entries if e["unit"]} | set(expected), key=int)
+    contacts = _parse_owners(owner_rows, warnings) if owner_rows is not None else None
+
+    units = sorted({e["unit"] for e in entries if e["unit"]} | set(expected)
+                   | {c["unit"] for c in contacts or []}, key=int)
     fees = {}
     for e in sorted(entries, key=lambda e: e["date"]):
         if e["category"] == "dues":
@@ -211,10 +219,63 @@ def parse(data):
 
     counts = {c: sum(1 for e in entries if e["category"] == c)
               for c in ("opening", "dues", "payment", "credit", "expense")}
-    return {"kind": "sheet", "hash": hashlib.sha256(data).hexdigest(), "entries": entries,
+    counts["owners"] = len(contacts) if contacts is not None else None
+    return {"kind": "sheet", "hash": hashlib.sha256(data).hexdigest(), "entries": entries, "owners": contacts,
             "units": [{"number": u, "owner": owners.get(u, ""), "fee_cents": fees.get(u),
                        "balance_cents": computed[u], "sheet_balance_cents": expected.get(u)} for u in units],
             "counts": counts, "warnings": warnings}
+
+
+TRUTHY = {"yes", "y", "true", "x", "1", "primary", "✓", "oui"}
+
+
+def _owner_role(text):
+    t = text.lower().replace(" ", "-")
+    if t in OWNER_ROLES:
+        return t
+    if "tenant" in t or "locataire" in t:
+        return "tenant"
+    if "co" in t and "owner" in t:
+        return "co-owner"
+    if t and "owner" not in t and "propri" not in t:
+        return "contact"
+    return "owner"
+
+
+def _parse_owners(rows, warnings):
+    """One person per row. Returns a list of contact dicts."""
+    if not rows:
+        return []
+    header = rows[0]
+    col = {key: _header_index(header, *names_) for key, names_ in {
+        "unit": ("unit",), "name": ("name", "owner"), "email": ("email", "e-mail", "courriel"),
+        "phone": ("phone", "tel", "mobile", "cell"), "address": ("mailing address", "address", "adresse"),
+        "role": ("role",), "primary": ("primary", "main contact"), "notes": ("notes", "note"),
+    }.items()}
+    if col["unit"] is None or col["name"] is None:
+        warnings.append('Owners tab skipped: it needs at least "Unit" and "Name" columns.')
+        return []
+
+    def get(row, key):
+        i = col[key]
+        return _text(row[i]) if i is not None and i < len(row) else ""
+
+    contacts = []
+    for n, row in enumerate(rows[1:], start=2):
+        if not any(v not in (None, "") for v in row):
+            continue
+        unit, name = _unit(get(row, "unit")), get(row, "name")
+        if not unit or not name:
+            warnings.append(f"Owners tab row {n}: skipped (needs a unit and a name).")
+            continue
+        email = get(row, "email").lower()
+        if email and "@" not in email:
+            warnings.append(f"Owners tab row {n}: \"{email}\" isn't an email address; left blank.")
+            email = ""
+        contacts.append({"row": n, "unit": unit, "name": name, "email": email, "phone": get(row, "phone"),
+                         "address": get(row, "address"), "role": _owner_role(get(row, "role")),
+                         "primary": get(row, "primary").lower() in TRUTHY, "notes": get(row, "notes")})
+    return contacts
 
 
 def cents_str(cents):
@@ -245,9 +306,21 @@ def apply(plan):
             unit.monthly_fee_cents = u["fee_cents"]
     db.session.flush()
 
-    for model in (Charge, Payment, Expense):
+    models = (Charge, Payment, Expense) + ((Owner,) if plan.get("owners") is not None else ())
+    for model in models:
         db.session.execute(db.delete(model).where(model.origin == ORIGIN))
     db.session.flush()
+    db.session.expire_all()  # bulk deletes bypass the session; drop stale relationship caches
+
+    primary_set = set()
+    for c in plan.get("owners") or []:
+        unit = existing[c["unit"]]
+        is_primary = c["primary"] and c["unit"] not in primary_set
+        if is_primary:
+            primary_set.add(c["unit"])
+        db.session.add(Owner(unit=unit, name=_truncate(c["name"], 200), email=c["email"][:255] or None,
+                             phone=c["phone"][:60] or None, mailing_address=c["address"] or None,
+                             role=c["role"], is_primary=is_primary, notes=c["notes"] or None, origin=ORIGIN))
 
     # Charges that were entered in the app for the same unit, kind and month would clash.
     taken = set(db.session.execute(

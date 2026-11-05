@@ -10,7 +10,8 @@ Built with Flask, SQLAlchemy and SQLite. It renders pages on the server and need
 |---|---|---|
 | **Dashboard** | Occupancy, outstanding dues, units that owe money, active maintenance, upcoming bookings | Their unit's balance, their requests and bookings, latest notices |
 | **Units** | Create, edit and delete units (floor, bedrooms, area, parking, monthly dues) | — |
-| **People** | Manage accounts and roles, assign them to units, deactivate them, search | Edit their phone number and password |
+| **Owners** | Several owners and contacts per unit, each with email, phone, mailing address and a primary-contact flag; a searchable directory, "email all" and CSV export | — |
+| **Accounts** | Manage website logins and roles, assign them to units, deactivate them, search | Edit their phone number and password |
 | **Billing** | Bill monthly dues for every unit in one step (running it twice for the same month bills nobody twice), add special assessments or fines, record payments, see a statement with a running balance | Read their own unit's statement |
 | **Maintenance** | Triage requests by status and priority, comment on them | Submit requests for their unit or a common area, comment, close or reopen their own |
 | **Notices** | Post, pin, edit and delete notices | Read them |
@@ -65,6 +66,8 @@ Managers can link the condo's transaction log in Google Sheets under **Billing �
 | Fee payment, Special contribution | payment |
 | Purchase (reimbursement), with a unit | purchase credit to that unit |
 | Purchase, no unit | building expense |
+
+**Owner contacts:** an optional **Owners** tab lists one person per row, with the columns Unit, Name, Email, Phone, Mailing address, Role and Primary. Role is Owner, Co-owner, Tenant or Contact. When the tab exists, its people replace the contacts from the previous sync; contacts added in the app are kept.
 
 How a sync works:
 - A sync is previewed and confirmed before anything is written.

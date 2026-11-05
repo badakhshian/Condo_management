@@ -69,6 +69,14 @@ class Unit(db.Model):
                               order_by="Charge.due_date.desc()")
     payments = db.relationship("Payment", back_populates="unit", cascade="all, delete-orphan",
                                order_by="Payment.paid_on.desc()")
+    owners = db.relationship("Owner", back_populates="unit", cascade="all, delete-orphan",
+                             order_by="(Owner.is_primary.desc(), Owner.name)")
+
+    @property
+    def owner_display(self):
+        """Names of the unit's owner contacts, or the plain owner name when none are recorded."""
+        names = [o.name for o in self.owners if o.role in ("owner", "co-owner")]
+        return " / ".join(names) if names else (self.owner_name or "")
 
     @property
     def total_charged(self):
@@ -269,3 +277,28 @@ class Setting(db.Model):
             db.session.add(Setting(key=key, value=value))
         else:
             row.value = value
+
+
+OWNER_ROLES = {"owner": "Owner", "co-owner": "Co-owner", "tenant": "Tenant", "contact": "Other contact"}
+
+
+class Owner(db.Model):
+    """A person connected to a unit (usually one of several co-owners), with contact details.
+    Separate from login accounts: an owner doesn't need to use the website."""
+    id = db.Column(db.Integer, primary_key=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default="owner")
+    email = db.Column(db.String(255))
+    phone = db.Column(db.String(60))
+    mailing_address = db.Column(db.Text)  # empty = lives in the unit
+    is_primary = db.Column(db.Boolean, nullable=False, default=False)
+    notes = db.Column(db.Text)
+    origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet's Owners tab
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    unit = db.relationship("Unit", back_populates="owners")
+
+    @property
+    def role_label(self):
+        return OWNER_ROLES.get(self.role, self.role)

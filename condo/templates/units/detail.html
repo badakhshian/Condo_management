@@ -11,7 +11,6 @@
   <section class="card">
     <h2>Details</h2>
     <dl class="props">
-      <dt>Owner</dt><dd>{{ unit.owner_name or '—' }}</dd>
       <dt>Ownership share</dt><dd>{{ '%.2f%%'|format(unit.ownership_share * 100) if unit.ownership_share else '—' }}</dd>
       <dt>Floor</dt><dd>{{ unit.floor if unit.floor is not none else '—' }}</dd>
       <dt>Bedrooms</dt><dd>{{ unit.bedrooms or '—' }}</dd>
@@ -35,12 +34,36 @@
     </div>
   </section>
   <section class="card">
-    <h2>Residents <a class="btn small" href="{{ url_for('residents.new', unit_id=unit.id) }}">Add</a></h2>
+    <h2>Owners &amp; contacts <a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id) }}">Add</a></h2>
+    {% if unit.owners %}
+      {% for o in unit.owners %}
+      <div class="comment">
+        <strong>{{ o.name }}</strong> <span class="tag">{{ o.role_label }}</span>
+        {% if o.is_primary %}<span class="badge status-open">Primary</span>{% endif %}
+        {% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>
+        {% else %}<span class="actions" style="display:inline-flex;float:right">
+          <a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id) }}">Edit</a>
+          {{ post_button(url_for('owners.delete', owner_id=o.id), 'Remove', cls='btn small ghost', confirm='Remove ' ~ o.name ~ '?') }}</span>{% endif %}
+        <div class="muted">
+          {% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% endif %}
+          {% if o.email and o.phone %} · {% endif %}
+          {% if o.phone %}<a href="tel:{{ o.phone }}">{{ o.phone }}</a>{% endif %}
+        </div>
+        {% if o.mailing_address %}<div class="prose excerpt">{{ o.mailing_address }}</div>{% endif %}
+        {% if o.notes %}<div class="excerpt">{{ o.notes }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">{% if unit.owner_name %}Recorded as “{{ unit.owner_name }}”, but no contact details yet.{% else %}No owners recorded.{% endif %}</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Website accounts <a class="btn small" href="{{ url_for('residents.new', unit_id=unit.id) }}">Add</a></h2>
     {% if unit.residents %}<ul class="list">
       {% for r in unit.residents %}<li><a href="{{ url_for('residents.edit', user_id=r.id) }}">{{ r.name }}</a>
         <span class="tag">{{ r.role_label }}</span> <span class="muted">{{ r.email }}{% if r.phone %} · {{ r.phone }}{% endif %}</span>
         {% if not r.active %}<span class="badge status-closed">Inactive</span>{% endif %}</li>{% endfor %}
-    </ul>{% else %}<p class="muted">Vacant.</p>{% endif %}
+    </ul>{% else %}<p class="muted">Nobody from this unit can sign in yet.</p>{% endif %}
   </section>
 </div>
 {% endblock %}

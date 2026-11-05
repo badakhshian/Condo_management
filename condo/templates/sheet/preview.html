@@ -12,6 +12,7 @@
   <div class="stat"><span>{{ plan.counts.payment }}</span>Payments</div>
   <div class="stat"><span>{{ plan.counts.credit }}</span>Purchase credits</div>
   <div class="stat"><span>{{ plan.counts.expense }}</span>Building expenses</div>
+  <div class="stat"><span>{{ plan.counts.owners if plan.counts.owners is not none else '—' }}</span>Owner contacts</div>
 </div>
 
 {% for w in plan.warnings %}<div class="flash flash-error">{{ w }}</div>{% endfor %}
@@ -28,6 +29,21 @@
     {% endfor %}</tbody>
   </table>
 </section>
+
+{% if plan.owners is not none %}
+<section class="card">
+  <h2>Owner contacts <span class="muted">from the Owners tab · replaces contacts from earlier syncs</span></h2>
+  <table>
+    <thead><tr><th>Unit</th><th>Name</th><th>Email</th><th>Phone</th><th>Mailing address</th></tr></thead>
+    <tbody>{% for c in plan.owners %}
+      <tr><td>{{ c.unit }}</td><td><strong>{{ c.name }}</strong> <span class="tag">{{ c.role }}</span>{% if c.primary %} <span class="badge status-open">Primary</span>{% endif %}</td>
+        <td>{{ c.email or '—' }}</td><td>{{ c.phone or '—' }}</td><td class="prose">{{ c.address or '' }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">The Owners tab has no rows.</td></tr>{% endfor %}</tbody>
+  </table>
+</section>
+{% else %}
+<div class="flash flash-info">The sheet has no Owners tab, so owner contacts in the app are left as they are. Add a tab named “Owners” with columns Unit, Name, Email, Phone, Mailing address, Role, Primary to sync them too.</div>
+{% endif %}
 
 <section class="card">
   <h2>Transactions <span class="muted">{{ plan.entries|length }} rows</span></h2>

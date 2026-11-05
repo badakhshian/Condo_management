@@ -4,7 +4,7 @@
 {% block content %}
 <h1>Google Sheet sync</h1>
 <p class="muted">The app can mirror the condo's transaction log in Google Sheets. Opening balances, monthly fees, payments,
-  purchase credits and building expenses come from the sheet's <strong>Transactions</strong> tab; the <strong>Balances</strong> tab is used as a cross-check.
+  purchase credits and building expenses come from the sheet's <strong>Transactions</strong> tab, and owner contacts from an optional <strong>Owners</strong> tab; the <strong>Balances</strong> tab is used as a cross-check.
   Each sync replaces only what came from the sheet. Entries typed into the app by hand are kept.</p>
 
 <div class="grid two">
@@ -50,7 +50,7 @@
     <h2>Last sync</h2>
     {% if last %}
       <p>{{ last.at.replace('T', ' ') }} UTC · {{ last.counts.opening }} opening balances, {{ last.counts.dues }} monthly fees,
-        {{ last.counts.payment }} payments, {{ last.counts.credit }} purchase credits, {{ last.counts.expense }} building expenses.</p>
+        {{ last.counts.payment }} payments, {{ last.counts.credit }} purchase credits, {{ last.counts.expense }} building expenses{% if last.counts.owners is not none %}, {{ last.counts.owners }} owner contacts{% endif %}.</p>
       {% if last.units_created %}<p>New units created: {{ last.units_created|join(', ') }}</p>{% endif %}
       {% for m in last.mismatches + last.skipped + last.warnings %}<div class="flash flash-error">{{ m }}</div>{% endfor %}
       {% if not (last.mismatches or last.skipped or last.warnings) %}<p class="credit">Every unit's balance matches the sheet.</p>{% endif %}

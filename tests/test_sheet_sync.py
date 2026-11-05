@@ -48,7 +48,7 @@ def test_export_url():
 
 def test_parse_classifies_and_cross_checks():
     plan = sheet_sync.parse(make_sheet())
-    assert plan["counts"] == {"opening": 2, "dues": 2, "payment": 2, "credit": 1, "expense": 1}
+    assert plan["counts"] == {"opening": 2, "dues": 2, "payment": 2, "credit": 1, "expense": 1, "owners": None}
     assert plan["warnings"] == []
     u101, u102 = plan["units"]
     assert (u101["balance_cents"], u101["sheet_balance_cents"], u101["fee_cents"]) == (5000, 5000, 40000)
@@ -164,3 +164,51 @@ def test_sheet_entries_cannot_be_removed_in_app(admin_client):
     admin_client.post(f"/billing/payments/{pay.id}/delete")
     assert db.session.get(Payment, pay.id) is not None
     assert b"from sheet" in admin_client.get(f"/billing/unit/{pay.unit_id}").data
+
+
+def add_owners_tab(data, rows):
+    from openpyxl import load_workbook
+    wb = load_workbook(io.BytesIO(data))
+    ws = wb.create_sheet("Owners")
+    ws.append(["Unit", "Name", "Email", "Phone", "Mailing address", "Role", "Primary", "Notes"])
+    for r in rows:
+        ws.append(r)
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def test_owners_tab_syncs_multiple_owners_per_unit(app):
+    from condo.models import Owner
+    manual = Owner(unit=db.session.scalar(db.select(Unit).where(Unit.number == "101")), name="Property Manager",
+                   role="contact")
+    db.session.add(manual)
+    db.session.commit()
+    data = add_owners_tab(make_sheet(), [
+        ["#101", "Alice Chen", "ALICE@example.com", "514-555-0101", "", "Owner", "yes", ""],
+        ["#101", "Wei Chen", "wei@example.com", "514-555-0102", "12 Elm St\nLaval QC", "Co-owner", "", "Lives abroad"],
+        ["#102", "Bob Okafor", "not-an-email", "", "", "", "x", ""],
+        ["#103", "Nobody", "", "", "", "tenant", "", ""],
+    ])
+    plan = sheet_sync.parse(data)
+    assert plan["counts"]["owners"] == 4
+    assert any("isn't an email address" in w for w in plan["warnings"])
+    sheet_sync.apply(plan)
+    u101 = db.session.scalar(db.select(Unit).where(Unit.number == "101"))
+    names = [(o.name, o.role, o.is_primary, o.email) for o in u101.owners]
+    assert ("Alice Chen", "owner", True, "alice@example.com") in names
+    assert ("Wei Chen", "co-owner", False, "wei@example.com") in names
+    assert ("Property Manager", "contact", False, None) in names  # manual contact kept
+    assert u101.owner_display == "Alice Chen / Wei Chen"  # other contacts aren't listed as owners
+    assert db.session.scalar(db.select(Unit).where(Unit.number == "103")) is not None  # unit created
+
+    # Re-sync replaces only the sheet's owners.
+    sheet_sync.apply(sheet_sync.parse(add_owners_tab(make_sheet(), [["#101", "Alice Chen", "", "", "", "", "", ""]])))
+    assert sorted(o.name for o in db.session.get(Unit, u101.id).owners) == ["Alice Chen", "Property Manager"]
+
+
+def test_no_owners_tab_leaves_contacts_alone(app):
+    from condo.models import Owner
+    sheet_sync.apply(sheet_sync.parse(add_owners_tab(make_sheet(), [["#101", "Alice Chen", "", "", "", "", "", ""]])))
+    sheet_sync.apply(sheet_sync.parse(make_sheet()))  # tab removed
+    assert db.session.scalar(db.select(db.func.count(Owner.id))) == 1
