@@ -69,6 +69,8 @@ Managers can link the condo's transaction log in Google Sheets under **Billing â
 
 **Owner contacts:** an optional **Owners** tab lists one person per row, with the columns Unit, Name, Email, Phone, Mailing address, Role and Primary. Role is Owner, Co-owner, Tenant or Contact. When the tab exists, its people replace the contacts from the previous sync; contacts added in the app are kept.
 
+To reuse another owner's address, write `Same as <name>` (or `= <name>`) in the Mailing address cell. A match in the same unit is used first, then one anywhere in the sheet. On the website, the owner form's **Copy address from** list does the same.
+
 How a sync works:
 - A sync is previewed and confirmed before anything is written.
 - Each sync replaces every entry that came from the sheet. Entries typed into the app by hand are kept.

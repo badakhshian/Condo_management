@@ -275,7 +275,37 @@ def _parse_owners(rows, warnings):
         contacts.append({"row": n, "unit": unit, "name": name, "email": email, "phone": get(row, "phone"),
                          "address": get(row, "address"), "role": _owner_role(get(row, "role")),
                          "primary": get(row, "primary").lower() in TRUTHY, "notes": get(row, "notes")})
+    _resolve_same_as(contacts, warnings)
     return contacts
+
+
+SAME_AS_RE = re.compile(r"^\s*(?:same\s+(?:address\s+)?as|idem|=)\s*(.+?)\s*$", re.IGNORECASE)
+
+
+def _resolve_same_as(contacts, warnings):
+    """Let an address cell say "Same as <name>" to reuse another owner's address.
+    Names are matched in the same unit first, then anywhere in the sheet; chains are followed."""
+    def find(name, unit):
+        key = name.strip().lower()
+        matches = [c for c in contacts if c["name"].strip().lower() == key]
+        return next((c for c in matches if c["unit"] == unit), matches[0] if matches else None)
+
+    for c in contacts:
+        seen = set()
+        target, m = c, SAME_AS_RE.match(c["address"])
+        while m and id(target) not in seen:
+            seen.add(id(target))
+            target = find(m.group(1), target["unit"])
+            if target is None:
+                break
+            m = SAME_AS_RE.match(target["address"])
+        if not SAME_AS_RE.match(c["address"]):
+            continue
+        if target is None or m:
+            warnings.append(f"Owners tab row {c['row']}: couldn't find an address for \"{c['address']}\"; left blank.")
+            c["address"] = ""
+        else:
+            c["address"] = target["address"]
 
 
 def cents_str(cents):

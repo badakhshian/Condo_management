@@ -60,3 +60,30 @@ def test_owner_contacts_are_admin_only(alice_client):
     assert alice_client.get("/owners/").status_code == 403
     assert alice_client.get("/owners/export.csv").status_code == 403
     assert alice_client.get(f"/units/{unit('101').id}/owners/new").status_code == 403
+
+
+def test_copy_address_from_another_owner(admin_client):
+    u101, u102 = unit("101"), unit("102")
+    src = Owner(unit=u101, name="Alice Chen", role="owner", mailing_address="12 Elm St\nLaval QC")
+    db.session.add_all([src, Owner(unit=u102, name="Bob", role="owner", mailing_address="9 Oak Ave")])
+    db.session.commit()
+    page = admin_client.get(f"/units/{u101.id}/owners/new").data
+    assert b'<optgroup label="Unit 101">' in page and b"Alice Chen" in page and b"(unit 102)" in page
+
+    # Without JavaScript: choosing a source with an empty address box copies it on the server.
+    admin_client.post(f"/units/{u101.id}/owners/new",
+                      data={"name": "Wei Chen", "role": "co-owner", "copy_address_from": str(src.id)})
+    wei = db.session.scalar(db.select(Owner).where(Owner.name == "Wei Chen"))
+    assert wei.mailing_address == "12 Elm St\nLaval QC"
+
+    # A typed address wins over the picker.
+    admin_client.post(f"/owners/{wei.id}/edit", data={"name": "Wei Chen", "role": "co-owner",
+                                                      "copy_address_from": str(src.id), "mailing_address": "1 New Rd"})
+    assert db.session.get(Owner, wei.id).mailing_address == "1 New Rd"
+
+
+def test_edit_form_does_not_offer_own_address(admin_client):
+    o = Owner(unit=unit("101"), name="Solo", role="owner", mailing_address="Only Address 1")
+    db.session.add(o)
+    db.session.commit()
+    assert b"copy_address_from" not in admin_client.get(f"/owners/{o.id}/edit").data

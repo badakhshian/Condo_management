@@ -212,3 +212,16 @@ def test_no_owners_tab_leaves_contacts_alone(app):
     sheet_sync.apply(sheet_sync.parse(add_owners_tab(make_sheet(), [["#101", "Alice Chen", "", "", "", "", "", ""]])))
     sheet_sync.apply(sheet_sync.parse(make_sheet()))  # tab removed
     assert db.session.scalar(db.select(db.func.count(Owner.id))) == 1
+
+
+def test_owners_tab_same_as_address():
+    data = add_owners_tab(make_sheet(), [
+        ["#101", "Alice Chen", "", "", "12 Elm St, Laval", "Owner", "yes", ""],
+        ["#101", "Wei Chen", "", "", "Same as Alice Chen", "Co-owner", "", ""],
+        ["#102", "Bob Okafor", "", "", "same address as wei chen", "", "", ""],  # chain, other unit
+        ["#102", "Eve", "", "", "Same as Nobody", "", "", ""],
+    ])
+    plan = sheet_sync.parse(data)
+    addr = {c["name"]: c["address"] for c in plan["owners"]}
+    assert addr["Wei Chen"] == addr["Bob Okafor"] == "12 Elm St, Laval"
+    assert addr["Eve"] == "" and any('"Same as Nobody"' in w for w in plan["warnings"])

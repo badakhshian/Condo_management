@@ -30,11 +30,36 @@ def _apply_form(owner, form):
     owner.name = name[:200]
     owner.email = email or None
     owner.phone = form.get("phone", "").strip()[:60] or None
-    owner.mailing_address = form.get("mailing_address", "").strip() or None
+    address = form.get("mailing_address", "").strip()
+    source_id = form.get("copy_address_from", "")
+    if not address and source_id.isdigit():
+        source = db.session.get(Owner, int(source_id))
+        if source is not None and source.mailing_address:
+            address = source.mailing_address
+    owner.mailing_address = address or None
     owner.role = role
     owner.is_primary = bool(form.get("is_primary"))
     owner.notes = form.get("notes", "").strip() or None
     return []
+
+
+def address_sources(unit, owner=None):
+    """Owners with an address that can be copied: same unit first, then the rest of the building.
+    Each distinct address appears once per group."""
+    rows = db.session.scalars(
+        db.select(Owner).join(Unit).where(Owner.mailing_address.is_not(None), Owner.mailing_address != "")
+        .order_by(Unit.number, Owner.name)).all()
+    same, other, seen = [], [], set()
+    for o in rows:
+        if owner is not None and o.id == owner.id:
+            continue
+        group = same if o.unit_id == unit.id else other
+        key = (group is same, o.mailing_address.strip().lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        group.append(o)
+    return same, other
 
 
 def _only_one_primary(owner):
@@ -60,9 +85,9 @@ def new(unit_id):
             return redirect(url_for("units.detail", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
-        return render_template("owners/form.html", unit=unit, owner=None, form=request.form,
+        return render_template("owners/form.html", unit=unit, owner=None, sources=address_sources(unit, None), form=request.form,
                                roles=OWNER_ROLES), 400
-    return render_template("owners/form.html", unit=unit, owner=None, roles=OWNER_ROLES,
+    return render_template("owners/form.html", unit=unit, owner=None, sources=address_sources(unit, None), roles=OWNER_ROLES,
                            form={"role": "owner", "is_primary": owner.is_primary})
 
 
@@ -89,11 +114,11 @@ def edit(owner_id):
         db.session.rollback()
         for e in errors:
             flash(e, "error")
-        return render_template("owners/form.html", unit=owner.unit, owner=owner, form=request.form,
+        return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=request.form,
                                roles=OWNER_ROLES), 400
     form = {k: getattr(owner, k) or "" for k in ("name", "email", "phone", "mailing_address", "role", "notes")}
     form["is_primary"] = owner.is_primary
-    return render_template("owners/form.html", unit=owner.unit, owner=owner, form=form, roles=OWNER_ROLES)
+    return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=form, roles=OWNER_ROLES)
 
 
 @bp.route("/owners/<int:owner_id>/delete", methods=["POST"])

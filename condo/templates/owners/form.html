@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'Edit ' ~ owner.name if owner else 'Add owner' }} · Unit {{ unit.number }}{% endblock %}
+{% block title %}{{ 'Edit ' ~ owner.name if owner else 'Add owner' }} · Unit {{ unit.number }}<script>
+  (function () {
+    var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
+    if (!pick || !box) return;
+    pick.addEventListener('change', function () {
+      var opt = pick.options[pick.selectedIndex];
+      if (opt && opt.dataset.address) box.value = opt.dataset.address;
+    });
+  })();
+</script>
+{% endblock %}
 {% block content %}
 <h1>{{ 'Edit ' ~ owner.name if owner else 'Add an owner' }} <span class="muted">· Unit {{ unit.number }}</span></h1>
 <form method="post" class="card narrow">
@@ -13,10 +23,31 @@
     <label>Email <input type="email" name="email" value="{{ form.get('email', '') }}"></label>
     <label>Phone <input type="tel" name="phone" maxlength="60" value="{{ form.get('phone', '') }}"></label>
   </div>
-  <label>Mailing address <textarea name="mailing_address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>
+  {% set same, other = sources %}
+  {% if same or other %}
+  <label>Copy address from
+    <select name="copy_address_from" id="copy-address">
+      <option value="">— Type a new address —</option>
+      {% if same %}<optgroup label="Unit {{ unit.number }}">{% for o in same %}
+        <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
+      {% if other %}<optgroup label="Other units">{% for o in other %}
+        <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} (unit {{ o.unit.number }}) — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
+    </select></label>
+  {% endif %}
+  <label>Mailing address <textarea name="mailing_address" id="mailing-address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>
   <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
   <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
   <button class="btn primary">Save</button>
   <a href="{{ url_for('units.detail', unit_id=unit.id) }}">Cancel</a>
 </form>
+<script>
+  (function () {
+    var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
+    if (!pick || !box) return;
+    pick.addEventListener('change', function () {
+      var opt = pick.options[pick.selectedIndex];
+      if (opt && opt.dataset.address) box.value = opt.dataset.address;
+    });
+  })();
+</script>
 {% endblock %}
