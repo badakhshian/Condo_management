@@ -20,6 +20,28 @@
   <div class="stat"><span>{{ unit.monthly_fee_cents|money }}</span>Monthly fee</div>
 </div>
 
+<div class="grid two">
+  <section class="card">
+    <h2>Condo fee · {{ fees.year }}</h2>
+    {% if fees.fee %}
+      <dl class="props"><dt>Annual</dt><dd><strong>{{ fees.fee.annual|money }}</strong></dd>
+        <dt>Monthly</dt><dd>{{ fees.fee.monthly|money }}</dd>
+        {% if fees.fee.share %}<dt>Ownership share</dt><dd>{{ '%.2f%%'|format(fees.fee.share * 100) }}</dd>{% endif %}</dl>
+    {% else %}<p class="muted">The {{ fees.year }} rates haven't been set yet. Current monthly fee: {{ unit.monthly_fee_cents|money }}.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Special contributions</h2>
+    {% if fees.specials %}<table>
+      <thead><tr><th>For</th><th>Deadline</th><th class="num">Amount</th><th class="num">Left to pay</th><th></th></tr></thead>
+      <tbody>{% for sc, r in fees.specials %}
+        <tr><td>{% if current_user.can('accounting') %}<a href="{{ url_for('fees.special', special_id=sc.id) }}">{{ sc.title }}</a>{% else %}{{ sc.title }}{% endif %}</td>
+          <td class="nowrap">{{ sc.deadline.strftime('%b %d, %Y') }}</td><td class="num">{{ r.amount|money }}</td>
+          <td class="num">{{ r.left|money if r.left else '—' }}</td>
+          <td><span class="badge sc-{{ r.status }}">{{ {'paid': 'Paid', 'partial': 'Partly paid', 'unpaid': 'Not paid yet', 'overdue': 'Overdue'}[r.status] }}</span></td></tr>
+      {% endfor %}</tbody>
+    </table>{% else %}<p class="muted">None.</p>{% endif %}
+  </section>
+</div>
 <div class="grid two money-panels">
   <section class="card panel-out">
     <div class="card-head"><h2>Charges <span class="muted count">{{ charges|length }}</span></h2>

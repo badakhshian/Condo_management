@@ -3,12 +3,15 @@
 {% block title %}Accounting · {{ period.label }}{% endblock %}
 {% block content %}
 <div class="head"><h1>Accounting</h1>
-  {% if current_user.can('accounting_edit') %}<div class="actions">
+  <div class="actions">
+    <a class="btn primary" href="{{ url_for('fees.index', year=period.year) }}">Fees &amp; contributions</a>
+    {% if current_user.can('accounting_edit') %}
     <a class="btn" href="{{ url_for('sheet.index') }}">Google Sheet</a>
     <a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a>
     <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
     <a class="btn" href="{{ url_for('reimbursements.index') }}">Reimbursements{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
-  </div>{% endif %}</div>
+    {% endif %}
+  </div></div>
 
 {% include "billing/_period_bar.html" %}
 

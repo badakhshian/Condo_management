@@ -187,7 +187,8 @@ def _unit_view(unit, period, scope):
             pd = sum(p.amount_cents for p in payments if ms <= p.paid_on <= me)
             months.append({"month": m, "name": calendar.month_name[m], "billed": b, "paid": pd})
     all_units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if scope == "all" else []
-    return render_template("billing/unit_view.html", period=period, unit=unit, scope=scope, all_units=all_units,
+    from .fees import unit_summary
+    return render_template("billing/unit_view.html", fees=unit_summary(unit, period["year"]), period=period, unit=unit, scope=scope, all_units=all_units,
                            charges=charges, payments=payments, billed=billed, opening=opening, paid=paid,
                            months=months, today=date.today())
 
@@ -259,6 +260,12 @@ def generate():
     return redirect(url_for("billing.index"))
 
 
+def _special_from(values):
+    from ..models import SpecialContribution
+    raw = values.get("special_id", "")
+    return db.session.get(SpecialContribution, int(raw)) if str(raw).isdigit() else None
+
+
 def _manual_kinds():
     return {k: v for k, v in CHARGE_KINDS.items() if k not in SYSTEM_CHARGE_KINDS}
 
@@ -327,19 +334,27 @@ def new_payment():
         except ValueError as e:
             errors.append(str(e))
         if not errors:
+            special = _special_from(request.form)
+            notes = request.form.get("notes", "").strip()[:255] or None
+            if special is not None and not notes:
+                notes = f"Special contribution — {special.title}"[:255]
             db.session.add(Payment(unit=unit, amount_cents=amount, paid_on=paid_on, method=method,
                                    reference=request.form.get("reference", "").strip()[:80] or None,
-                                   notes=request.form.get("notes", "").strip()[:255] or None,
+                                   notes=notes, special_id=special.id if special else None,
                                    recorded_by_id=current_user.id))
             db.session.commit()
             flash(f"Payment recorded for unit {unit.number}.", "success")
+            if special is not None:
+                return redirect(url_for("fees.special", special_id=special.id))
             return redirect(url_for("billing.ledger", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
         return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHOD_LABELS,
-                               form=request.form), 400
-    form = {"unit_id": request.args.get("unit_id", ""), "paid_on": date.today().isoformat(), "method": "bank transfer"}
-    return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHOD_LABELS, form=form)
+                               form=request.form, special=_special_from(request.form)), 400
+    form = {"unit_id": request.args.get("unit_id", ""), "paid_on": date.today().isoformat(), "method": "bank transfer",
+            "amount": request.args.get("amount", ""), "special_id": request.args.get("special_id", "")}
+    return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHOD_LABELS, form=form,
+                           special=_special_from(request.args))
 
 
 @bp.route("/charges/<int:charge_id>/delete", methods=["POST"])

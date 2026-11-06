@@ -50,10 +50,10 @@ def create_app(test_config=None):
     login_manager.init_app(app)
 
     from . import models  # noqa: F401  (register models)
-    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units
+    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, fees, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units
 
     for bp in (auth.bp, dashboard.bp, units.bp, residents.bp, billing.bp,
-               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy, notifications.bp, reimbursements.bp):
+               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy, notifications.bp, reimbursements.bp, fees.bp):
         app.register_blueprint(bp)
 
     from .cli import register_cli

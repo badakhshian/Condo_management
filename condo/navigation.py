@@ -47,6 +47,10 @@ def parent_for(endpoint, args):
         if admin or current_user.role == "owner":
             return "Accounting", url_for("billing.index")
         return "Dashboard", url_for("dashboard.index")
+    if endpoint == "fees.index":
+        return "Accounting", url_for("billing.index")
+    if endpoint.startswith("fees."):
+        return "Fees & contributions", url_for("fees.index")
     if endpoint.startswith("reimbursements."):
         return "Reimbursements", url_for("reimbursements.index")
     if endpoint.startswith("maintenance."):

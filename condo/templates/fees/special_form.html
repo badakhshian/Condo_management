@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}New special contribution{% endblock %}
+{% block content %}
+<h1>New special contribution</h1>
+<form method="post" class="card narrow" id="sc-form">
+  {{ csrf() }}
+  <label>Title <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="e.g. Window replacement 2027"></label>
+  <label>Description <span class="muted">(optional)</span> <textarea name="description" rows="2" placeholder="What it's for, when it was voted">{{ form.get('description', '') }}</textarea></label>
+  <div class="row">
+    <label>Deadline to pay <input type="date" name="deadline" required value="{{ form.get('deadline', '') }}"></label>
+    <label>Split <select name="method" id="sc-method">{% for k, label in methods.items() %}<option value="{{ k }}" {{ 'selected' if form.get('method') == k }}>{{ label }}</option>{% endfor %}</select></label>
+  </div>
+  <label class="sc-total">Total amount <span class="money-input"><input name="total" id="sc-total" inputmode="decimal" placeholder="0.00" value="{{ form.get('total', '') }}"></span></label>
+  <table class="sc-preview">
+    <thead><tr><th>Unit</th><th class="num">Share</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for u in units %}
+      <tr data-share="{{ u.ownership_share or 0 }}"><td>{{ u.number }}{% if u.owner_display %} <span class="muted">· {{ u.owner_display }}</span>{% endif %}</td>
+        <td class="num muted">{{ '%.2f%%'|format(u.ownership_share * 100) if u.ownership_share else '—' }}</td>
+        <td class="num"><span class="calc"></span>
+          <span class="money-input custom-amount" hidden><input name="amount_{{ u.id }}" inputmode="decimal" placeholder="0.00" value="{{ form.get('amount_' ~ u.id, '') }}"></span></td></tr>
+    {% endfor %}</tbody>
+  </table>
+  <p class="muted">Nothing is billed yet. After saving you can check the amounts, then bill the units, which notifies their owners.</p>
+  <div class="form-actions"><button class="btn primary">Save</button>
+    <a href="{{ safe_back() or url_for('fees.index') }}">Cancel</a></div>
+</form>
+<script>
+  (function () {
+    var method = document.getElementById('sc-method'), total = document.getElementById('sc-total');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('.sc-preview tbody tr'));
+    function money(c) { return '$' + (c / 100).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function update() {
+      var m = method.value, cents = Math.round(parseFloat((total.value || '0').replace(/[$,]/g, '')) * 100) || 0;
+      document.querySelector('.sc-total').hidden = m === 'custom';
+      var weights = rows.map(function (r) { return m === 'equal' ? 1 : parseFloat(r.dataset.share) || 0; });
+      var sum = weights.reduce(function (a, b) { return a + b; }, 0);
+      var exact = weights.map(function (w) { return sum ? cents * w / sum : 0; });
+      var parts = exact.map(Math.floor), left = cents - parts.reduce(function (a, b) { return a + b; }, 0);
+      exact.map(function (e, i) { return [e - parts[i], i]; }).sort(function (a, b) { return b[0] - a[0]; })
+        .slice(0, left).forEach(function (x) { parts[x[1]] += 1; });
+      rows.forEach(function (r, i) {
+        r.querySelector('.calc').hidden = m === 'custom';
+        r.querySelector('.custom-amount').hidden = m !== 'custom';
+        r.querySelector('.calc').textContent = cents ? money(parts[i]) : '—';
+      });
+    }
+    method.addEventListener('change', update); total.addEventListener('input', update); update();
+  })();
+</script>
+{% endblock %}

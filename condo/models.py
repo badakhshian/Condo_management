@@ -223,7 +223,7 @@ class Unit(db.Model):
         return rows
 
 
-CHARGE_KINDS = {"dues": "Monthly dues", "special": "Special assessment", "fine": "Fine", "other": "Other",
+CHARGE_KINDS = {"dues": "Monthly dues", "special": "Special contribution", "fine": "Fine", "other": "Other",
                 "opening": "Opening balance"}
 # Kinds created by the system (dues generation, spreadsheet import), never by the manual charge form.
 SYSTEM_CHARGE_KINDS = ("dues", "opening")
@@ -260,6 +260,7 @@ class Payment(db.Model):
     reference = db.Column(db.String(80))
     notes = db.Column(db.String(255))
     origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet; None = entered in the app
+    special_id = db.Column(db.Integer, db.ForeignKey("special_contribution.id"))  # paying a special contribution
     recorded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     created_at = db.Column(db.DateTime, default=utcnow)
 
@@ -730,3 +731,116 @@ def link_admin_accounts():
             user.name = person.name[:120]
         converted.append(user)
     return converted
+
+
+# --- annual condo fees and special contributions ---------------------------------
+
+def split_by_weight(total_cents, weights):
+    """Split an amount in proportion to weights so the parts add up exactly to the total
+    (largest-remainder rounding). `weights` is {key: weight}."""
+    weight_sum = sum(weights.values())
+    if not weights or weight_sum <= 0:
+        return {k: 0 for k in weights}
+    exact = {k: total_cents * w / weight_sum for k, w in weights.items()}
+    parts = {k: int(v) for k, v in exact.items()}
+    leftover = total_cents - sum(parts.values())
+    for k in sorted(exact, key=lambda k: exact[k] - parts[k], reverse=True)[:leftover]:
+        parts[k] += 1
+    return parts
+
+
+class FeeSchedule(db.Model):
+    """The building's condo-fee budget for one year, split between units by ownership share."""
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, nullable=False, unique=True)
+    annual_total_cents = db.Column(db.Integer, nullable=False)
+    notes = db.Column(db.Text)
+    applied_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    overrides = db.relationship("FeeOverride", back_populates="schedule", cascade="all, delete-orphan")
+
+    def unit_fees(self, units):
+        """[{unit, share, annual, monthly, override}] for every unit. Overrides are kept as set;
+        the rest of the budget is split by ownership share."""
+        fixed = {o.unit_id: o.annual_cents for o in self.overrides}
+        rest = [u for u in units if u.id not in fixed]
+        remaining = self.annual_total_cents - sum(v for k, v in fixed.items() if any(u.id == k for u in units))
+        split = split_by_weight(max(remaining, 0), {u.id: (u.ownership_share or 0) for u in rest})
+        rows = []
+        for u in units:
+            annual = fixed.get(u.id, split.get(u.id, 0))
+            rows.append({"unit": u, "share": u.ownership_share, "annual": annual, "monthly": round(annual / 12),
+                         "override": u.id in fixed})
+        return rows
+
+
+class FeeOverride(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    schedule_id = db.Column(db.Integer, db.ForeignKey("fee_schedule.id", ondelete="CASCADE"), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False)
+    annual_cents = db.Column(db.Integer, nullable=False)
+
+    schedule = db.relationship("FeeSchedule", back_populates="overrides")
+    __table_args__ = (db.UniqueConstraint("schedule_id", "unit_id", name="uq_fee_override_unit"),)
+
+
+SPLIT_METHODS = {"share": "By ownership share", "equal": "Equally between units", "custom": "Amounts I enter per unit"}
+
+
+class SpecialContribution(db.Model):
+    """A one-off amount the owners must pay by a deadline (e.g. roof or window replacement)."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    total_cents = db.Column(db.Integer, nullable=False)
+    deadline = db.Column(db.Date, nullable=False)
+    method = db.Column(db.String(10), nullable=False, default="share")
+    billed_at = db.Column(db.DateTime)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    shares = db.relationship("SpecialShare", back_populates="special", cascade="all, delete-orphan",
+                             order_by="SpecialShare.id")
+    created_by = db.relationship("User")
+
+    def paid_by_unit(self):
+        rows = db.session.execute(db.select(Payment.unit_id, db.func.sum(Payment.amount_cents))
+                                  .where(Payment.special_id == self.id).group_by(Payment.unit_id)).all()
+        return {unit_id: total for unit_id, total in rows}
+
+    def status_rows(self, today=None):
+        from datetime import date
+        today = today or date.today()
+        paid = self.paid_by_unit()
+        rows = []
+        for sh in sorted(self.shares, key=lambda s: s.unit.number):
+            p = paid.get(sh.unit_id, 0)
+            left = max(sh.amount_cents - p, 0)
+            if sh.amount_cents == 0 or left == 0:
+                status = "paid"
+            elif today > self.deadline:
+                status = "overdue"
+            else:
+                status = "partial" if p else "unpaid"
+            rows.append({"share": sh, "unit": sh.unit, "amount": sh.amount_cents, "paid": p, "left": left,
+                         "status": status})
+        return rows
+
+    @property
+    def collected_cents(self):
+        return min(sum(self.paid_by_unit().values()), self.total_cents)
+
+
+SPECIAL_STATUS_LABELS = {"paid": "Paid", "partial": "Partly paid", "unpaid": "Not paid yet", "overdue": "Overdue"}
+
+
+class SpecialShare(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    special_id = db.Column(db.Integer, db.ForeignKey("special_contribution.id", ondelete="CASCADE"), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False)
+    amount_cents = db.Column(db.Integer, nullable=False)
+    charge_id = db.Column(db.Integer, db.ForeignKey("charge.id"))
+
+    special = db.relationship("SpecialContribution", back_populates="shares")
+    unit = db.relationship("Unit")

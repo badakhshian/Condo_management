@@ -5,6 +5,8 @@
 <h1>Record a payment</h1>
 <form method="post" class="card narrow" id="payment-form">
   {{ csrf() }}
+  {% if special %}<input type="hidden" name="special_id" value="{{ special.id }}">
+  <div class="flash flash-info">For the special contribution <strong>{{ special.title }}</strong> (due {{ special.deadline.strftime('%b %d, %Y') }})</div>{% endif %}
   <label>Unit
     <select name="unit_id" id="pay-unit" required><option value="">Choose a unit…</option>
       {% for u in units %}<option value="{{ u.id }}" data-balance="{{ u.balance }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}{% if u.owner_display %} · {{ u.owner_display }}{% endif %}</option>{% endfor %}
