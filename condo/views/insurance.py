@@ -86,13 +86,18 @@ def new(unit_id, group):
         return render_template("insurance/form.html", unit=unit, group=group, members=members, last=last,
                                form=request.form, accept=files.ACCEPT), 400
     preferred = request.args.get("holder", "")
-    default = next((m for m in members if str(m.id) == preferred), None) \
-        or (last.owner if last and last.owner in members else None) \
-        or next((m for m in members if m.is_primary), members[0])
+    separate = bool(request.args.get("separate")) and last is not None
+    if separate:  # another co-owner's own policy: default to someone who isn't the main policyholder
+        default = next((m for m in members if m.id != last.owner_id), members[0])
+    else:
+        default = next((m for m in members if str(m.id) == preferred), None) \
+            or (last.owner if last and last.owner in members else None) \
+            or next((m for m in members if m.is_primary), members[0])
     form = {"policyholder_id": str(default.id),
-            "provider": last.provider if last else "", "policy_number": last.policy_number if last else ""}
+            "provider": "" if separate or not last else last.provider or "",
+            "policy_number": "" if separate or not last else last.policy_number or ""}
     return render_template("insurance/form.html", unit=unit, group=group, members=members, last=last,
-                           form=form, accept=files.ACCEPT)
+                           form=form, accept=files.ACCEPT, separate=separate)
 
 
 @bp.route("/people/<int:owner_id>/insurance/new")

@@ -274,3 +274,30 @@ def test_other_units_owner_cannot_decide(app, client):
     login(client, "alice@test.com")  # owner of a different unit
     req = db.session.scalar(db.select(MaintenanceRequest))
     assert client.post(f"/maintenance/{req.id}/owner-decision", data={"decision": "approve"}).status_code == 403
+
+
+def test_second_owner_policy_is_optional_and_listed(admin_client):
+    u = unit("101")
+    a, b = Owner(unit=u, name="Ann", role="owner", is_primary=True), Owner(unit=u, name="Ben", role="co-owner")
+    db.session.add_all([a, b])
+    db.session.commit()
+    add_policy(admin_client, u, "owners", date.today() + timedelta(days=300), holder=a)
+    # Ben is covered without filing anything.
+    assert db.session.get(Owner, b.id).insurance_state == "valid"
+    page = admin_client.get(f"/units/{u.id}").data.decode()
+    assert "Add another person's own policy" in page and "Also:" not in page
+
+    form = admin_client.get(f"/units/{u.id}/insurance/owners/new?separate=1").data.decode()
+    assert "optional" in form and f'value="{b.id}" selected' in form
+    resp = admin_client.post(f"/units/{u.id}/insurance/owners/new", content_type="multipart/form-data", data={
+        "policyholder_id": str(b.id), "provider": "La Capitale", "policy_number": "LC-9",
+        "valid_from": date.today().isoformat(), "valid_until": (date.today() + timedelta(days=200)).isoformat(),
+        "file": (io.BytesIO(PDF), "ben.pdf")})
+    assert resp.status_code == 302
+    page = admin_client.get(f"/units/{u.id}").data.decode()
+    assert "Also: Ben · La Capitale #LC-9" in page
+    # The main policy (ending last) still drives the status; renewals aren't listed as extras.
+    add_policy(admin_client, u, "owners", date.today() + timedelta(days=665), start=date.today() + timedelta(days=300),
+               holder=a)
+    extras = db.session.get(Unit, u.id).extra_policies("owners")
+    assert [x.owner.name for x in extras] == ["Ben"]

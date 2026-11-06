@@ -9,7 +9,8 @@
     {% if group == 'tenants' %}One tenant (renter's) policy with liability coverage covers the household:
     {% else %}One home-insurance policy, including civil liability, covers the unit's owners together:
     {% endif %}<strong>{{ members|map(attribute='name')|join(', ') }}</strong>.
-    {% if last %}When it's renewed, add the new policy here; earlier ones are kept.{% endif %}</p>
+    {% if separate %}The household is already covered by {{ last.owner.name }}'s policy, so this is <strong>optional</strong>: add it only if this person also keeps their own policy.
+    {% elif last %}When it's renewed, add the new policy here; earlier ones are kept. If one owner has filed the policy, the others don't need to.{% else %}Only one owner needs to file it; the others are covered by the same policy.{% endif %}</p>
   {% if members|length > 1 %}
   <label>Policyholder <select name="policyholder_id">
     {% for m in members %}<option value="{{ m.id }}" {{ 'selected' if form.get('policyholder_id')|string == m.id|string }}>{{ m.name }}</option>{% endfor %}

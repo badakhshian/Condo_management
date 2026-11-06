@@ -95,6 +95,24 @@ class Unit(db.Model):
         policies = self.policies_for(group)
         return policies[0] if policies else None
 
+    def extra_policies(self, group, today=None):
+        """Other policies still in force beside the main one, e.g. a co-owner who also keeps
+        their own. Optional: the household is covered by any one valid policy. Renewals of the
+        same policy (same policyholder and policy number) aren't listed twice."""
+        from datetime import date
+        today = today or date.today()
+        policies = self.policies_for(group)
+        if not policies:
+            return []
+        main, seen, extra = policies[0], set(), []
+        seen.add((main.owner_id, (main.policy_number or "").strip().lower()))
+        for p in policies[1:]:
+            key = (p.owner_id, (p.policy_number or "").strip().lower())
+            if p.valid_until >= today and key not in seen:
+                seen.add(key)
+                extra.append(p)
+        return extra
+
     def group_insurance(self, group):
         """Insurance state of the owners' or tenants' shared policy; None when nobody is in the group."""
         if not self.members(group):
