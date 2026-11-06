@@ -53,7 +53,7 @@ def create_app(test_config=None):
     from .views import amenities, announcements, auth, billing, dashboard, directory, documents, importer, insurance, maintenance, owners, residents, sheet, units
 
     for bp in (auth.bp, dashboard.bp, units.bp, residents.bp, billing.bp,
-               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp):
+               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy):
         app.register_blueprint(bp)
 
     from .cli import register_cli

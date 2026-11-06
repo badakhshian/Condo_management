@@ -111,7 +111,7 @@ def test_flow_preview_confirm_auto(admin_client, monkeypatch):
     assert db.session.scalar(db.select(db.func.count(Expense.id))) == 1
     admin_client.post("/sheet/auto", data={"auto": "on"})
     assert sheet_sync.config()["auto"] is True
-    assert b"Synced from Google Sheet" in admin_client.get("/billing/").data
+    assert b"come from the Google Sheet" in admin_client.get("/accounting/").data
 
 
 def test_preview_from_uploaded_file(admin_client):
@@ -161,9 +161,9 @@ def test_cron_records_fetch_errors(app, client, monkeypatch):
 def test_sheet_entries_cannot_be_removed_in_app(admin_client):
     sheet_sync.apply(sheet_sync.parse(make_sheet()))
     pay = db.session.scalar(db.select(Payment).where(Payment.origin == "sheet"))
-    admin_client.post(f"/billing/payments/{pay.id}/delete")
+    admin_client.post(f"/accounting/payments/{pay.id}/delete")
     assert db.session.get(Payment, pay.id) is not None
-    assert b"from sheet" in admin_client.get(f"/billing/unit/{pay.unit_id}").data
+    assert b"from sheet" in admin_client.get(f"/accounting/unit/{pay.unit_id}").data
 
 
 def add_owners_tab(data, rows):

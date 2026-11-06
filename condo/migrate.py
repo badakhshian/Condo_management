@@ -22,6 +22,7 @@ ADDED_COLUMNS = [
     ("owner", "board_roles", "VARCHAR(200)"),
     ("insurance_policy", "unit_id", "INTEGER"),
     ("insurance_policy", "holder_group", "VARCHAR(10)"),
+    ("expense", "category", "VARCHAR(20)"),
 ]
 
 # Data fixes that run after the columns exist. Each must be safe to repeat.

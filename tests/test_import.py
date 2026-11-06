@@ -124,7 +124,7 @@ def test_credit_balance_and_manual_form_cannot_create_opening(admin_client):
     admin_client.post(location.rstrip("/") + "/load/balances")
     u165 = db.session.scalar(db.select(Unit).where(Unit.number == "165"))
     assert u165.balance == -7525
-    resp = admin_client.post("/billing/charges/new", data={"unit_id": str(u165.id), "kind": "opening",
+    resp = admin_client.post("/accounting/charges/new", data={"unit_id": str(u165.id), "kind": "opening",
                                                            "description": "x", "amount": "5",
                                                            "due_date": "2026-10-01"})
     assert resp.status_code == 400

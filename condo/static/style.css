@@ -164,3 +164,14 @@ form .btn.primary + a { margin-left: .8rem; }
 .assign-form { display: flex; gap: .5rem; align-items: center; }
 .assign-form select { margin: 0; min-width: 12rem; }
 @media (max-width: 760px) { .assign-form { flex-wrap: wrap; } }
+.period-bar { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: .7rem 1rem; }
+.period-bar .tabs { margin: 0; }
+.period-nav { display: flex; align-items: center; gap: .6rem; flex: 1; justify-content: center; }
+.period-nav strong { font-size: 1.1rem; min-width: 9rem; text-align: center; }
+.period-pick { display: flex; gap: .4rem; align-items: center; }
+.period-pick select { width: auto; margin: 0; }
+.money-panels .card-head .credit, .money-panels .card-head .owed { font-weight: 700; }
+.panel-in { border-top: 3px solid var(--ok); }
+.panel-out { border-top: 3px solid var(--danger); }
+.cat-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
+tr.muted td { color: var(--muted); }

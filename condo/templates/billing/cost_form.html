@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Add cost{% endblock %}
+{% block content %}
+<h1>Add a cost</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <div class="row">
+    <label>Type <select name="kind">
+      <option value="cost" {{ 'selected' if form.get('kind') != 'refund' }}>Cost (money paid out)</option>
+      <option value="refund" {{ 'selected' if form.get('kind') == 'refund' }}>Refund (money back)</option></select></label>
+    <label>Category <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Description <input name="description" required maxlength="255" value="{{ form.get('description', '') }}" placeholder="e.g. Snow removal — December"></label>
+  <div class="row">
+    <label>Amount ($) <input name="amount" inputmode="decimal" required value="{{ form.get('amount', '') }}"></label>
+    <label>Date <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
+  </div>
+  <div class="row">
+    <label>Approved by <input name="approved_by" maxlength="255" value="{{ form.get('approved_by', '') }}"></label>
+    <label>Paid to / reference <input name="source" maxlength="255" value="{{ form.get('source', '') }}"></label>
+  </div>
+  <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
+  <button class="btn primary">Save</button>
+  <a href="{{ url_for('billing.index') }}">Cancel</a>
+</form>
+{% endblock %}

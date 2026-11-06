@@ -305,11 +305,38 @@ class ImportBatch(db.Model):
     created_by = db.relationship("User")
 
 
+COST_CATEGORIES = {
+    "utilities": "Utilities",
+    "insurance": "Insurance",
+    "maintenance": "Maintenance",
+    "repairs": "Repairs & projects",
+    "administration": "Administration",
+    "other": "Other",
+}
+_COST_KEYWORDS = [
+    ("insurance", ("insurance", "assurance")),
+    ("utilities", ("hydro", "electric bill", "électricité", "gas", "water bill")),
+    ("maintenance", ("snow", "lawn", "landscap", "garden", "gardening", "cleaning", "déneigement", "leaf", "compost")),
+    ("administration", ("bank", "fee", "frais", "interac", "cheque", "check order", "accounting", "tax")),
+    ("repairs", ("repair", "heater", "plumb", "roof", "window", "door", "brick", "garage", "contractor",
+                 "electric", "paint", "invoice")),
+]
+
+
+def guess_cost_category(text):
+    t = (text or "").lower()
+    for key, words in _COST_KEYWORDS:
+        if any(w in t for w in words):
+            return key
+    return "other"
+
+
 class Expense(db.Model):
-    """A building-level transaction not tied to a unit (e.g. a contractor invoice).
-    Negative amounts are money paid out of the condo account."""
+    """A building-level cost (or refund) not tied to a unit, e.g. a contractor invoice.
+    Negative amounts are money paid out of the condo account; positive ones are money back."""
     id = db.Column(db.Integer, primary_key=True)
     spent_on = db.Column(db.Date, nullable=False)
+    category = db.Column(db.String(20))
     description = db.Column(db.String(255), nullable=False)
     amount_cents = db.Column(db.Integer, nullable=False)
     approved_by = db.Column(db.String(255))
@@ -317,6 +344,26 @@ class Expense(db.Model):
     notes = db.Column(db.Text)
     origin = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=utcnow)
+
+    @property
+    def sort_id(self):
+        return self.id
+
+    paid_by = None
+
+    @property
+    def cost_cents(self):
+        """Money spent as a positive number (a refund shows as negative)."""
+        return -self.amount_cents
+
+    @property
+    def category_key(self):
+        return self.category if self.category in COST_CATEGORIES else guess_cost_category(
+            f"{self.description} {self.notes or ''}")
+
+    @property
+    def category_label(self):
+        return COST_CATEGORIES[self.category_key]
 
 
 class Setting(db.Model):

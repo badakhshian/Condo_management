@@ -28,7 +28,7 @@ import urllib.request
 from datetime import date, datetime
 
 from .extensions import db
-from .models import OWNER_ROLES, Charge, allowed_positions, hand_over_policies, Expense, Owner, Payment, Setting, Unit, utcnow
+from .models import OWNER_ROLES, Charge, guess_cost_category, allowed_positions, hand_over_policies, Expense, Owner, Payment, Setting, Unit, utcnow
 
 ORIGIN = "sheet"
 UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
@@ -377,6 +377,7 @@ def apply(plan):
         note = " — ".join(x for x in (e["kind"], e["notes"]) if x)
         if e["category"] == "expense":
             db.session.add(Expense(spent_on=when, amount_cents=e["amount_cents"], origin=ORIGIN,
+                                   category=guess_cost_category(f"{e['notes']} {e['kind']}"),
                                    description=_truncate(e["notes"] or e["kind"], 255),
                                    approved_by=_truncate(e["approved"], 255) or None,
                                    source=_truncate(e["source"], 255) or None))

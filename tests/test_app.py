@@ -63,21 +63,21 @@ def test_login_ignores_external_next(client):
     assert resp.headers["Location"] == "/"
 
 
-@pytest.mark.parametrize("path", ["/units/", "/residents/", "/billing/", "/announcements/new",
-                                  "/amenities/new", "/billing/payments/new"])
+@pytest.mark.parametrize("path", ["/units/", "/residents/", "/accounting/", "/announcements/new",
+                                  "/amenities/new", "/accounting/payments/new"])
 def test_resident_blocked_from_admin_pages(alice_client, path):
     assert alice_client.get(path).status_code == 403
 
 
 def test_resident_cannot_view_other_units_ledger(alice_client):
-    assert alice_client.get(f"/billing/unit/{unit('102').id}").status_code == 403
-    assert alice_client.get(f"/billing/unit/{unit('101').id}").status_code == 200
+    assert alice_client.get(f"/accounting/unit/{unit('102').id}").status_code == 403
+    assert alice_client.get(f"/accounting/unit/{unit('101').id}").status_code == 200
 
 
 def test_all_main_pages_render(admin_client):
-    for path in ["/", "/units/", "/directory/owners", "/directory/tenants", "/directory/accounts", "/directory/owners/new", "/billing/", "/maintenance/", "/announcements/",
+    for path in ["/", "/units/", "/directory/owners", "/directory/tenants", "/directory/accounts", "/directory/owners/new", "/accounting/", "/maintenance/", "/announcements/",
                  "/amenities/", "/account", f"/units/{unit('101').id}", "/maintenance/new",
-                 "/billing/charges/new", "/billing/payments/new", f"/billing/unit/{unit('101').id}"]:
+                 "/accounting/charges/new", "/accounting/payments/new", f"/accounting/unit/{unit('101').id}"]:
         assert admin_client.get(path).status_code == 200, path
 
 
@@ -152,7 +152,7 @@ def test_payment_and_ledger(admin_client):
     u = unit("101")
     generate_dues(2026, 1)
     generate_dues(2026, 2)
-    resp = admin_client.post("/billing/payments/new", data={"unit_id": str(u.id), "amount": "500",
+    resp = admin_client.post("/accounting/payments/new", data={"unit_id": str(u.id), "amount": "500",
                                                             "paid_on": "2026-02-05", "method": "check",
                                                             "reference": "1001"})
     assert resp.status_code == 302
@@ -163,14 +163,14 @@ def test_payment_and_ledger(admin_client):
 
 def test_special_charge(admin_client):
     u = unit("102")
-    resp = admin_client.post("/billing/charges/new", data={"unit_id": str(u.id), "kind": "special",
+    resp = admin_client.post("/accounting/charges/new", data={"unit_id": str(u.id), "kind": "special",
                                                            "description": "Roof", "amount": "1000",
                                                            "due_date": "2026-06-01"})
     assert resp.status_code == 302 and unit("102").balance == 100000
 
 
 def test_invalid_payment_rejected(admin_client):
-    resp = admin_client.post("/billing/payments/new", data={"unit_id": str(unit("101").id),
+    resp = admin_client.post("/accounting/payments/new", data={"unit_id": str(unit("101").id),
                                                             "amount": "-3", "paid_on": "2026-01-01",
                                                             "method": "check"})
     assert resp.status_code == 400
@@ -181,7 +181,7 @@ def test_delete_payment(admin_client):
     p = Payment(unit=unit("101"), amount_cents=100, paid_on=date.today(), method="cash")
     db.session.add(p)
     db.session.commit()
-    admin_client.post(f"/billing/payments/{p.id}/delete")
+    admin_client.post(f"/accounting/payments/{p.id}/delete")
     assert unit("101").balance == 0
 
 
