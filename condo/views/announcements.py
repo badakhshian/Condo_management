@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from ..extensions import db
 from ..models import Announcement
-from ..utils import admin_required
+from ..utils import permission_required
 
 bp = Blueprint("announcements", __name__, url_prefix="/announcements")
 
@@ -29,7 +29,7 @@ def _save(item):
 
 
 @bp.route("/new", methods=["GET", "POST"])
-@admin_required
+@permission_required("notices")
 def new():
     item = Announcement()
     if request.method == "POST":
@@ -47,7 +47,7 @@ def new():
 
 
 @bp.route("/<int:item_id>/edit", methods=["GET", "POST"])
-@admin_required
+@permission_required("notices")
 def edit(item_id):
     item = db.session.get(Announcement, item_id) or abort(404)
     if request.method == "POST":
@@ -61,7 +61,7 @@ def edit(item_id):
 
 
 @bp.route("/<int:item_id>/delete", methods=["POST"])
-@admin_required
+@permission_required("notices")
 def delete(item_id):
     item = db.session.get(Announcement, item_id) or abort(404)
     db.session.delete(item)

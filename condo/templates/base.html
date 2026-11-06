@@ -17,6 +17,9 @@
       <a href="{{ url_for('units.index') }}" class="{{ 'active' if ep.startswith('units') }}">Units</a>
       <a href="{{ url_for('directory.index') }}" class="{{ 'active' if ep.startswith(('directory', 'owners', 'residents')) }}">Directory</a>
       <a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
+    {% elif current_user.is_staff %}
+      {% if current_user.can('directory') %}<a href="{{ url_for('directory.index') }}" class="{{ 'active' if ep.startswith('directory') }}">Directory</a>{% endif %}
+      {% if current_user.can('accounting') %}<a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>{% endif %}
     {% elif current_user.unit_id %}
       {% if nav_board %}<a href="{{ url_for('directory.board') }}" class="{{ 'active' if ep.startswith(('directory', 'residents')) }}">Directory</a>{% endif %}
       {% if current_user.role == 'owner' or nav_board %}<a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
@@ -26,7 +29,7 @@
     {% if not current_user.is_admin and (current_user.role == 'owner' or nav_board) %}<a href="{{ url_for('reimbursements.index') }}" class="{{ 'active' if ep.startswith('reimbursements') }}">Reimbursements</a>{% endif %}
     <a href="{{ url_for('announcements.index') }}" class="{{ 'active' if ep.startswith('announcements') }}">Notices</a>
     <a href="{{ url_for('documents.index') }}" class="{{ 'active' if ep.startswith('documents') }}">Documents</a>
-    <a href="{{ url_for('amenities.index') }}" class="{{ 'active' if ep.startswith('amenities') }}">Amenities</a>
+    {% if not current_user.is_staff %}<a href="{{ url_for('amenities.index') }}" class="{{ 'active' if ep.startswith('amenities') }}">Amenities</a>{% endif %}
   </nav>
   <div class="user">
     <a class="bell {{ 'has-unread' if unread }}" href="{{ url_for('notifications.index') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">

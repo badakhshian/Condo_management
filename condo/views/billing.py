@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import (CHARGE_KINDS, COST_CATEGORIES, PAYMENT_METHOD_LABELS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment,
                       Setting, Unit, guess_cost_category)
-from ..utils import admin_required, can_access_unit, parse_date, parse_money
+from ..utils import admin_required, can_access_unit, permission_required, parse_date, parse_money
 
 # Shown as "Accounting"; the blueprint keeps its old name so existing links keep working.
 bp = Blueprint("billing", __name__, url_prefix="/accounting")
@@ -98,7 +98,7 @@ def accounting_scope(user=None):
     """'all' for managers and the board, 'own' for other owners (their unit only), else None."""
     from ..utils import board_positions_of
     user = user or current_user
-    if user.is_admin or board_positions_of(user):
+    if user.is_admin or board_positions_of(user) or user.can("accounting"):
         return "all"
     if user.role == "owner" and user.unit_id is not None:
         return "own"
@@ -193,7 +193,7 @@ def _unit_view(unit, period, scope):
 
 
 @bp.route("/costs/new", methods=["GET", "POST"])
-@admin_required
+@permission_required("accounting_edit")
 def new_cost():
     if request.method == "POST":
         errors = []
@@ -229,7 +229,7 @@ def new_cost():
 
 
 @bp.route("/costs/<int:cost_id>/delete", methods=["POST"])
-@admin_required
+@permission_required("accounting_edit")
 def delete_cost(cost_id):
     cost = db.session.get(Expense, cost_id) or abort(404)
     if cost.origin == "sheet":
@@ -242,7 +242,7 @@ def delete_cost(cost_id):
 
 
 @bp.route("/generate", methods=["POST"])
-@admin_required
+@permission_required("accounting_edit")
 def generate():
     try:
         year, month = (int(x) for x in request.form.get("period", "").split("-"))
@@ -276,7 +276,7 @@ def _unit_from_form(errors):
 
 
 @bp.route("/charges/new", methods=["GET", "POST"])
-@admin_required
+@permission_required("accounting_edit")
 def new_charge():
     if request.method == "POST":
         errors = []
@@ -310,7 +310,7 @@ def new_charge():
 
 
 @bp.route("/payments/new", methods=["GET", "POST"])
-@admin_required
+@permission_required("accounting_edit")
 def new_payment():
     if request.method == "POST":
         errors = []
@@ -343,7 +343,7 @@ def new_payment():
 
 
 @bp.route("/charges/<int:charge_id>/delete", methods=["POST"])
-@admin_required
+@permission_required("accounting_edit")
 def delete_charge(charge_id):
     charge = db.session.get(Charge, charge_id) or abort(404)
     unit_id = charge.unit_id
@@ -357,7 +357,7 @@ def delete_charge(charge_id):
 
 
 @bp.route("/payments/<int:payment_id>/delete", methods=["POST"])
-@admin_required
+@permission_required("accounting_edit")
 def delete_payment(payment_id):
     payment = db.session.get(Payment, payment_id) or abort(404)
     unit_id = payment.unit_id
@@ -373,7 +373,7 @@ def delete_payment(payment_id):
 @bp.route("/unit/<int:unit_id>")
 @login_required
 def ledger(unit_id):
-    if not can_access_unit(unit_id):
+    if not (can_access_unit(unit_id) or current_user.can("accounting")):
         abort(403)
     unit = db.session.get(Unit, unit_id) or abort(404)
     rows = unit.ledger()

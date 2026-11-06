@@ -24,6 +24,8 @@ ADDED_COLUMNS = [
     ("insurance_policy", "holder_group", "VARCHAR(10)"),
     ("expense", "category", "VARCHAR(20)"),
     ("user", "must_change_password", "BOOLEAN NOT NULL DEFAULT FALSE"),
+    ("user", "job_title", "VARCHAR(120)"),
+    ("user", "permissions", "VARCHAR(300)"),
     ("maintenance_request", "quote_note", "TEXT"),
     ("maintenance_request", "quote_vendor", "VARCHAR(200)"),
     ("maintenance_request", "quote_amount_cents", "INTEGER"),

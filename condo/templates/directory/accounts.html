@@ -2,34 +2,34 @@
 {% block title %}Accounts · Directory{% endblock %}
 {% block content %}
 {% include "directory/_tabs.html" %}
-<p class="muted">People who can sign in to this website: staff (managers) and anyone else given access, such as owners or tenants. Accounts are managed by the board.</p>
-{% if bootstrap %}<div class="flash flash-info">No board member has an account yet, so managers can set accounts up for now. Once a board member's account exists (same email as on their Directory entry), only the board can manage accounts.</div>{% endif %}
+<p class="muted">People you hire, such as a cleaner, a contractor or an outside accountant, who aren't owners or tenants. Give each one only the access they need. Owners' and tenants' logins are managed in the Owners and Tenants tabs.</p>
+{% if bootstrap %}<div class="flash flash-info">No board member has an account yet, so the temporary administrator can set accounts up for now.</div>{% endif %}
 <div class="head">
   <form class="search" method="get" style="margin:0">
-    <input name="q" placeholder="Search name, email, phone or unit" value="{{ q }}">
-    <select name="role" style="width:auto;margin:0"><option value="">All</option>
-      {% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if role == k }}>{{ label }}</option>{% endfor %}</select>
+    <input name="q" placeholder="Search name, email, phone or company" value="{{ q }}">
+    <select name="role" style="width:auto;margin:0"><option value="">Any access</option>
+      {% for k, label in perms.items() %}<option value="{{ k }}" {{ 'selected' if role == k }}>{{ label.split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</option>{% endfor %}</select>
     <button class="btn">Search</button>
   </form>
   <div class="actions">
-    {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email {{ 'these' if q or role else 'all' }} ({{ emails|length }})</a>{% endif %}
+    {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email all ({{ emails|length }})</a>{% endif %}
     <a class="btn" href="{{ url_for('directory.export', group='accounts', q=q, role=role) }}">Download CSV</a>
     <a class="btn primary" href="{{ url_for('residents.new', back=here()) }}">Add account</a>
   </div>
 </div>
 <div class="card">
 <table>
-  <thead><tr><th>Name</th><th>Role</th><th>Unit</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+  <thead><tr><th>Name</th><th>Job / company</th><th>Access</th><th>Email</th><th>Phone</th><th></th></tr></thead>
   <tbody>
   {% for u in users %}
     <tr class="{{ 'inactive' if not u.active }}"><td><strong>{{ u.name }}</strong>{% if not u.active %} <span class="badge status-closed">Inactive</span>{% endif %}</td>
-      <td><span class="tag">{{ u.role_label }}</span></td>
-      <td>{% if u.unit %}<a href="{{ url_for('units.detail', unit_id=u.unit.id) }}">{{ u.unit.number }}</a>{% else %}—{% endif %}</td>
-      <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td><td>{{ u.phone or '—' }}</td>
+      <td class="muted">{{ u.job_title or ('Temporary administrator' if u.is_temp_admin else '—') }}</td>
+      <td>{% if u.is_temp_admin %}<span class="tag">Everything</span>{% else %}{% for k in u.permission_keys %}<span class="tag">{{ perms[k].split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</span> {% else %}<span class="muted">None yet</span>{% endfor %}{% endif %}</td>
+      <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td><td>{% if u.phone %}<a href="{{ u.phone|tel }}" class="nowrap">{{ u.phone|phone }}</a>{% else %}—{% endif %}</td>
       <td class="actions nowrap"><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id, back=here()) }}">Edit</a>
         {% if u.id != current_user.id %}<a class="btn small" href="{{ url_for('residents.set_password', user_id=u.id, back=here()) }}">Set password</a>{% endif %}
         {% if u.must_change_password %}<span class="tag" title="Will choose their own password at next sign-in">temporary</span>{% endif %}</td></tr>
-  {% else %}<tr><td colspan="6" class="muted">No matches.</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="6" class="muted">{{ 'No matches.' if q or role else 'No staff accounts yet. Use Add account to give someone you hire access.' }}</td></tr>{% endfor %}
   </tbody>
 </table>
 </div>

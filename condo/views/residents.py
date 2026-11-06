@@ -5,7 +5,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user
 
 from ..extensions import db
-from ..models import ACCOUNT_ROLES, ROLE_LABELS, ROLES, Unit, User
+from ..models import ACCOUNT_ROLES, RESIDENT_ROLES, ROLE_LABELS, ROLES, STAFF_PERMISSIONS, Unit, User
 from ..navigation import safe_back
 from ..utils import admin_required, board_required
 
@@ -34,12 +34,10 @@ def _apply_form(user, form, creating):
     if role not in allowed_roles:
         errors.append("Choose Owner or Tenant. Managing the building comes from a board position.")
     unit = None
-    if unit_id:
-        unit = db.session.get(Unit, int(unit_id)) if str(unit_id).isdigit() else None
+    if role in RESIDENT_ROLES:
+        unit = db.session.get(Unit, int(unit_id)) if str(unit_id or "").isdigit() else None
         if unit is None:
-            errors.append("Selected unit does not exist.")
-    elif role != "admin":
-        errors.append("Choose the unit this person owns or rents.")
+            errors.append("Choose the unit this person owns or rents.")
     if creating and len(password) < 8:
         errors.append("Password must be at least 8 characters.")
     elif password and len(password) < 8:
@@ -57,6 +55,11 @@ def _apply_form(user, form, creating):
     user.phone = form.get("phone", "").strip() or None
     user.role = role
     user.unit = unit
+    if role == "staff":
+        user.job_title = form.get("job_title", "").strip()[:120] or None
+        user.permission_keys = form.getlist("perms") if hasattr(form, "getlist") else form.get("perms", [])
+    else:
+        user.job_title, user.permissions = None, None
     user.active = bool(form.get("active")) if not creating else True
     if password:
         user.set_password(password)
@@ -99,10 +102,17 @@ def set_password(user_id):
 
 
 def _role_choices(user):
-    choices = dict(ACCOUNT_ROLES)
+    choices = dict(RESIDENT_ROLES)
     if getattr(user, "role", None) == "admin":
         choices["admin"] = ROLE_LABELS["admin"]
     return choices
+
+
+def _render(user, form, creating, status=200):
+    role = form.get("role") or user.role
+    mode = "staff" if role == "staff" else "resident"
+    return render_template("residents/form.html", user=user, form=form, units=_units(), roles=_role_choices(user),
+                           creating=creating, mode=mode, perms=STAFF_PERMISSIONS), status
 
 
 def _units():
@@ -129,14 +139,12 @@ def new():
             return redirect(safe_back() or url_for("directory.accounts"))
         for e in errors:
             flash(e, "error")
-        return render_template("residents/form.html", user=user, form=request.form, units=_units(),
-                               roles=_role_choices(user), creating=True), 400
-    role = request.args.get("role", "owner")
-    form = {"unit_id": request.args.get("unit_id", ""), "role": role if role in ROLES else "owner",
+        return _render(user, request.form, True, 400)
+    role = request.args.get("role", "staff")  # Accounts tab adds staff; Owners/Tenants tabs pass owner/tenant
+    form = {"unit_id": request.args.get("unit_id", ""), "role": role if role in ACCOUNT_ROLES else "staff",
             "name": request.args.get("name", ""), "email": request.args.get("email", ""),
-            "phone": request.args.get("phone", ""), "must_change": True}
-    return render_template("residents/form.html", user=user, form=form, units=_units(),
-                           roles=_role_choices(user), creating=True)
+            "phone": request.args.get("phone", ""), "must_change": True, "perms": []}
+    return _render(user, form, True)
 
 
 @bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
@@ -152,9 +160,8 @@ def edit(user_id):
         db.session.rollback()
         for e in errors:
             flash(e, "error")
-        return render_template("residents/form.html", user=user, form=request.form, units=_units(),
-                               roles=_role_choices(user), creating=False), 400
+        return _render(user, request.form, False, 400)
     form = {"name": user.name, "email": user.email, "phone": user.phone or "", "role": user.role,
-            "unit_id": str(user.unit_id or ""), "active": user.active}
-    return render_template("residents/form.html", user=user, form=form, units=_units(),
-                           roles=_role_choices(user), creating=False)
+            "unit_id": str(user.unit_id or ""), "active": user.active, "job_title": user.job_title or "",
+            "perms": user.permission_keys}
+    return _render(user, form, False)

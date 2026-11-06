@@ -55,7 +55,7 @@ def test_board_position_grants_management(app, client):
 
 
 def test_account_roles_are_owner_or_tenant(admin_client):
-    form = admin_client.get("/residents/new").data.decode()
+    form = admin_client.get("/residents/new?role=owner").data.decode()
     assert 'value="owner"' in form and 'value="tenant"' in form and 'value="admin"' not in form
     resp = admin_client.post("/residents/new", data={"name": "X", "email": "x@x.com", "role": "admin",
                                                      "unit_id": str(unit("101").id), "password": "password123"})

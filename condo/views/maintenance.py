@@ -16,8 +16,8 @@ def is_board(user=None):
 
 
 def _visible(req):
-    """Managers and the board see everything; residents see their unit's requests and their own."""
-    return (is_board() or req.submitted_by_id == current_user.id
+    """The board and repair staff see everything; residents see their unit's requests and their own."""
+    return (is_board() or current_user.can("maintenance") or req.submitted_by_id == current_user.id
             or (req.unit_id is not None and req.unit_id == current_user.unit_id))
 
 
@@ -36,7 +36,7 @@ def _tell_unit_side(req, title, body=None):
 def index():
     status = request.args.get("status", "active")
     stmt = db.select(MaintenanceRequest).order_by(MaintenanceRequest.created_at.desc())
-    if not is_board():
+    if not (is_board() or current_user.can("maintenance")):
         conds = [MaintenanceRequest.submitted_by_id == current_user.id]
         if current_user.unit_id:
             conds.append(MaintenanceRequest.unit_id == current_user.unit_id)
@@ -53,7 +53,8 @@ def index():
 @bp.route("/new", methods=["GET", "POST"])
 @login_required
 def new():
-    units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if current_user.is_admin else []
+    picks_unit = current_user.is_admin or current_user.is_staff
+    units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if picks_unit else []
     if request.method == "POST":
         errors = []
         title = request.form.get("title", "").strip()
@@ -72,7 +73,7 @@ def new():
 
         unit_id = None
         if location == "unit":
-            if current_user.is_admin:
+            if picks_unit:
                 raw = request.form.get("unit_id", "")
                 unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
                 if unit is None:
@@ -303,7 +304,7 @@ def update_status(request_id):
     req = _get_visible(request_id)
     new_status = request.form.get("status")
     new_priority = request.form.get("priority", req.priority)
-    if current_user.is_admin:
+    if current_user.can("maintenance"):
         if new_status not in REQUEST_STATUSES or new_priority not in REQUEST_PRIORITIES:
             abort(400)
         if req.awaiting_owner and new_status not in ("awaiting_owner", "closed"):

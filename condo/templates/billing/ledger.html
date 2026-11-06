@@ -3,7 +3,7 @@
 {% block title %}Statement · Unit {{ unit.number }}{% endblock %}
 {% block content %}
 <div class="head"><h1>Statement — Unit {{ unit.number }}</h1>
-  {% if current_user.is_admin %}<div class="actions">
+  {% if current_user.can('accounting_edit') %}<div class="actions">
     <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">Add charge</a>
     <a class="btn primary" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">Record payment</a>
   </div>{% endif %}</div>
@@ -13,14 +13,14 @@
 </div>
 <div class="card">
 <table>
-  <thead><tr><th>Date</th><th>Description</th><th class="num">Charge</th><th class="num">Payment</th><th class="num">Balance</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
+  <thead><tr><th>Date</th><th>Description</th><th class="num">Charge</th><th class="num">Payment</th><th class="num">Balance</th>{% if current_user.can('accounting_edit') %}<th></th>{% endif %}</tr></thead>
   <tbody>
   {% for r in rows %}
     <tr><td>{{ r.date.strftime('%Y-%m-%d') }}</td><td>{{ r.description }}</td>
       <td class="num">{{ r.charge|money if r.charge else '' }}</td>
       <td class="num">{{ r.payment|money if r.payment else '' }}</td>
       <td class="num">{{ balance(r.balance) }}</td>
-      {% if current_user.is_admin %}<td>{% if r.origin == 'sheet' %}<span class="tag" title="Edit this in the Google Sheet">from sheet</span>{% else %}{{ post_button(url_for('billing.delete_' ~ r.type, **{r.type ~ '_id': r.id}), 'Remove', cls='btn small ghost', confirm='Remove this entry?') }}{% endif %}</td>{% endif %}</tr>
+      {% if current_user.can('accounting_edit') %}<td>{% if r.origin == 'sheet' %}<span class="tag" title="Edit this in the Google Sheet">from sheet</span>{% else %}{{ post_button(url_for('billing.delete_' ~ r.type, **{r.type ~ '_id': r.id}), 'Remove', cls='btn small ghost', confirm='Remove this entry?') }}{% endif %}</td>{% endif %}</tr>
   {% else %}<tr><td colspan="6" class="muted">No activity yet.</td></tr>{% endfor %}
   </tbody>
 </table>

@@ -1,20 +1,8 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'New account' if creating else 'Edit ' ~ user.name }}<script>
-  (function () {
-    var b = document.getElementById('pw-gen'), f = document.getElementById('pw');
-    if (!b || !f) return;
-    var a = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    b.addEventListener('click', function () {
-      var r = new Uint32Array(12); crypto.getRandomValues(r);
-      var s = ''; for (var i = 0; i < 12; i++) { if (i && i % 4 === 0) s += '-'; s += a[r[i] % a.length]; }
-      f.value = s; f.select();
-    });
-  })();
-</script>
-{% endblock %}
+{% block title %}{{ ('New staff account' if mode == 'staff' else 'New login') if creating else ('Edit ' ~ user.name) }}{% endblock %}
 {% block content %}
-<h1>{{ 'New account' if creating else 'Edit ' ~ user.name }}</h1>
+<h1>{{ ('New staff account' if mode == 'staff' else 'New login') if creating else ('Edit ' ~ user.name) }}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   <label>Full name <input name="name" required value="{{ form.get('name', '') }}"></label>
@@ -22,16 +10,26 @@
     <label>Email <input type="email" name="email" required value="{{ form.get('email', '') }}"></label>
     <label>Phone <input name="phone" value="{{ form.get('phone', '') }}"></label>
   </div>
+  {% if mode == 'staff' %}
+  <input type="hidden" name="role" value="staff">
+  <label>Job or company <input name="job_title" maxlength="120" placeholder="e.g. Cleaning company, Accountant, Handyman" value="{{ form.get('job_title', '') }}"></label>
+  <fieldset><legend>Access</legend>
+    {% set chosen = form.getlist('perms') if form.getlist is defined else form.get('perms', []) %}
+    {% for k, label in perms.items() %}<label class="check"><input type="checkbox" name="perms" value="{{ k }}" {{ 'checked' if k in chosen }}> {{ label }}</label>{% endfor %}
+    <p class="muted">They'll only see these parts of the portal, plus notices and documents shared with everyone.</p>
+  </fieldset>
+  {% else %}
   <div class="row">
     <label>Role
       <select name="role">{% for key, label in roles.items() %}<option value="{{ key }}" {{ 'selected' if form.get('role') == key }}>{{ label }}</option>{% endfor %}</select>
     </label>
     <label>Unit
-      <select name="unit_id"><option value="">— None —</option>
-        {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}
+      <select name="unit_id"><option value="">— Choose —</option>
+        {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}{% if u.owner_display %} · {{ u.owner_display }}{% endif %}</option>{% endfor %}
       </select>
     </label>
   </div>
+  {% endif %}
   {% if creating %}
   <label>Password
     <span class="pw-field"><input type="text" name="password" id="pw" minlength="8" required autocomplete="new-password" value="{{ form.get('password', '') }}">
@@ -42,8 +40,8 @@
   <p class="muted">Password: <a href="{{ url_for('residents.set_password', user_id=user.id, back=safe_back() or url_for('directory.accounts')) }}">set a new password</a>{% if user.must_change_password %} · <span class="tag">must change at next sign-in</span>{% endif %}</p>
   {% endif %}
   {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> Account active</label>{% endif %}
-  <button class="btn primary">Save</button>
-  <a href="{{ safe_back() or url_for('directory.accounts') }}">Cancel</a>
+  <div class="form-actions"><button class="btn primary">Save</button>
+  <a href="{{ safe_back() or url_for('directory.accounts') }}">Cancel</a></div>
 </form>
 <script>
   (function () {

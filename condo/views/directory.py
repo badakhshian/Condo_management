@@ -11,7 +11,7 @@ from flask import Blueprint, Response, abort, flash, redirect, render_template, 
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import (ACCOUNT_ROLES, BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
+from ..models import (ACCOUNT_ROLES, BOARD_POSITIONS, STAFF_PERMISSIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
                       Owner, Unit, User, allowed_positions)
 from ..utils import admin_required, board_has_accounts, board_positions_of, board_required, can_manage_accounts
 
@@ -50,14 +50,16 @@ def search_contacts(group, q="", role=""):
 
 
 def search_accounts(q="", role=""):
-    stmt = db.select(User).outerjoin(Unit).order_by(User.role != "admin", User.name)
-    if role in ACCOUNT_ROLES:
-        stmt = stmt.where(User.role == role)
+    """Hired staff accounts (people who aren't owners or tenants), plus a temporary admin."""
+    stmt = db.select(User).outerjoin(Unit).where(User.role.in_(("staff", "admin"))).order_by(User.name)
     if q:
         like = f"%{q}%"
         stmt = stmt.where(db.or_(User.name.ilike(like), User.email.ilike(like), User.phone.ilike(like),
-                                 Unit.number.ilike(like)))
-    return db.session.scalars(stmt).all()
+                                 User.job_title.ilike(like)))
+    users = db.session.scalars(stmt).all()
+    if role in STAFF_PERMISSIONS:
+        users = [u for u in users if role in u.permission_keys]
+    return users
 
 
 def can_manage_board(user=None):
@@ -66,7 +68,12 @@ def can_manage_board(user=None):
 
 
 def visible_tabs():
-    tabs = TABS if current_user.is_admin else [t for t in TABS if t[0] == "board"]
+    if current_user.is_admin:
+        tabs = TABS
+    elif current_user.can("directory"):
+        tabs = [t for t in TABS if t[0] in ("owners", "tenants")]
+    else:
+        tabs = [t for t in TABS if t[0] == "board"]
     if not can_manage_accounts():
         tabs = [t for t in tabs if t[0] != "accounts"]
     elif not current_user.is_admin:
@@ -77,15 +84,19 @@ def visible_tabs():
 def _counts():
     counts = dict(db.session.execute(db.select(Owner.role, db.func.count(Owner.id)).group_by(Owner.role)).all())
     out = {g: sum(counts.get(r, 0) for r in spec["roles"]) for g, spec in GROUPS.items()}
-    out["accounts"] = db.session.scalar(db.select(db.func.count(User.id)))
+    out["accounts"] = db.session.scalar(db.select(db.func.count(User.id)).where(User.role.in_(("staff", "admin"))))
     out["board"] = db.session.scalar(db.select(db.func.count(Owner.id)).where(Owner.board_roles.is_not(None)))
     return out
 
 
 @bp.route("/")
-@admin_required
+@login_required
 def index():
-    return redirect(url_for("directory.contacts", group="owners"))
+    if current_user.can("directory"):
+        return redirect(url_for("directory.contacts", group="owners"))
+    if can_manage_board():
+        return redirect(url_for("directory.board"))
+    abort(403)
 
 
 @bp.route("/accounts")
@@ -94,8 +105,7 @@ def accounts():
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")
     users = search_accounts(q, role)
     emails = sorted({u.email for u in users if u.email and u.active})
-    return render_template("directory/accounts.html", users=users, q=q, role=role,
-                           roles={"board": "Board members", **ACCOUNT_ROLES},
+    return render_template("directory/accounts.html", users=users, q=q, role=role, perms=STAFF_PERMISSIONS,
                            bootstrap=not board_has_accounts(),
                            emails=emails, tab="accounts", tabs=visible_tabs(), counts=_counts())
 
@@ -165,8 +175,10 @@ def unassign():
 
 
 @bp.route("/<group>")
-@admin_required
+@login_required
 def contacts(group):
+    if not current_user.can("directory"):
+        abort(403)
     if group not in GROUPS:
         abort(404)
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")
@@ -177,9 +189,10 @@ def contacts(group):
     if group == "owners" and not (q or role):
         without = db.session.scalars(db.select(Unit).where(
             ~Unit.owners.any(Owner.role.in_(GROUPS["owners"]["roles"]))).order_by(Unit.number)).all()
-    account_emails = {e.lower() for e in db.session.scalars(db.select(User.email))} if can_manage_accounts() else None
+    logins = ({u.email.lower(): u for u in db.session.scalars(db.select(User).where(User.role.in_(("owner", "tenant", "admin"))))}
+              if can_manage_accounts() else None)
     return render_template("directory/contacts.html", people=people, q=q, role=role, roles=role_choices,
-                           account_emails=account_emails,
+                           logins=logins,
                            emails=emails, group=group, spec=GROUPS[group], units_without=without,
                            tab=group, tabs=visible_tabs(), counts=_counts())
 
@@ -187,15 +200,16 @@ def contacts(group):
 @bp.route("/<group>/export.csv")
 @login_required
 def export(group):
-    if not (can_manage_accounts() if group == "accounts" else current_user.is_admin):
+    if not (can_manage_accounts() if group == "accounts" else current_user.can("directory")):
         abort(403)
     buf = io.StringIO()
     writer = csv.writer(buf)
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")
     if group == "accounts":
-        writer.writerow(["Name", "Role", "Unit", "Email", "Phone", "Active"])
+        writer.writerow(["Name", "Job / company", "Email", "Phone", "Access", "Active"])
         for u in search_accounts(q, role):
-            writer.writerow([u.name, u.role_label, u.unit.number if u.unit else "", u.email, u.phone or "",
+            writer.writerow([u.name, u.job_title or "", u.email, u.phone or "",
+                             "; ".join(STAFF_PERMISSIONS[k].split(":")[0] for k in u.permission_keys),
                              "yes" if u.active else "no"])
     elif group in GROUPS:
         writer.writerow(["Unit", "Name", "Role", "Board role", "Primary contact", "Email", "Phone",

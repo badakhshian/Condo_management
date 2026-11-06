@@ -5,7 +5,7 @@
 <div class="head"><h1>Accounting <span class="muted">· Unit {{ unit.number }}</span></h1>
   <div class="actions">
     <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">Full statement</a>
-    {% if current_user.is_admin %}
+    {% if current_user.can('accounting_edit') %}
     <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">Add charge</a>
     <a class="btn primary" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">Record payment</a>
     {% endif %}

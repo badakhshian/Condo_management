@@ -82,12 +82,14 @@ def test_back_link_follows_where_you_came_from(admin_client):
 
 
 def test_account_pages_back_to_accounts_tab(admin_client):
-    bob = db.session.scalar(db.select(User).where(User.email == "bob@test.com"))
-    accounts = admin_client.get("/directory/accounts?q=bob").data.decode()
-    assert f"/residents/{bob.id}/edit?back=/directory/accounts?q%3Dbob" in accounts or \
-        f"/residents/{bob.id}/edit?back=%2Fdirectory%2Faccounts%3Fq%3Dbob" in accounts
-    page = admin_client.get(f"/residents/{bob.id}/edit?back=/directory/accounts%3Fq%3Dbob")
-    assert back(page) == ("/directory/accounts?q=bob", "Directory")
+    staff = User(email="clean@x.com", name="Sparkle", role="staff")
+    staff.set_password("password123")
+    db.session.add(staff)
+    db.session.commit()
+    accounts = admin_client.get("/directory/accounts?q=sparkle").data.decode()
+    assert f"/residents/{staff.id}/edit?back=" in accounts
+    page = admin_client.get(f"/residents/{staff.id}/edit?back=/directory/accounts%3Fq%3Dsparkle")
+    assert back(page) == ("/directory/accounts?q=sparkle", "Directory")
 
 
 def test_back_param_cannot_leave_the_site(admin_client):

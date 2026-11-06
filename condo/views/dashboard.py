@@ -57,6 +57,15 @@ def index():
                                reimb_waiting=_reimb_waiting(),
                                building=current_building_insurance(current_user))
 
+    if current_user.is_staff:
+        from ..models import STAFF_PERMISSIONS
+        active = []
+        if current_user.can("maintenance"):
+            active = db.session.scalars(db.select(MaintenanceRequest).where(
+                MaintenanceRequest.status.in_(ACTIVE_STATUSES)).order_by(MaintenanceRequest.created_at.desc()).limit(10)).all()
+        return render_template("dashboard_staff.html", perms=STAFF_PERMISSIONS, active_requests=active,
+                               announcements=announcements)
+
     unit = current_user.unit
     my_requests = []
     if unit:

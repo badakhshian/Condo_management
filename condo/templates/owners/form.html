@@ -1,16 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'Edit ' ~ owner.name if owner else 'Add owner' }} · Unit {{ unit.number }}<script>
-  (function () {
-    var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
-    if (!pick || !box) return;
-    pick.addEventListener('change', function () {
-      var opt = pick.options[pick.selectedIndex];
-      if (opt && opt.dataset.address) box.value = opt.dataset.address;
-    });
-  })();
-</script>
-{% endblock %}
+{% block title %}{{ 'Edit ' ~ owner.name if owner else ('Add a tenant' if form.get('role') == 'tenant' else 'Add an owner') }}{% if unit %} · Unit {{ unit.number }}{% endif %}{% endblock %}
 {% block content %}
 <h1>{{ 'Edit ' ~ owner.name if owner else ('Add a tenant' if form.get('role') == 'tenant' else 'Add an owner') }}{% if unit %} <span class="muted">· Unit {{ unit.number }}</span>{% endif %}</h1>
 <form method="post" class="card narrow">
@@ -53,21 +43,6 @@
 {% endif %}
 <script>
   (function () {
-    var role = document.querySelector('[name=role]'), box = document.getElementById('board-positions');
-    if (!role || !box) return;
-    var openToContacts = ['accounting'];
-    function sync() {
-      var r = role.value;
-      box.hidden = r === 'tenant';
-      box.querySelectorAll('[data-position]').forEach(function (el) {
-        var ok = r === 'owner' || r === 'co-owner' || (r === 'contact' && openToContacts.indexOf(el.dataset.position) >= 0);
-        el.hidden = !ok;
-        if (!ok) el.querySelector('input').checked = false;
-      });
-    }
-    role.addEventListener('change', sync); sync();
-  })();
-  (function () {
     var pick = document.getElementById('copy-address'), box = document.getElementById('mailing-address');
     if (!pick || !box) return;
     pick.addEventListener('change', function () {
@@ -76,4 +51,5 @@
     });
   })();
 </script>
+
 {% endblock %}

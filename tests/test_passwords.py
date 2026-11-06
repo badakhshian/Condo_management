@@ -75,7 +75,9 @@ def test_create_login_from_directory(admin_client):
     db.session.commit()
     owners = admin_client.get("/directory/owners").data.decode()
     assert "Create login" in owners and "email=olivia@x.com" in owners
-    assert "has login" in admin_client.get("/directory/tenants").data.decode()
+    tenants = admin_client.get("/directory/tenants").data.decode()
+    bob_id = db.session.scalar(db.select(User.id).where(User.email == "bob@test.com"))
+    assert f"/residents/{bob_id}/password" in tenants and f"/residents/{bob_id}/edit" in tenants
     form = admin_client.get(f"/residents/new?name=Olivia+Owner&email=olivia%40x.com&unit_id={u.id}&role=owner").data.decode()
     assert 'value="Olivia Owner"' in form and 'value="olivia@x.com"' in form and "Generate" in form
     admin_client.post("/residents/new", data={"name": "Olivia Owner", "email": "olivia@x.com", "role": "owner",

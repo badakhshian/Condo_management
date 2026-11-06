@@ -96,6 +96,19 @@ def board_required(view):
     return wrapped
 
 
+def permission_required(permission):
+    """Board members, or staff given this permission."""
+    def decorator(view):
+        @wraps(view)
+        @login_required
+        def wrapped(*args, **kwargs):
+            if not current_user.can(permission):
+                abort(403)
+            return view(*args, **kwargs)
+        return wrapped
+    return decorator
+
+
 def can_access_unit(unit_id):
     return current_user.is_admin or (unit_id is not None and current_user.unit_id == unit_id)
 

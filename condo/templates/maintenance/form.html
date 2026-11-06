@@ -14,8 +14,8 @@
   <fieldset>
     <legend>Location</legend>
     <label class="check"><input type="radio" name="location" value="unit" {{ 'checked' if form.get('location') != 'common' }}>
-      {% if current_user.is_admin %}A unit:{% else %}My unit{% if current_user.unit %} ({{ current_user.unit.number }}){% endif %}{% endif %}</label>
-    {% if current_user.is_admin %}
+      {% if (current_user.is_admin or current_user.is_staff) %}A unit:{% else %}My unit{% if current_user.unit %} ({{ current_user.unit.number }}){% endif %}{% endif %}</label>
+    {% if (current_user.is_admin or current_user.is_staff) %}
       <select name="unit_id"><option value="">Select unit…</option>
         {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}</select>
     {% endif %}

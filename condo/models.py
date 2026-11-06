@@ -15,8 +15,19 @@ ROLES = ("admin", "owner", "tenant")
 # Accounts are owners or tenants. Managing the building comes from holding a board position
 # (Directory > Board). "admin" only remains for the first, temporary account until its person
 # is in the Directory with a board position; it is then converted automatically.
-ROLE_LABELS = {"owner": "Owner", "tenant": "Tenant", "admin": "Administrator (temporary)"}
-ACCOUNT_ROLES = {"owner": "Owner", "tenant": "Tenant"}
+ROLE_LABELS = {"owner": "Owner", "tenant": "Tenant", "staff": "Staff", "admin": "Administrator (temporary)"}
+ACCOUNT_ROLES = {"owner": "Owner", "tenant": "Tenant", "staff": "Staff"}
+RESIDENT_ROLES = {"owner": "Owner", "tenant": "Tenant"}
+
+# What a hired staff account (not an owner or tenant) may be given access to.
+STAFF_PERMISSIONS = {
+    "maintenance": "Repairs: see and update all repair requests",
+    "accounting": "Accounting: view all units, payments and costs",
+    "accounting_edit": "Accounting: record payments, charges and costs",
+    "directory": "Directory: see owners' and tenants' contact details",
+    "documents": "Documents: see all documents, including managers-only ones",
+    "notices": "Notices: post and edit notices",
+}
 
 
 class User(UserMixin, db.Model):
@@ -29,9 +40,33 @@ class User(UserMixin, db.Model):
     unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"))
     active = db.Column(db.Boolean, nullable=False, default=True)
     must_change_password = db.Column(db.Boolean, nullable=False, default=False)
+    job_title = db.Column(db.String(120))      # staff: e.g. "Cleaning company"
+    permissions = db.Column(db.String(300))    # staff: comma-separated STAFF_PERMISSIONS keys
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="residents")
+
+    @property
+    def is_staff(self):
+        return self.role == "staff"
+
+    @property
+    def permission_keys(self):
+        keys = {k.strip() for k in (self.permissions or "").split(",")}
+        return [k for k in STAFF_PERMISSIONS if k in keys]
+
+    @permission_keys.setter
+    def permission_keys(self, keys):
+        self.permissions = ",".join(k for k in STAFF_PERMISSIONS if k in set(keys or ())) or None
+
+    def can(self, permission):
+        """Board members (managers) can do everything; staff only what they were given."""
+        if self.is_admin:
+            return True
+        if not self.is_staff:
+            return False
+        keys = set(self.permission_keys)
+        return permission in keys or (permission == "accounting" and "accounting_edit" in keys)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -74,6 +109,8 @@ class User(UserMixin, db.Model):
     def role_label(self):
         if self.is_board:
             return ", ".join(BOARD_POSITIONS[k] for k in self.board_positions)
+        if self.is_staff and self.job_title:
+            return self.job_title
         return ROLE_LABELS.get(self.role, self.role)
 
 
@@ -555,7 +592,7 @@ class Document(db.Model):
     file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)
 
     def visible_to(self, user):
-        if user.is_admin or self.visibility == "everyone":
+        if user.can("documents") or self.visibility == "everyone":
             return True
         return self.visibility == "owners" and user.role == "owner"
 

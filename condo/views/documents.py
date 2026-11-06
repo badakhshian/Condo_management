@@ -17,7 +17,7 @@ def visible_documents(user, category=None):
         Document.valid_until, Document.document_date, db.func.date(Document.created_at)).desc(), Document.id.desc())
     if category:
         stmt = stmt.where(Document.category == category)
-    if not user.is_admin:
+    if not user.can("documents"):
         allowed = ["everyone"] + (["owners"] if user.role == "owner" else [])
         stmt = stmt.where(Document.visibility.in_(allowed))
     return db.session.scalars(stmt).all()

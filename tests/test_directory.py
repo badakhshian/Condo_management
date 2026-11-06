@@ -1,5 +1,5 @@
 from condo.extensions import db
-from condo.models import Owner, Unit
+from condo.models import Owner, Unit, User
 
 
 def unit(number):
@@ -17,7 +17,7 @@ def test_directory_tabs_and_counts(admin_client):
     page = admin_client.get("/directory/owners").data
     assert b'Owners <span class="count">2</span>' in page
     assert b'Tenants <span class="count">1</span>' in page
-    assert b'Accounts <span class="count">3</span>' in page  # fixture logins: admin, alice, bob
+    assert b'Accounts <span class="count">1</span>' in page  # only non-resident accounts (the temporary admin)
     accounts = admin_client.get("/directory/accounts").data
     assert b"Admin" in accounts and b"Administrator (temporary)" in accounts
     assert b"Directory" in admin_client.get("/").data
@@ -54,7 +54,14 @@ def test_edit_from_directory_returns_to_tab(admin_client):
 
 
 def test_accounts_search_and_export(admin_client):
-    tenants = admin_client.get("/directory/accounts?role=tenant").data.split(b"<tbody>")[1]
-    assert b"Bob" in tenants and b"Admin" not in tenants
+    staff = User(email="clean@x.com", name="Sparkle Cleaning", role="staff", job_title="Cleaning company")
+    staff.set_password("password123")
+    staff.permission_keys = ["maintenance"]
+    db.session.add(staff)
+    db.session.commit()
+    page = admin_client.get("/directory/accounts").data.decode().split("<tbody>")[1]
+    assert "Sparkle Cleaning" in page and "Cleaning company" in page and "Repairs" in page
+    assert "Bob" not in page and "Alice" not in page  # owners and tenants live in their own tabs
+    assert "Sparkle" not in admin_client.get("/directory/accounts?role=accounting").data.decode().split("<tbody>")[1]
     csv = admin_client.get("/directory/accounts/export.csv").data
-    assert b"admin@test.com" in csv and b"bob@test.com" in csv
+    assert b"clean@x.com" in csv and b"Repairs" in csv and b"bob@test.com" not in csv
