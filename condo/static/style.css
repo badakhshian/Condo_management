@@ -68,7 +68,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); o
 fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0 0 1rem; padding: .8rem 1rem .2rem; }
 fieldset > select { margin: -.4rem 0 .9rem; }
 legend { color: var(--muted); padding: 0 .3rem; }
-.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0 1rem; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr)); gap: 0 1rem; }
+.row > * { min-width: 0; }
 .inline { display: inline; }
 .inline-form { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
 .inline-form input { width: auto; margin: 0; }
@@ -216,3 +217,39 @@ tr.muted td { color: var(--muted); }
 .topbar nav::-webkit-scrollbar { display: none; }
 .topbar .user { flex: none; }
 @media (max-width: 760px) { .topbar { flex-wrap: wrap; } .topbar nav { order: 3; flex-basis: 100%; } }
+
+/* ---- Form fields: one height and look in every browser (Safari draws date fields and
+   dropdowns its own way unless told not to). ---- */
+input, select, textarea { box-sizing: border-box; min-width: 0; max-width: 100%; line-height: 1.35;
+  -webkit-appearance: none; appearance: none; }
+input:not([type=checkbox]):not([type=radio]):not([type=file]), select { height: 2.6rem; }
+textarea { min-height: 4.5rem; resize: vertical; }
+input[type=checkbox], input[type=radio] { -webkit-appearance: auto; appearance: auto; width: 1rem; height: 1rem; padding: 0;
+  accent-color: var(--primary); }
+input[type=file] { padding: .45rem .6rem; font-size: .9rem; }
+input[type=file]::file-selector-button { font: inherit; margin-right: .7rem; padding: .3rem .7rem; border-radius: 5px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+select { padding-right: 2.2rem; cursor: pointer; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%238a93a6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .7rem center; background-size: 1rem; }
+input[type=date], input[type=month], input[type=time] { display: block; text-align: left; }
+input::-webkit-date-and-time-value { text-align: left; margin: 0; }
+input::-webkit-datetime-edit { padding: 0; }
+input::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+@media (prefers-color-scheme: dark) { input::-webkit-calendar-picker-indicator { filter: invert(1); } }
+.money-input { position: relative; margin-top: .3rem; }
+.money-input input { margin-top: 0; padding-left: 1.7rem; font-variant-numeric: tabular-nums; }
+.money-input::before { content: "$"; position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.field-hint { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-top: .3rem; font-size: .85rem; font-weight: 400; color: var(--muted); }
+.form-actions { display: flex; align-items: center; gap: .9rem; margin-top: .4rem; }
+form .btn.primary + a { margin-left: 0; }
+.money-input { display: block; }
+.money-input input { margin-top: 0; }
+@media (max-width: 760px) {
+  .topbar { row-gap: .35rem; padding: .5rem .8rem; }
+  .topbar .brand { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .user { gap: .55rem; }
+  .topbar .user .tag { display: none; }
+  .topbar .user > a:not(.bell) { max-width: 7.5rem; overflow: hidden; text-overflow: ellipsis; }
+  .topbar nav { margin: 0 -.3rem; }
+}

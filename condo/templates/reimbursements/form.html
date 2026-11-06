@@ -15,14 +15,14 @@
     <label>Category <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
   <div class="row">
-    <label>Amount ($) <input name="amount" inputmode="decimal" required value="{{ form.get('amount', '') }}"></label>
+    <label>Amount <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
     <label>Date paid <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
   </div>
   <fieldset><legend>How would you like to be reimbursed?</legend>
     {% for k, label in methods.items() %}<label class="check"><input type="radio" name="settle_method" value="{{ k }}" {{ 'checked' if form.get('settle_method') == k }}> {{ label }}</label>{% endfor %}
   </fieldset>
   <label>Receipts / invoice (PDF or photos, up to 4 MB each) <input type="file" name="files" accept="{{ accept }}" multiple required></label>
-  <button class="btn primary">Send to the president</button>
-  <a href="{{ url_for('reimbursements.index') }}">Cancel</a>
+  <div class="form-actions"><button class="btn primary">Send to the president</button>
+  <a href="{{ url_for('reimbursements.index') }}">Cancel</a></div>
 </form>
 {% endblock %}

@@ -130,3 +130,15 @@ def test_purchase_credit_is_also_a_cost_and_opening_not_billed(admin_client):
     units = page.split("<h2>Units</h2>")[1]
     row = units.split(">102<")[1].split("</tr>")[0]
     assert "$327.00" in row  # billed excludes the opening balance
+
+
+def test_payment_form_defaults_and_note(admin_client):
+    page = admin_client.get("/accounting/payments/new").data.decode()
+    assert 'value="bank transfer" selected' in page and "Interac e-Transfer" in page
+    assert 'class="money-input"' in page and "data-balance=" in page
+    resp = admin_client.post("/accounting/payments/new", data={"unit_id": str(unit("101").id), "amount": "341.03",
+                                                               "paid_on": "2026-11-03", "method": "bank transfer",
+                                                               "notes": "November condo fee"})
+    assert resp.status_code == 302
+    p = db.session.scalar(db.select(Payment).where(Payment.notes == "November condo fee"))
+    assert p.amount_cents == 34103 and p.label == "November condo fee"

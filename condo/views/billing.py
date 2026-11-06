@@ -5,7 +5,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import (CHARGE_KINDS, COST_CATEGORIES, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment,
+from ..models import (CHARGE_KINDS, COST_CATEGORIES, PAYMENT_METHOD_LABELS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment,
                       Setting, Unit, guess_cost_category)
 from ..utils import admin_required, can_access_unit, parse_date, parse_money
 
@@ -277,17 +277,18 @@ def new_payment():
             errors.append(str(e))
         if not errors:
             db.session.add(Payment(unit=unit, amount_cents=amount, paid_on=paid_on, method=method,
-                                   reference=request.form.get("reference", "").strip() or None,
+                                   reference=request.form.get("reference", "").strip()[:80] or None,
+                                   notes=request.form.get("notes", "").strip()[:255] or None,
                                    recorded_by_id=current_user.id))
             db.session.commit()
             flash(f"Payment recorded for unit {unit.number}.", "success")
             return redirect(url_for("billing.ledger", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
-        return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHODS,
+        return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHOD_LABELS,
                                form=request.form), 400
-    form = {"unit_id": request.args.get("unit_id", ""), "paid_on": date.today().isoformat()}
-    return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHODS, form=form)
+    form = {"unit_id": request.args.get("unit_id", ""), "paid_on": date.today().isoformat(), "method": "bank transfer"}
+    return render_template("billing/payment_form.html", units=_units(), methods=PAYMENT_METHOD_LABELS, form=form)
 
 
 @bp.route("/charges/<int:charge_id>/delete", methods=["POST"])

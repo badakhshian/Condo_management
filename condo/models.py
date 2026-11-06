@@ -179,6 +179,9 @@ class Charge(db.Model):
 
 
 PAYMENT_METHODS = ("check", "bank transfer", "card", "cash", "purchase credit", "other")
+PAYMENT_METHOD_LABELS = {"bank transfer": "Interac e-Transfer / bank transfer", "check": "Cheque", "card": "Card",
+                         "cash": "Cash", "purchase credit": "Credit for a purchase (owner paid a cost)",
+                         "other": "Other"}
 
 
 class Payment(db.Model):
