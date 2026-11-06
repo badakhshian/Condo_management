@@ -175,3 +175,6 @@ form .btn.primary + a { margin-left: .8rem; }
 .panel-out { border-top: 3px solid var(--danger); }
 .cat-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
 tr.muted td { color: var(--muted); }
+.back-link { display: inline-flex; align-items: center; gap: .3rem; margin: -.4rem 0 .5rem; font-size: .92rem;
+  color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--primary); text-decoration: none; }

@@ -74,7 +74,10 @@ def create_app(test_config=None):
     @app.context_processor
     def inject_globals():
         from datetime import date
+
+        from .navigation import back_link
         return {"condo_name": app.config["CONDO_NAME"], "ephemeral_db": app.config["EPHEMERAL_DB"],
+                "back": back_link(),
                 "today": date.today(), "nav_board": _nav_board(),
                 "STATUS_LABELS": models.REQUEST_STATUSES, "PRIORITY_LABELS": models.REQUEST_PRIORITIES}
 
