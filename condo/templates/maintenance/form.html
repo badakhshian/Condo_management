@@ -1,12 +1,23 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}New maintenance request{% endblock %}
+{% set project = kind == 'project' %}
+{% block title %}{{ 'New project' if project else 'New maintenance request' }}{% endblock %}
 {% block content %}
-<h1>New maintenance request</h1>
+<h1>{{ 'New project' if project else 'New maintenance request' }}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
+  <input type="hidden" name="kind" value="{{ kind }}">
+  {% if project %}
+  <label>Project <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="e.g. Roof replacement"></label>
+  <label>Details <textarea name="description" rows="5" required placeholder="Scope of the work, contractors consulted, how it will be paid for…">{{ form.get('description', '') }}</textarea></label>
+  <div class="row">
+    <label>Budget <span class="muted">(optional)</span> <span class="money-input"><input name="budget" inputmode="decimal" placeholder="0.00" value="{{ form.get('budget', '') }}"></span></label>
+    <label>Target date <span class="muted">(optional)</span> <input type="date" name="target_date" value="{{ form.get('target_date', '') }}"></label>
+  </div>
+  {% else %}
   <label>What's the problem? <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="e.g. Leaking faucet in bathroom"></label>
   <label>Details <textarea name="description" rows="5" required placeholder="When did it start? Where exactly? Best times to access the unit?">{{ form.get('description', '') }}</textarea></label>
+  {% endif %}
   <div class="row">
     <label>Category <select name="category">{% for c in categories %}<option {{ 'selected' if form.get('category') == c }}>{{ c }}</option>{% endfor %}</select></label>
     <label>Priority <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if form.get('priority') == k }}>{{ label }}</option>{% endfor %}</select></label>
@@ -19,9 +30,9 @@
       <select name="unit_id"><option value="">Select unit…</option>
         {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}</select>
     {% endif %}
-    <label class="check"><input type="radio" name="location" value="common" {{ 'checked' if form.get('location') == 'common' }}> Common area</label>
+    <label class="check"><input type="radio" name="location" value="common" {{ 'checked' if form.get('location') == 'common' }}> {{ 'Whole building / common area' if project else 'Common area' }}</label>
   </fieldset>
-  <button class="btn primary">Submit request</button>
-  <a href="{{ url_for('maintenance.index') }}">Cancel</a>
+  <button class="btn primary">{{ 'Add project' if project else 'Submit request' }}</button>
+  <a href="{{ url_for('maintenance.index', tab='projects' if project else 'maintenance') }}">Cancel</a>
 </form>
 {% endblock %}

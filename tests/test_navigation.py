@@ -35,7 +35,7 @@ def test_detail_pages_point_to_their_parent(admin_client):
         f"/accounting/unit/{u.id}": ("/accounting/", "Accounting"),
         "/accounting/costs/new": ("/accounting/", "Accounting"),
         "/accounting/payments/new": ("/accounting/", "Accounting"),
-        "/maintenance/new": ("/maintenance/", "Maintenance"),
+        "/maintenance/new": ("/maintenance/?tab=maintenance", "Maintenance"),
         "/documents/new": ("/documents/", "Documents"),
         "/announcements/new": ("/announcements/", "Notices"),
         "/residents/new": ("/directory/accounts", "Accounts"),
@@ -54,7 +54,7 @@ def test_resident_back_links_go_to_dashboard(alice_client):
     db.session.add(req)
     db.session.commit()
     assert back(alice_client.get(f"/accounting/unit/{u.id}")) == ("/accounting/", "Accounting")
-    assert back(alice_client.get(f"/maintenance/{req.id}")) == ("/maintenance/", "Maintenance")
+    assert back(alice_client.get(f"/maintenance/{req.id}")) == ("/maintenance/?tab=maintenance", "Maintenance")
 
 
 def test_back_link_follows_where_you_came_from(admin_client):

@@ -16,7 +16,7 @@
   <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>Units ({{ stats.occupied }} occupied)</a>
   <a class="stat" href="{{ url_for('directory.index') }}"><span>{{ stats.people }}</span>Owners &amp; tenants</a>
   <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>Outstanding dues</a>
-  <a class="stat" href="{{ url_for('maintenance.index') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
+  <a class="stat" href="{{ url_for('maintenance.index', tab='maintenance') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
 </div>
 {% if reimb_waiting %}
 <section class="card building-insurance">

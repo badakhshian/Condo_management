@@ -13,7 +13,7 @@
   </section>
   {% if current_user.can('maintenance') %}
   <section class="card">
-    <h2>Active repairs <a class="btn small" href="{{ url_for('maintenance.index') }}">All</a></h2>
+    <h2>Active repairs <a class="btn small" href="{{ url_for('maintenance.index', tab='maintenance') }}">All</a></h2>
     {% if active_requests %}<ul class="list">{% for r in active_requests %}
       <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
         <span class="muted">· {{ 'Unit ' ~ r.unit.number if r.unit else 'Common area' }}</span>

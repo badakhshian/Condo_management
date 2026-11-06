@@ -308,6 +308,10 @@ class MaintenanceRequest(db.Model):
     quote_decided_by = db.Column(db.String(200))
     quote_decided_at = db.Column(db.DateTime)
     quote_decision_note = db.Column(db.Text)
+    # 'maintenance' (a repair or upkeep request) or 'project' (planned building work, e.g. a roof).
+    kind = db.Column(db.String(20), nullable=False, default="maintenance", server_default="maintenance")
+    budget_cents = db.Column(db.Integer)   # projects: expected cost
+    target_date = db.Column(db.Date)       # projects: when it should be done
 
     unit = db.relationship("Unit")
     submitted_by = db.relationship("User")
@@ -322,6 +326,10 @@ class MaintenanceRequest(db.Model):
     @property
     def awaiting_owner(self):
         return self.status == "awaiting_owner"
+
+    @property
+    def is_project(self):
+        return self.kind == "project"
 
 
 class MaintenanceComment(db.Model):

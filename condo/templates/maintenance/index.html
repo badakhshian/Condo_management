@@ -1,15 +1,37 @@
 {% extends "base.html" %}
 {% from "_macros.html" import status_badge, priority_badge %}
-{% block title %}Maintenance{% endblock %}
+{% block title %}{{ tabs[tab] }}{% endblock %}
 {% block content %}
-<div class="head"><h1>Maintenance requests</h1><a class="btn primary" href="{{ url_for('maintenance.new') }}">New request</a></div>
+<div class="head"><h1>Projects &amp; Maintenance</h1>
+  {% if tab == 'projects' %}{% if can_add_projects %}<a class="btn primary" href="{{ url_for('maintenance.new', kind='project') }}">New project</a>{% endif %}
+  {% else %}<a class="btn primary" href="{{ url_for('maintenance.new') }}">New request</a>{% endif %}</div>
+<nav class="section-tabs">
+  {% for key, label in tabs.items() %}
+    <a href="{{ url_for('maintenance.index', tab=key) }}" class="{{ 'active' if tab == key }}">{{ label }}{% if counts[key] %} <span class="count">{{ counts[key] }}</span>{% endif %}</a>
+  {% endfor %}
+</nav>
 <nav class="tabs">
   {% for key, label in [('active', 'Active')] + statuses.items()|list + [('all', 'All')] %}
-    <a href="{{ url_for('maintenance.index', status=key) }}" class="{{ 'active' if status == key }}">{{ label }}</a>
+    {% if tab == 'maintenance' or key not in ('awaiting_owner', 'quote_requested', 'quote_review', 'owner_repair') %}
+    <a href="{{ url_for('maintenance.index', tab=tab, status=key) }}" class="{{ 'active' if status == key }}">{{ label }}</a>
+    {% endif %}
   {% endfor %}
 </nav>
 <div class="card">
 <table>
+  {% if tab == 'projects' %}
+  <thead><tr><th>#</th><th>Project</th><th>Location</th><th class="num">Budget</th><th>Target date</th><th>Status</th><th>Added</th></tr></thead>
+  <tbody>
+  {% for r in requests %}
+    <tr><td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a> <span class="muted">· {{ r.category }}</span></td>
+      <td>{{ 'Unit ' ~ r.unit.number if r.unit else 'Building' }}</td>
+      <td class="num">{{ r.budget_cents|money if r.budget_cents is not none else '—' }}</td>
+      <td class="nowrap">{{ r.target_date.strftime('%b %d, %Y') if r.target_date else '—' }}</td>
+      <td>{{ status_badge(r.status, statuses) }}</td>
+      <td>{{ r.created_at.strftime('%Y-%m-%d') }} <span class="muted">· {{ r.submitted_by.name }}</span></td></tr>
+  {% else %}<tr><td colspan="7" class="muted">No projects{{ '' if status == 'all' else ' here' }}.{% if can_add_projects %} Projects are planned work for the building, such as a roof, windows or a renovation.{% endif %}</td></tr>{% endfor %}
+  </tbody>
+  {% else %}
   <thead><tr><th>#</th><th>Title</th><th>Location</th><th>Category</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
   <tbody>
   {% for r in requests %}
@@ -19,6 +41,7 @@
       <td>{{ r.created_at.strftime('%Y-%m-%d') }} <span class="muted">· {{ r.submitted_by.name }}</span></td></tr>
   {% else %}<tr><td colspan="7" class="muted">No requests.</td></tr>{% endfor %}
   </tbody>
+  {% endif %}
 </table>
 </div>
 {% endblock %}

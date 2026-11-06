@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, status_badge, priority_badge, post_button %}
-{% block title %}Request #{{ req.id }}{% endblock %}
+{% block title %}{{ 'Project' if req.is_project else 'Request' }} #{{ req.id }}{% endblock %}
 {% block content %}
 <div class="head"><h1>#{{ req.id }} · {{ req.title }}</h1>
   <div>{{ priority_badge(req.priority, priorities) }} {{ status_badge(req.status, statuses) }}</div></div>
 <div class="grid two wide-left">
   <section>
     <div class="card">
-      <p class="muted">{{ 'Unit ' ~ req.unit.number if req.unit else 'Common area' }} · {{ req.category }} ·
+      {% if req.is_project and (req.budget_cents is not none or req.target_date) %}<div class="project-facts">
+        {% if req.budget_cents is not none %}<div><span>{{ req.budget_cents|money }}</span>Budget</div>{% endif %}
+        {% if req.target_date %}<div><span>{{ req.target_date.strftime('%b %d, %Y') }}</span>Target date</div>{% endif %}
+      </div>{% endif %}
+      <p class="muted">{% if req.is_project %}<span class="tag">Project</span> {% endif %}{{ 'Unit ' ~ req.unit.number if req.unit else 'Common area' }} · {{ req.category }} ·
         submitted by {{ req.submitted_by.name }} on {{ req.created_at.strftime('%b %d, %Y %H:%M') }}</p>
       <div class="prose">{{ req.description }}</div>
     </div>
@@ -122,6 +126,25 @@
       <p class="muted">Last updated {{ req.updated_at.strftime('%b %d, %Y') }}.</p>
     {% endif %}
     </div>
+    {% if can_projects %}
+    <div class="card">
+      {% if req.is_project %}
+      <h2>Project</h2>
+      <form method="post" action="{{ url_for('maintenance.project_details', request_id=req.id) }}">
+        {{ csrf() }}<input type="hidden" name="kind" value="project">
+        <label>Budget <span class="money-input"><input name="budget" inputmode="decimal" placeholder="optional"
+          value="{{ '%.2f'|format(req.budget_cents / 100) if req.budget_cents is not none }}"></span></label>
+        <label>Target date <input type="date" name="target_date" value="{{ req.target_date.isoformat() if req.target_date }}"></label>
+        <button class="btn">Save</button>
+      </form>
+      {{ post_button(url_for('maintenance.project_details', request_id=req.id), 'Move to Maintenance', cls='link-btn', extra={'kind': 'maintenance'}) }}
+      {% else %}
+      <h2>Filed under Maintenance</h2>
+      <p class="muted">Is this bigger planned work for the building?</p>
+      {{ post_button(url_for('maintenance.project_details', request_id=req.id), 'Move to Projects', cls='btn', extra={'kind': 'project'}) }}
+      {% endif %}
+    </div>
+    {% endif %}
   </aside>
 </div>
 {% endblock %}

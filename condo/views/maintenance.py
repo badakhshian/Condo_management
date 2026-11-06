@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 
 from .. import files, notify
 from ..extensions import db
-from ..utils import board_positions_of, parse_money
+from ..utils import board_positions_of, parse_date, parse_money
 from ..models import (ACTIVE_STATUSES, QUOTE_STATUSES, REQUEST_CATEGORIES, REQUEST_PRIORITIES, REQUEST_STATUSES,
                       MaintenanceComment, MaintenanceRequest, Unit, User, utcnow)
 
@@ -15,10 +15,26 @@ def is_board(user=None):
     return user.is_admin or bool(board_positions_of(user))
 
 
+TABS = {"projects": "Projects", "maintenance": "Maintenance"}
+KIND_OF_TAB = {"projects": "project", "maintenance": "maintenance"}
+
+
+def sees_all(user=None):
+    user = user or current_user
+    return is_board(user) or user.can("maintenance")
+
+
+def can_add_projects(user=None):
+    """Projects are building work the board plans; residents follow them but don't create them."""
+    return sees_all(user)
+
+
 def _visible(req):
-    """The board and repair staff see everything; residents see their unit's requests and their own."""
-    return (is_board() or current_user.can("maintenance") or req.submitted_by_id == current_user.id
-            or (req.unit_id is not None and req.unit_id == current_user.unit_id))
+    """The board and repair staff see everything; residents see their unit's requests, their own,
+    and the building's projects."""
+    return (sees_all() or req.submitted_by_id == current_user.id
+            or (req.unit_id is not None and req.unit_id == current_user.unit_id)
+            or (req.kind == "project" and req.unit_id is None))
 
 
 def _url(req):
@@ -34,19 +50,28 @@ def _tell_unit_side(req, title, body=None):
 @bp.route("/")
 @login_required
 def index():
+    tab = request.args.get("tab", "projects")
+    if tab not in TABS:
+        tab = "projects"
     status = request.args.get("status", "active")
-    stmt = db.select(MaintenanceRequest).order_by(MaintenanceRequest.created_at.desc())
-    if not (is_board() or current_user.can("maintenance")):
-        conds = [MaintenanceRequest.submitted_by_id == current_user.id]
+    base = db.select(MaintenanceRequest)
+    if not sees_all():
+        conds = [MaintenanceRequest.submitted_by_id == current_user.id,
+                 db.and_(MaintenanceRequest.kind == "project", MaintenanceRequest.unit_id.is_(None))]
         if current_user.unit_id:
             conds.append(MaintenanceRequest.unit_id == current_user.unit_id)
-        stmt = stmt.where(db.or_(*conds))
+        base = base.where(db.or_(*conds))
+    counts = {key: db.session.scalar(db.select(db.func.count()).select_from(
+        base.where(MaintenanceRequest.kind == kind, MaintenanceRequest.status.in_(ACTIVE_STATUSES)).subquery()))
+        for key, kind in KIND_OF_TAB.items()}
+    stmt = base.where(MaintenanceRequest.kind == KIND_OF_TAB[tab]).order_by(MaintenanceRequest.created_at.desc())
     if status == "active":
         stmt = stmt.where(MaintenanceRequest.status.in_(ACTIVE_STATUSES))
     elif status in REQUEST_STATUSES:
         stmt = stmt.where(MaintenanceRequest.status == status)
     requests_ = db.session.scalars(stmt).all()
-    return render_template("maintenance/index.html", requests=requests_, status=status,
+    return render_template("maintenance/index.html", requests=requests_, status=status, tab=tab, tabs=TABS,
+                           counts=counts, can_add_projects=can_add_projects(),
                            statuses=REQUEST_STATUSES, priorities=REQUEST_PRIORITIES)
 
 
@@ -55,6 +80,8 @@ def index():
 def new():
     picks_unit = current_user.is_admin or current_user.is_staff
     units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if picks_unit else []
+    values = request.form if request.method == "POST" else request.args
+    kind = "project" if values.get("kind") == "project" and can_add_projects() else "maintenance"
     if request.method == "POST":
         errors = []
         title = request.form.get("title", "").strip()
@@ -70,6 +97,18 @@ def new():
             errors.append("Choose a category.")
         if priority not in REQUEST_PRIORITIES:
             errors.append("Choose a priority.")
+        budget = target = None
+        if kind == "project":
+            if request.form.get("budget", "").strip():
+                try:
+                    budget = parse_money(request.form.get("budget"))
+                except ValueError as e:
+                    errors.append(f"Budget: {e}")
+            if request.form.get("target_date", "").strip():
+                try:
+                    target = parse_date(request.form.get("target_date"), "Target date")
+                except ValueError as e:
+                    errors.append(str(e))
 
         unit_id = None
         if location == "unit":
@@ -86,9 +125,10 @@ def new():
                 unit_id = current_user.unit_id
 
         if not errors:
-            req = MaintenanceRequest(title=title, description=description, category=category,
-                                     priority=priority, unit_id=unit_id, submitted_by_id=current_user.id)
-            needs_owner = needs_owner_approval(current_user, unit_id)
+            req = MaintenanceRequest(title=title, description=description, category=category, kind=kind,
+                                     priority=priority, unit_id=unit_id, submitted_by_id=current_user.id,
+                                     budget_cents=budget, target_date=target)
+            needs_owner = kind == "maintenance" and needs_owner_approval(current_user, unit_id)
             if needs_owner:
                 req.status, req.owner_approval = "awaiting_owner", "pending"
             db.session.add(req)
@@ -97,19 +137,24 @@ def new():
             if needs_owner:
                 notify.send(notify.unit_owner_accounts(unit_id), f"Your tenant asked for a repair: {title}",
                             url=_url(req), body=f"{current_user.name}: {description}", kind="maintenance")
+            elif kind == "project":
+                notify.send([u for u in notify.admins() if u.id != current_user.id],
+                            f"New project ({where}): {title}", url=_url(req),
+                            body=f"{current_user.name}: {description}", kind="maintenance")
             else:
                 notify.send(notify.admins(), f"New repair request ({where}): {title}", url=_url(req),
                             body=f"{current_user.name}: {description}", kind="maintenance")
             db.session.commit()
             flash("Request sent to the unit's owner for approval." if needs_owner
-                  else "Maintenance request submitted.", "success")
+                  else "Project added." if kind == "project" else "Maintenance request submitted.", "success")
             return redirect(url_for("maintenance.detail", request_id=req.id))
         for e in errors:
             flash(e, "error")
-        return render_template("maintenance/form.html", form=request.form, units=units,
+        return render_template("maintenance/form.html", form=request.form, units=units, kind=kind,
                                categories=REQUEST_CATEGORIES, priorities=REQUEST_PRIORITIES), 400
-    return render_template("maintenance/form.html", form={"priority": "normal", "location": "unit"},
-                           units=units, categories=REQUEST_CATEGORIES, priorities=REQUEST_PRIORITIES)
+    return render_template("maintenance/form.html", units=units, kind=kind,
+                           form={"priority": "normal", "location": "common" if kind == "project" else "unit"},
+                           categories=REQUEST_CATEGORIES, priorities=REQUEST_PRIORITIES)
 
 
 def needs_owner_approval(user, unit_id):
@@ -144,7 +189,8 @@ def detail(request_id):
     owners = owner_accounts(req.unit_id) if req.awaiting_owner and req.unit_id else []
     return render_template("maintenance/detail.html", req=req, statuses=REQUEST_STATUSES,
                            priorities=REQUEST_PRIORITIES, can_decide=can_decide(req), owner_accounts=owners,
-                           board=is_board(), unit_owner=is_unit_owner(req), accept=files.ACCEPT)
+                           board=is_board(), unit_owner=is_unit_owner(req), accept=files.ACCEPT,
+                           can_projects=can_add_projects())
 
 
 def is_unit_owner(req, user=None):
@@ -278,6 +324,45 @@ def owner_decision(request_id):
     db.session.commit()
     flash(f"Repair {verb}." + (" The manager can now schedule it." if decision == "approve" else ""), "success")
     return redirect(url_for("maintenance.detail", request_id=req.id))
+
+
+@bp.route("/<int:request_id>/project", methods=["POST"])
+@login_required
+def project_details(request_id):
+    """The board files an item under Projects or Maintenance and sets a project's budget and target date."""
+    req = _get_visible(request_id)
+    if not can_add_projects():
+        abort(403)
+    kind = request.form.get("kind", req.kind)
+    if kind not in ("project", "maintenance"):
+        abort(400)
+    errors, budget, target = [], None, None
+    if kind == "project":
+        if request.form.get("budget", "").strip():
+            try:
+                budget = parse_money(request.form.get("budget"))
+            except ValueError as e:
+                errors.append(f"Budget: {e}")
+        if request.form.get("target_date", "").strip():
+            try:
+                target = parse_date(request.form.get("target_date"), "Target date")
+            except ValueError as e:
+                errors.append(str(e))
+    if errors:
+        for e in errors:
+            flash(e, "error")
+        return redirect(_url(req))
+    moved = kind != req.kind
+    req.kind = kind
+    if kind == "project":
+        req.budget_cents, req.target_date = budget, target
+    if moved:
+        db.session.add(MaintenanceComment(request=req, author_id=current_user.id,
+                                          body=f"Moved to {'Projects' if kind == 'project' else 'Maintenance'}."))
+    db.session.commit()
+    flash("Moved to Projects." if moved and kind == "project" else "Moved to Maintenance." if moved
+          else "Project details saved.", "success")
+    return redirect(_url(req))
 
 
 @bp.route("/<int:request_id>/comment", methods=["POST"])
