@@ -34,8 +34,7 @@
       <option value="">— Type a new address —</option>
       {% if same and unit %}<optgroup label="Unit {{ unit.number }}">{% for o in same %}
         <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
-      {% if other %}<optgroup label="{{ 'Other units' if unit else 'Owners and tenants' }}">{% for o in other %}
-        <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} (unit {{ o.unit.number }}) — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
+
     </select></label>
   {% endif %}
   <label>Mailing address <textarea name="mailing_address" id="mailing-address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>

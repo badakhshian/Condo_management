@@ -12,7 +12,7 @@ bp = Blueprint("owners", __name__)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-def _apply_form(owner, form):
+def _apply_form(owner, form, unit=None):
     errors = []
     name = form.get("name", "").strip()
     email = form.get("email", "").strip().lower()
@@ -30,9 +30,12 @@ def _apply_form(owner, form):
     owner.phone = form.get("phone", "").strip()[:60] or None
     address = form.get("mailing_address", "").strip()
     source_id = form.get("copy_address_from", "")
+    target_unit_id = unit.id if unit is not None else owner.unit_id
     if not address and source_id.isdigit():
         source = db.session.get(Owner, int(source_id))
-        if source is not None and source.mailing_address:
+        # Privacy: an address can only be copied from someone in the same unit.
+        if source is not None and source.mailing_address and target_unit_id is not None \
+                and source.unit_id == target_unit_id:
             address = source.mailing_address
     owner.mailing_address = address or None
     owner.role = role
@@ -60,22 +63,23 @@ def claim_single_positions(owner):
 
 
 def address_sources(unit, owner=None):
-    """Owners with an address that can be copied: same unit first, then the rest of the building.
-    Each distinct address appears once per group."""
+    """Addresses that can be copied into this form: only from people in the same unit, so
+    nobody sees another unit's owners' addresses. Each distinct address appears once.
+    Returns (same_unit, []) — the second list is kept for the template's shape."""
+    if unit is None:
+        return [], []
     rows = db.session.scalars(
-        db.select(Owner).join(Unit).where(Owner.mailing_address.is_not(None), Owner.mailing_address != "")
-        .order_by(Unit.number, Owner.name)).all()
-    same, other, seen = [], [], set()
+        db.select(Owner).where(Owner.unit_id == unit.id, Owner.mailing_address.is_not(None),
+                               Owner.mailing_address != "").order_by(Owner.name)).all()
+    same, seen = [], set()
     for o in rows:
         if owner is not None and o.id == owner.id:
             continue
-        group = same if unit is not None and o.unit_id == unit.id else other
-        key = (group is same, o.mailing_address.strip().lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        group.append(o)
-    return same, other
+        key = o.mailing_address.strip().lower()
+        if key not in seen:
+            seen.add(key)
+            same.append(o)
+    return same, []
 
 
 def _only_one_primary(owner):
@@ -125,7 +129,7 @@ def new(unit_id, default_role=None, from_directory=False):
     owner = Owner(role=default_role, is_primary=not unit.owners)  # attached to the unit only once valid
     units = _units() if from_directory else None
     if request.method == "POST":
-        errors = _apply_form(owner, request.form)
+        errors = _apply_form(owner, request.form, unit=unit)
         if not errors:
             owner.unit = unit
             db.session.add(owner)

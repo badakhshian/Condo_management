@@ -71,7 +71,8 @@ def test_copy_address_from_another_owner(admin_client):
     db.session.add_all([src, Owner(unit=u102, name="Bob", role="owner", mailing_address="9 Oak Ave")])
     db.session.commit()
     page = admin_client.get(f"/units/{u101.id}/owners/new").data
-    assert b'<optgroup label="Unit 101">' in page and b"Alice Chen" in page and b"(unit 102)" in page
+    assert b'<optgroup label="Unit 101">' in page and b"Alice Chen" in page
+    assert b"9 Oak Ave" not in page and b"Bob" not in page  # other units' addresses are never shown
 
     # Without JavaScript: choosing a source with an empty address box copies it on the server.
     admin_client.post(f"/units/{u101.id}/owners/new",
@@ -111,3 +112,21 @@ def test_unit_page_collapses_shared_address(admin_client):
     page = admin_client.get(f"/units/{u.id}").data.decode()
     assert page.count("1000 Rue Levert, Apt. 715") == 1
     assert "Same address as Mostafa Badakhshian" in page and "(514) 566-4383" in page
+
+
+
+def test_cannot_copy_address_from_another_unit(admin_client):
+    other = Owner(unit=unit("102"), name="Bob", role="owner", mailing_address="9 Oak Ave")
+    db.session.add(other)
+    db.session.commit()
+    u101 = unit("101")
+    # Even a hand-crafted request can't pull another unit's address.
+    admin_client.post(f"/units/{u101.id}/owners/new",
+                      data={"name": "Sneaky", "role": "owner", "copy_address_from": str(other.id)})
+    assert db.session.scalar(db.select(Owner).where(Owner.name == "Sneaky")).mailing_address is None
+    sneaky = db.session.scalar(db.select(Owner).where(Owner.name == "Sneaky"))
+    admin_client.post(f"/owners/{sneaky.id}/edit",
+                      data={"name": "Sneaky", "role": "owner", "copy_address_from": str(other.id)})
+    assert db.session.get(Owner, sneaky.id).mailing_address is None
+    # The Directory's add form shows no list until the unit is known.
+    assert b"copy_address_from" not in admin_client.get("/directory/owners/new").data
