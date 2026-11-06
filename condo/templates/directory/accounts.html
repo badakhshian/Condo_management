@@ -26,7 +26,9 @@
       <td><span class="tag">{{ u.role_label }}</span></td>
       <td>{% if u.unit %}<a href="{{ url_for('units.detail', unit_id=u.unit.id) }}">{{ u.unit.number }}</a>{% else %}—{% endif %}</td>
       <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td><td>{{ u.phone or '—' }}</td>
-      <td><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id) }}">Edit</a></td></tr>
+      <td class="actions nowrap"><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id) }}">Edit</a>
+        {% if u.id != current_user.id %}<a class="btn small" href="{{ url_for('residents.set_password', user_id=u.id) }}">Set password</a>{% endif %}
+        {% if u.must_change_password %}<span class="tag" title="Will choose their own password at next sign-in">temporary</span>{% endif %}</td></tr>
   {% else %}<tr><td colspan="6" class="muted">No matches.</td></tr>{% endfor %}
   </tbody>
 </table>

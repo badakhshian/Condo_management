@@ -2,7 +2,7 @@
 
 `db.create_all()` creates missing tables but never adds columns to tables that
 already exist. Each entry below is a column added after the first release; it is
-added with ALTER TABLE when absent. Only nullable columns belong here, so the
+added with ALTER TABLE when absent. Only nullable columns (or ones with a DEFAULT) belong here, so the
 upgrade is safe on tables that already hold rows.
 """
 from sqlalchemy import inspect, text
@@ -23,6 +23,7 @@ ADDED_COLUMNS = [
     ("insurance_policy", "unit_id", "INTEGER"),
     ("insurance_policy", "holder_group", "VARCHAR(10)"),
     ("expense", "category", "VARCHAR(20)"),
+    ("user", "must_change_password", "BOOLEAN NOT NULL DEFAULT FALSE"),
     ("maintenance_request", "quote_note", "TEXT"),
     ("maintenance_request", "quote_vendor", "VARCHAR(200)"),
     ("maintenance_request", "quote_amount_cents", "INTEGER"),

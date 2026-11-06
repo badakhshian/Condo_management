@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default="owner")
     unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"))
     active = db.Column(db.Boolean, nullable=False, default=True)
+    must_change_password = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="residents")

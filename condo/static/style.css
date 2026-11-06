@@ -253,3 +253,11 @@ form .btn.primary + a { margin-left: 0; }
   .topbar .user > a:not(.bell) { max-width: 7.5rem; overflow: hidden; text-overflow: ellipsis; }
   .topbar nav { margin: 0 -.3rem; }
 }
+.pw-field { display: flex; gap: .5rem; align-items: center; margin-top: .3rem; }
+.pw-field input { margin-top: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 1.2rem; margin: .4rem 0 1rem; }
+.choice > div { border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1rem; }
+.choice h2 { font-size: 1rem; }
+.secret { display: flex; align-items: center; gap: .8rem; margin: .8rem 0; padding: .8rem 1rem; border-radius: 8px;
+  background: var(--bg); border: 1px dashed var(--border); }
+.secret code { font-size: 1.25rem; letter-spacing: .04em; flex: 1; user-select: all; }

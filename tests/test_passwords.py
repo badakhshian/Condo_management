@@ -1,0 +1,83 @@
+import re
+
+from condo.extensions import db
+from condo.models import Owner, Unit, User
+from condo.views.residents import generate_password
+
+from .conftest import login
+
+
+def user(email):
+    return db.session.scalar(db.select(User).where(User.email == email))
+
+
+def test_generated_passwords_are_readable_and_strong():
+    pw = generate_password()
+    assert re.fullmatch(r"[A-Za-z2-9]{4}-[A-Za-z2-9]{4}-[A-Za-z2-9]{4}", pw)
+    assert not set(pw) & set("0O1lI")
+    assert len({generate_password() for _ in range(50)}) == 50
+
+
+def test_board_generates_password_shown_once_and_forces_change(admin_client, client):
+    bob = user("bob@test.com")
+    page = admin_client.post(f"/residents/{bob.id}/password", data={"action": "generate", "must_change": "on"})
+    html = page.data.decode()
+    pw = re.search(r'<code id="secret">([^<]+)</code>', html).group(1)
+    assert "won't be shown again" in html
+    bob = user("bob@test.com")
+    assert bob.check_password(pw) and bob.must_change_password
+    assert pw not in admin_client.get("/directory/accounts").data.decode()
+    assert "temporary" in admin_client.get("/directory/accounts").data.decode()
+
+    admin_client.post("/logout")
+    resp = client.post("/login", data={"email": "bob@test.com", "password": pw})
+    assert resp.headers["Location"] == "/account"
+    assert client.get("/maintenance/").headers["Location"] == "/account"  # locked until changed
+    resp = client.post("/account", data={"current_password": pw, "new_password": pw, "confirm_password": pw})
+    assert resp.status_code == 400  # must differ
+    client.post("/account", data={"current_password": pw, "new_password": "my-own-pass-9",
+                                  "confirm_password": "my-own-pass-9"})
+    bob = user("bob@test.com")
+    assert not bob.must_change_password and bob.check_password("my-own-pass-9")
+    assert client.get("/maintenance/").status_code == 200
+
+
+def test_board_types_a_password(admin_client):
+    bob = user("bob@test.com")
+    resp = admin_client.post(f"/residents/{bob.id}/password", data={"action": "set", "password": "short",
+                                                                    "confirm": "short"})
+    assert resp.status_code == 400
+    resp = admin_client.post(f"/residents/{bob.id}/password", data={"action": "set", "password": "longenough1",
+                                                                    "confirm": "different1"})
+    assert resp.status_code == 400
+    admin_client.post(f"/residents/{bob.id}/password", data={"action": "set", "password": "longenough1",
+                                                             "confirm": "longenough1"})
+    bob = user("bob@test.com")
+    assert bob.check_password("longenough1") and not bob.must_change_password
+
+
+def test_own_password_not_changed_here(admin_client):
+    admin = user("admin@test.com")
+    resp = admin_client.post(f"/residents/{admin.id}/password", data={"action": "generate"})
+    assert resp.headers["Location"] == "/account" and user("admin@test.com").check_password("password123")
+
+
+def test_only_board_sets_passwords(alice_client):
+    bob = user("bob@test.com")
+    assert alice_client.get(f"/residents/{bob.id}/password").status_code == 403
+    assert alice_client.post(f"/residents/{bob.id}/password", data={"action": "generate"}).status_code == 403
+
+
+def test_create_login_from_directory(admin_client):
+    u = db.session.scalar(db.select(Unit).where(Unit.number == "102"))
+    db.session.add_all([Owner(unit=u, name="Olivia Owner", role="owner", email="olivia@x.com"),
+                        Owner(unit=u, name="Bob", role="tenant", email="bob@test.com")])
+    db.session.commit()
+    owners = admin_client.get("/directory/owners").data.decode()
+    assert "Create login" in owners and "email=olivia@x.com" in owners
+    assert "has login" in admin_client.get("/directory/tenants").data.decode()
+    form = admin_client.get(f"/residents/new?name=Olivia+Owner&email=olivia%40x.com&unit_id={u.id}&role=owner").data.decode()
+    assert 'value="Olivia Owner"' in form and 'value="olivia@x.com"' in form and "Generate" in form
+    admin_client.post("/residents/new", data={"name": "Olivia Owner", "email": "olivia@x.com", "role": "owner",
+                                              "unit_id": str(u.id), "password": "Abcd-Efgh-Jkmn", "must_change": "on"})
+    assert user("olivia@x.com").must_change_password

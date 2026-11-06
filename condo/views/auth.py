@@ -31,6 +31,9 @@ def login():
                 flash("This account has been deactivated. Contact the management office.", "error")
             else:
                 login_user(user, remember=bool(request.form.get("remember")))
+                if user.must_change_password:
+                    flash("Welcome! Please choose your own password to continue.", "info")
+                    return redirect(url_for("auth.account"))
                 return redirect(_safe_next(request.args.get("next")) or url_for("dashboard.index"))
         else:
             flash("Invalid email or password.", "error")
@@ -43,6 +46,15 @@ def logout():
     logout_user()
     flash("You have been signed out.", "info")
     return redirect(url_for("auth.login"))
+
+
+@bp.before_app_request
+def require_new_password():
+    """Someone whose password was set by the board must choose their own before going on."""
+    if (current_user.is_authenticated and getattr(current_user, "must_change_password", False)
+            and request.endpoint not in ("auth.account", "auth.logout", "static")):
+        flash("Please choose your own password to continue.", "info")
+        return redirect(url_for("auth.account"))
 
 
 @bp.route("/account", methods=["GET", "POST"])
@@ -63,7 +75,11 @@ def account():
             if new != confirm:
                 flash("New passwords do not match.", "error")
                 return render_template("auth/account.html"), 400
+            if current_user.must_change_password and new == current:
+                flash("Choose a new password, different from the one you were given.", "error")
+                return render_template("auth/account.html"), 400
             current_user.set_password(new)
+            current_user.must_change_password = False
         current_user.phone = phone or None
         db.session.commit()
         flash("Account updated.", "success")

@@ -171,7 +171,9 @@ def contacts(group):
     if group == "owners" and not (q or role):
         without = db.session.scalars(db.select(Unit).where(
             ~Unit.owners.any(Owner.role.in_(GROUPS["owners"]["roles"]))).order_by(Unit.number)).all()
+    account_emails = {e.lower() for e in db.session.scalars(db.select(User.email))} if can_manage_accounts() else None
     return render_template("directory/contacts.html", people=people, q=q, role=role, roles=role_choices,
+                           account_emails=account_emails,
                            emails=emails, group=group, spec=GROUPS[group], units_without=without,
                            tab=group, tabs=visible_tabs(), counts=_counts())
 

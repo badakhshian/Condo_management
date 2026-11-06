@@ -1,4 +1,5 @@
 import re
+import secrets
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
@@ -57,7 +58,42 @@ def _apply_form(user, form, creating):
     user.active = bool(form.get("active")) if not creating else True
     if password:
         user.set_password(password)
+        user.must_change_password = bool(form.get("must_change")) and user.id != current_user.id
     return []
+
+
+# Unambiguous characters only (no 0/O, 1/l/I), grouped for reading aloud or typing from a phone.
+_ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def generate_password():
+    return "-".join("".join(secrets.choice(_ALPHABET) for _ in range(4)) for _ in range(3))
+
+
+@bp.route("/<int:user_id>/password", methods=["GET", "POST"])
+@board_required
+def set_password(user_id):
+    """The board sets (or generates) a password for one account."""
+    user = db.session.get(User, user_id) or abort(404)
+    if user.id == current_user.id:
+        flash("Change your own password from My profile.", "info")
+        return redirect(url_for("auth.account"))
+    if request.method == "POST":
+        generated = request.form.get("action") == "generate"
+        password = generate_password() if generated else request.form.get("password", "")
+        if not generated:
+            if len(password) < 8:
+                flash("The password must be at least 8 characters.", "error")
+                return render_template("residents/password.html", user=user, form=request.form), 400
+            if password != request.form.get("confirm", ""):
+                flash("The two passwords don't match.", "error")
+                return render_template("residents/password.html", user=user, form=request.form), 400
+        user.set_password(password)
+        user.must_change_password = bool(request.form.get("must_change"))
+        db.session.commit()
+        return render_template("residents/password_done.html", user=user,
+                               password=password if generated else None)
+    return render_template("residents/password.html", user=user, form={"must_change": True})
 
 
 def _units():
@@ -86,7 +122,10 @@ def new():
             flash(e, "error")
         return render_template("residents/form.html", user=user, form=request.form, units=_units(),
                                roles=ROLE_LABELS, creating=True), 400
-    form = {"unit_id": request.args.get("unit_id", ""), "role": "owner"}
+    role = request.args.get("role", "owner")
+    form = {"unit_id": request.args.get("unit_id", ""), "role": role if role in ROLES else "owner",
+            "name": request.args.get("name", ""), "email": request.args.get("email", ""),
+            "phone": request.args.get("phone", ""), "must_change": True}
     return render_template("residents/form.html", user=user, form=form, units=_units(),
                            roles=ROLE_LABELS, creating=True)
 

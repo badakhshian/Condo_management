@@ -18,7 +18,8 @@
     <h2>Update</h2>
     <label>Phone <input name="phone" value="{{ current_user.phone or '' }}"></label>
     <fieldset>
-      <legend>Change password (optional)</legend>
+      <legend>{% if current_user.must_change_password %}Choose your own password (required){% else %}Change password (optional){% endif %}</legend>
+      {% if current_user.must_change_password %}<p class="flash flash-info">Your password was set by the board. Enter it as the current password, then choose your own.</p>{% endif %}
       <label>Current password <input type="password" name="current_password"></label>
       <label>New password <input type="password" name="new_password" minlength="8"></label>
       <label>Confirm new password <input type="password" name="confirm_password"></label>

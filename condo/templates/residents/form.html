@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'New person' if creating else 'Edit ' ~ user.name }}{% endblock %}
+{% block title %}{{ 'New account' if creating else 'Edit ' ~ user.name }}<script>
+  (function () {
+    var b = document.getElementById('pw-gen'), f = document.getElementById('pw');
+    if (!b || !f) return;
+    var a = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    b.addEventListener('click', function () {
+      var r = new Uint32Array(12); crypto.getRandomValues(r);
+      var s = ''; for (var i = 0; i < 12; i++) { if (i && i % 4 === 0) s += '-'; s += a[r[i] % a.length]; }
+      f.value = s; f.select();
+    });
+  })();
+</script>
+{% endblock %}
 {% block content %}
-<h1>{{ 'New person' if creating else 'Edit ' ~ user.name }}</h1>
+<h1>{{ 'New account' if creating else 'Edit ' ~ user.name }}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   <label>Full name <input name="name" required value="{{ form.get('name', '') }}"></label>
@@ -20,10 +32,29 @@
       </select>
     </label>
   </div>
-  <label>{{ 'Password' if creating else 'New password (leave blank to keep)' }}
-    <input type="password" name="password" minlength="8" {{ 'required' if creating }}></label>
+  {% if creating %}
+  <label>Password
+    <span class="pw-field"><input type="text" name="password" id="pw" minlength="8" required autocomplete="new-password" value="{{ form.get('password', '') }}">
+      <button type="button" class="btn small" id="pw-gen">Generate</button></span>
+    <span class="field-hint">At least 8 characters. Share it with the person privately.</span></label>
+  <label class="check"><input type="checkbox" name="must_change" {{ 'checked' if form.get('must_change') }}> Ask them to change it at their first sign-in</label>
+  {% else %}
+  <p class="muted">Password: <a href="{{ url_for('residents.set_password', user_id=user.id) }}">set a new password</a>{% if user.must_change_password %} · <span class="tag">must change at next sign-in</span>{% endif %}</p>
+  {% endif %}
   {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> Account active</label>{% endif %}
   <button class="btn primary">Save</button>
   <a href="{{ url_for('directory.accounts') }}">Cancel</a>
 </form>
+<script>
+  (function () {
+    var b = document.getElementById('pw-gen'), f = document.getElementById('pw');
+    if (!b || !f) return;
+    var a = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    b.addEventListener('click', function () {
+      var r = new Uint32Array(12); crypto.getRandomValues(r);
+      var s = ''; for (var i = 0; i < 12; i++) { if (i && i % 4 === 0) s += '-'; s += a[r[i] % a.length]; }
+      f.value = s; f.select();
+    });
+  })();
+</script>
 {% endblock %}

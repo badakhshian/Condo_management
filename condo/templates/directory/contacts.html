@@ -28,7 +28,11 @@
       <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
       <td>{% if o.mailing_address %}{{ o.mailing_address|one_line }}{% else %}<span class="muted">In unit</span>{% endif %}</td>
       <td>{% if o.needs_insurance %}{{ insurance_badge(o.insurance_state) }}{% if o.current_policy %}<div class="excerpt">until {{ o.current_policy.valid_until.strftime('%Y-%m-%d') }}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
-      <td>{% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>{% else %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% endif %}</td></tr>
+      <td class="actions nowrap">{% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>{% else %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% endif %}
+        {% if account_emails is not none and o.email and o.role != 'contact' %}
+          {% if o.email.lower() in account_emails %}<span class="tag" title="Can sign in to the website">has login</span>
+          {% else %}<a class="btn small" href="{{ url_for('residents.new', name=o.name, email=o.email, phone=o.phone or '', unit_id=o.unit_id, role='tenant' if o.role == 'tenant' else 'owner') }}">Create login</a>{% endif %}
+        {% endif %}</td></tr>
   {% else %}<tr><td colspan="7" class="muted">{{ 'No matches.' if q or role else 'Nobody listed yet.' }}</td></tr>{% endfor %}</tbody>
 </table>
 </div>
