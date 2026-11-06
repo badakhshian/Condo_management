@@ -23,6 +23,14 @@ ADDED_COLUMNS = [
     ("insurance_policy", "unit_id", "INTEGER"),
     ("insurance_policy", "holder_group", "VARCHAR(10)"),
     ("expense", "category", "VARCHAR(20)"),
+    ("maintenance_request", "quote_note", "TEXT"),
+    ("maintenance_request", "quote_vendor", "VARCHAR(200)"),
+    ("maintenance_request", "quote_amount_cents", "INTEGER"),
+    ("maintenance_request", "quote_file_id", "INTEGER"),
+    ("maintenance_request", "quote_approved_cents", "INTEGER"),
+    ("maintenance_request", "quote_decided_by", "VARCHAR(200)"),
+    ("maintenance_request", "quote_decided_at", "TIMESTAMP"),
+    ("maintenance_request", "quote_decision_note", "TEXT"),
 ]
 
 # Data fixes that run after the columns exist. Each must be safe to repeat.

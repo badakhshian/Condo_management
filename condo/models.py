@@ -202,9 +202,12 @@ class Payment(db.Model):
         return text + (f" #{self.reference}" if self.reference else "")
 
 
-REQUEST_STATUSES = {"awaiting_owner": "Awaiting owner approval", "open": "Open", "in_progress": "In progress",
+REQUEST_STATUSES = {"awaiting_owner": "Awaiting owner approval", "open": "Open",
+                    "quote_requested": "Owner to get a quote", "quote_review": "Quote awaiting board approval",
+                    "owner_repair": "Approved: owner to do the repair", "in_progress": "In progress",
                     "resolved": "Resolved", "closed": "Closed"}
-ACTIVE_STATUSES = ("awaiting_owner", "open", "in_progress")
+ACTIVE_STATUSES = ("awaiting_owner", "open", "quote_requested", "quote_review", "owner_repair", "in_progress")
+QUOTE_STATUSES = ("quote_requested", "quote_review", "owner_repair")
 REQUEST_PRIORITIES = {"low": "Low", "normal": "Normal", "high": "High", "urgent": "Urgent"}
 REQUEST_CATEGORIES = ("Plumbing", "Electrical", "HVAC", "Appliance", "Common area", "Security", "Other")
 
@@ -225,9 +228,19 @@ class MaintenanceRequest(db.Model):
     owner_decision_by = db.Column(db.String(200))
     owner_decision_at = db.Column(db.DateTime)
     owner_decision_note = db.Column(db.Text)
+    # Quote step: the board asks the owner to get a quote, then approves the cost before work.
+    quote_note = db.Column(db.Text)               # board's instructions to the owner
+    quote_vendor = db.Column(db.String(200))
+    quote_amount_cents = db.Column(db.Integer)
+    quote_file_id = db.Column(db.Integer, db.ForeignKey("stored_file.id"))
+    quote_approved_cents = db.Column(db.Integer)
+    quote_decided_by = db.Column(db.String(200))
+    quote_decided_at = db.Column(db.DateTime)
+    quote_decision_note = db.Column(db.Text)
 
     unit = db.relationship("Unit")
     submitted_by = db.relationship("User")
+    quote_file = db.relationship("StoredFile", foreign_keys=[quote_file_id])
     comments = db.relationship("MaintenanceComment", back_populates="request",
                                cascade="all, delete-orphan", order_by="MaintenanceComment.created_at")
 
@@ -566,3 +579,64 @@ def hand_over_policies(person):
     for policy in list(person.policies):
         policy.owner = heir
     return True
+
+
+class Notification(db.Model):
+    """Something a user should know about, shown under the bell until they read it."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text)
+    url = db.Column(db.String(500))
+    kind = db.Column(db.String(30))
+    created_at = db.Column(db.DateTime, default=utcnow, index=True)
+    read_at = db.Column(db.DateTime)
+
+    user = db.relationship("User")
+
+
+REIMBURSEMENT_STATUSES = {"submitted": "Waiting for the president", "approved": "Approved: waiting for accounting",
+                          "declined": "Declined", "settled": "Settled"}
+SETTLE_METHODS = {"credit": "Credit on my next condo payment", "transfer": "Pay me back (e-transfer or cheque)"}
+
+
+class Reimbursement(db.Model):
+    """An owner paid a building cost and asks for it back, or for a credit on their dues."""
+    id = db.Column(db.Integer, primary_key=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False, index=True)
+    requested_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    request_id = db.Column(db.Integer, db.ForeignKey("maintenance_request.id"))  # repair it came from, if any
+    description = db.Column(db.String(255), nullable=False)
+    vendor = db.Column(db.String(200))
+    amount_cents = db.Column(db.Integer, nullable=False)
+    spent_on = db.Column(db.Date, nullable=False)
+    category = db.Column(db.String(20))
+    settle_method = db.Column(db.String(20), nullable=False, default="credit")
+    status = db.Column(db.String(20), nullable=False, default="submitted")
+    decided_by = db.Column(db.String(200))
+    decided_at = db.Column(db.DateTime)
+    decision_note = db.Column(db.Text)
+    settled_by = db.Column(db.String(200))
+    settled_at = db.Column(db.DateTime)
+    settle_reference = db.Column(db.String(120))
+    payment_id = db.Column(db.Integer, db.ForeignKey("payment.id"))
+    expense_id = db.Column(db.Integer, db.ForeignKey("expense.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    unit = db.relationship("Unit")
+    requested_by = db.relationship("User")
+    request = db.relationship("MaintenanceRequest")
+    files = db.relationship("ReimbursementFile", back_populates="reimbursement", cascade="all, delete-orphan")
+
+    @property
+    def status_label(self):
+        return REIMBURSEMENT_STATUSES.get(self.status, self.status)
+
+
+class ReimbursementFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reimbursement_id = db.Column(db.Integer, db.ForeignKey("reimbursement.id", ondelete="CASCADE"), nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey("stored_file.id"), nullable=False)
+
+    reimbursement = db.relationship("Reimbursement", back_populates="files")
+    file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)

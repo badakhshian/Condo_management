@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import post_button %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="head"><h1>Notifications</h1>
+  {% if items|selectattr('read_at', 'none')|list %}{{ post_button(url_for('notifications.read_all'), 'Mark all as read', cls='btn') }}{% endif %}</div>
+<nav class="tabs">
+  <a href="{{ url_for('notifications.index') }}" class="{{ 'active' if show != 'unread' }}">All</a>
+  <a href="{{ url_for('notifications.index', show='unread') }}" class="{{ 'active' if show == 'unread' }}">Unread</a>
+</nav>
+<div class="card notes">
+  {% for n in items %}
+    <a class="note {{ 'unread' if not n.read_at }}" href="{{ url_for('notifications.open', note_id=n.id) }}">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="note-body"><strong>{{ n.title }}</strong>
+        {% if n.body %}<span class="excerpt">{{ n.body|truncate(160) }}</span>{% endif %}</span>
+      <span class="muted nowrap">{{ n.created_at.strftime('%b %d, %H:%M') }}</span>
+    </a>
+  {% else %}<p class="muted">{{ "No unread notifications." if show == "unread" else "Nothing yet. You'll be notified here about your requests, approvals and notices." }}</p>{% endfor %}
+</div>
+{% endblock %}

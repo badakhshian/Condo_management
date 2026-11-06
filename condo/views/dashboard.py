@@ -5,7 +5,9 @@ from flask_login import current_user, login_required
 
 from ..extensions import db
 from ..models import ACTIVE_STATUSES, Announcement, Booking, MaintenanceRequest, Owner, Unit
+from ..models import Reimbursement
 from .directory import board_members
+from .reimbursements import is_accounting, is_president
 from .documents import current_building_insurance
 from .insurance import can_manage_group
 from .maintenance import can_decide
@@ -52,6 +54,7 @@ def index():
                                open_requests=[r for r in open_requests if not r.awaiting_owner][:5],
                                awaiting=awaiting, announcements=announcements, upcoming=upcoming,
                                insurance_alerts=insurance_alerts, board=board_members(),
+                               reimb_waiting=_reimb_waiting(),
                                building=current_building_insurance(current_user))
 
     unit = current_user.unit
@@ -74,4 +77,16 @@ def index():
     return render_template("dashboard_resident.html", unit=unit, my_requests=my_requests,
                            my_bookings=my_bookings, announcements=announcements, to_approve=to_approve,
                            my_insurance=my_insurance, building=current_building_insurance(current_user),
-                           board=board_members())
+                           board=board_members(), reimb_waiting=_reimb_waiting(),
+                           my_reimbursements=db.session.scalars(db.select(Reimbursement).where(
+                               Reimbursement.unit_id == unit.id).order_by(Reimbursement.created_at.desc()).limit(5)).all()
+                           if unit and current_user.role == "owner" else [])
+
+
+def _reimb_waiting():
+    """Reimbursements waiting for this user's decision or for them to record."""
+    statuses = (["submitted"] if is_president() else []) + (["approved"] if is_accounting() else [])
+    if not statuses:
+        return []
+    return db.session.scalars(db.select(Reimbursement).where(Reimbursement.status.in_(statuses))
+                              .order_by(Reimbursement.created_at)).all()

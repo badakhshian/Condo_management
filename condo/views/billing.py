@@ -132,7 +132,10 @@ def index():
                      "balance": u.balance})
     outstanding = sum(r["balance"] for r in rows if r["balance"] > 0)
     sheet = Setting.get("sheet") or {}
-    return render_template("billing/index.html", period=period, payments=payments, costs=costs,
+    from ..models import Reimbursement
+    pending = db.session.scalar(db.select(db.func.count(Reimbursement.id)).where(
+        Reimbursement.status.in_(("submitted", "approved"))))
+    return render_template("billing/index.html", period=period, pending_reimbursements=pending, payments=payments, costs=costs,
                            paid_total=paid_total, cost_total=cost_total, categories=categories, months=months,
                            rows=rows, outstanding=outstanding, today=date.today(), sheet=sheet,
                            last_sync=Setting.get("sheet_last_sync"))

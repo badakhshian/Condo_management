@@ -55,12 +55,58 @@
       {% endif %}
     </div>
     {% endif %}
+    {% if req.status in ('quote_requested', 'quote_review', 'owner_repair') or (board and req.unit_id and req.status in ('open', 'in_progress')) or req.quote_amount_cents %}
+    <div class="card {{ 'building-insurance' if req.status in ('quote_requested', 'quote_review', 'owner_repair') }}">
+      <h2>Quote &amp; board approval</h2>
+      {% if req.status in ('open', 'in_progress') and board and not req.quote_amount_cents %}
+        <p class="muted">Want the owner to arrange this repair? Ask them for a quote first; once the board approves the cost, they do the repair, pay, and request a reimbursement.</p>
+        <form method="post" action="{{ url_for('maintenance.ask_quote', request_id=req.id) }}">
+          {{ csrf() }}<label>Note to the owner <textarea name="note" rows="2" placeholder="e.g. Please get two quotes from licensed plumbers"></textarea></label>
+          <button class="btn">Ask the owner for a quote</button>
+        </form>
+      {% elif req.status == 'quote_requested' %}
+        <p>The board asked the owner to get a quote.{% if req.quote_note %}</p><p class="prose muted">“{{ req.quote_note }}”{% endif %}</p>
+        {% if req.quote_decision_note %}<p class="flash flash-info">Previous quote not approved: {{ req.quote_decision_note }}</p>{% endif %}
+        {% if unit_owner %}
+        <form method="post" action="{{ url_for('maintenance.submit_quote', request_id=req.id) }}" enctype="multipart/form-data">
+          {{ csrf() }}
+          <div class="row"><label>Contractor <input name="vendor" maxlength="200"></label>
+            <label>Quoted amount ($) <input name="amount" inputmode="decimal" required></label></div>
+          <label>Quote (PDF or photo) <input type="file" name="file" accept="{{ accept }}" required></label>
+          <button class="btn primary">Send quote to the board</button>
+        </form>
+        {% else %}<p class="muted">Waiting for the owner's quote.</p>{% endif %}
+      {% endif %}
+      {% if req.quote_amount_cents and req.status != 'quote_requested' %}
+        <dl class="props">
+          <dt>Quote</dt><dd><strong>{{ req.quote_amount_cents|money }}</strong>{% if req.quote_vendor %} · {{ req.quote_vendor }}{% endif %}
+            {% if req.quote_file %}· <a href="{{ url_for('maintenance.quote_file', request_id=req.id) }}" target="_blank" rel="noopener">view</a>{% endif %}</dd>
+          {% if req.quote_approved_cents %}<dt>Approved</dt><dd><span class="credit">{{ req.quote_approved_cents|money }}</span> by {{ req.quote_decided_by }}, {{ req.quote_decided_at.strftime('%b %d, %Y') }}</dd>{% endif %}
+        </dl>
+        {% if req.quote_decision_note and req.quote_approved_cents %}<p class="prose muted">{{ req.quote_decision_note }}</p>{% endif %}
+      {% endif %}
+      {% if req.status == 'quote_review' %}
+        {% if board %}
+        <form method="post" action="{{ url_for('maintenance.quote_decision', request_id=req.id) }}">
+          {{ csrf() }}
+          <label>Approved amount ($) <input name="approved_amount" inputmode="decimal" value="{{ '%.2f'|format(req.quote_amount_cents / 100) }}"></label>
+          <label>Note <span class="muted">(required to decline)</span><textarea name="note" rows="2"></textarea></label>
+          <div class="actions"><button class="btn primary" name="decision" value="approve">Approve cost</button>
+            <button class="btn danger" name="decision" value="decline">Ask for another quote</button></div>
+        </form>
+        {% else %}<p class="muted">Waiting for the board to approve the cost.</p>{% endif %}
+      {% elif req.status == 'owner_repair' %}
+        <p>Approved: the owner can now do the repair and pay for it.</p>
+        {% if unit_owner %}<a class="btn primary" href="{{ url_for('reimbursements.new', request_id=req.id) }}">Request reimbursement</a>{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
     <div class="card">
     {% if current_user.is_admin %}
       <h2>Manage</h2>
       <form method="post" action="{{ url_for('maintenance.update_status', request_id=req.id) }}">
         {{ csrf() }}
-        <label>Status <select name="status">{% for k, label in statuses.items() if k != 'awaiting_owner' or req.awaiting_owner %}<option value="{{ k }}" {{ 'selected' if req.status == k }}>{{ label }}</option>{% endfor %}</select></label>
+        <label>Status <select name="status">{% for k, label in statuses.items() if (k not in ('awaiting_owner', 'quote_requested', 'quote_review', 'owner_repair')) or k == req.status %}<option value="{{ k }}" {{ 'selected' if req.status == k }}>{{ label }}</option>{% endfor %}</select></label>
         <label>Priority <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if req.priority == k }}>{{ label }}</option>{% endfor %}</select></label>
         <button class="btn primary">Update</button>
       </form>

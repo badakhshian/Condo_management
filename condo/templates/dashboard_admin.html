@@ -18,6 +18,14 @@
   <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>Outstanding dues</a>
   <a class="stat" href="{{ url_for('maintenance.index') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
 </div>
+{% if reimb_waiting %}
+<section class="card building-insurance">
+  <h2>Reimbursements waiting for you <span class="muted">{{ reimb_waiting|length }}</span></h2>
+  <ul class="list">{% for r in reimb_waiting %}
+    <li><a href="{{ url_for('reimbursements.detail', reimb_id=r.id) }}"><strong>{{ r.amount_cents|money }}</strong> · unit {{ r.unit.number }} · {{ r.description|truncate(60) }}</a>
+      <span class="muted">· {{ 'to approve' if r.status == 'submitted' else 'to record' }}</span></li>{% endfor %}</ul>
+</section>
+{% endif %}
 <div class="grid two">
   <section class="card">
     <h2>Units with a balance due</h2>

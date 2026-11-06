@@ -50,10 +50,10 @@ def create_app(test_config=None):
     login_manager.init_app(app)
 
     from . import models  # noqa: F401  (register models)
-    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, importer, insurance, maintenance, owners, residents, sheet, units
+    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units
 
     for bp in (auth.bp, dashboard.bp, units.bp, residents.bp, billing.bp,
-               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy):
+               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy, notifications.bp, reimbursements.bp):
         app.register_blueprint(bp)
 
     from .cli import register_cli
@@ -62,6 +62,14 @@ def create_app(test_config=None):
     from .utils import initials, money, one_line, phone_display, phone_href
     app.jinja_env.filters.update(money=money, phone=phone_display, tel=phone_href, one_line=one_line,
                                  initials=initials)
+
+    def _unread():
+        from flask_login import current_user
+        from .notify import unread_count
+        try:
+            return unread_count(current_user)
+        except Exception:
+            return 0
 
     def _nav_board():
         from flask_login import current_user
@@ -77,7 +85,7 @@ def create_app(test_config=None):
 
         from .navigation import back_link
         return {"condo_name": app.config["CONDO_NAME"], "ephemeral_db": app.config["EPHEMERAL_DB"],
-                "back": back_link(),
+                "back": back_link(), "unread": _unread(),
                 "today": date.today(), "nav_board": _nav_board(),
                 "STATUS_LABELS": models.REQUEST_STATUSES, "PRIORITY_LABELS": models.REQUEST_PRIORITIES}
 

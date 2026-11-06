@@ -7,6 +7,7 @@
     <a class="btn" href="{{ url_for('sheet.index') }}">Google Sheet</a>
     <a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a>
     <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
+    <a class="btn" href="{{ url_for('reimbursements.index') }}">Reimbursements{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
   </div></div>
 
 <div class="period-bar card">
@@ -47,6 +48,17 @@
   <div class="stat"><span class="{{ 'owed' if outstanding }}">{{ outstanding|money }}</span>Owed by units today</div>
 </div>
 
+<section class="card">
+  <h2>Units</h2>
+  <table>
+    <thead><tr><th>Unit</th><th>Owner</th><th class="num">Billed · {{ period.label }}</th><th class="num">Paid · {{ period.label }}</th><th class="num">Balance today</th></tr></thead>
+    <tbody>{% for r in rows %}
+      <tr><td><a href="{{ url_for('billing.ledger', unit_id=r.unit.id) }}">{{ r.unit.number }}</a></td>
+        <td class="muted">{{ r.unit.owner_display or '—' }}</td>
+        <td class="num">{{ r.billed|money }}</td><td class="num">{{ r.paid|money }}</td><td class="num">{{ balance(r.balance) }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+</section>
 <div class="grid two money-panels">
   <section class="card panel-in">
     <div class="card-head"><h2>Payments <span class="muted count">{{ payments|length }}</span></h2>
@@ -98,15 +110,4 @@
 </section>
 {% endif %}
 
-<section class="card">
-  <h2>Units</h2>
-  <table>
-    <thead><tr><th>Unit</th><th>Owner</th><th class="num">Billed · {{ period.label }}</th><th class="num">Paid · {{ period.label }}</th><th class="num">Balance today</th></tr></thead>
-    <tbody>{% for r in rows %}
-      <tr><td><a href="{{ url_for('billing.ledger', unit_id=r.unit.id) }}">{{ r.unit.number }}</a></td>
-        <td class="muted">{{ r.unit.owner_display or '—' }}</td>
-        <td class="num">{{ r.billed|money }}</td><td class="num">{{ r.paid|money }}</td><td class="num">{{ balance(r.balance) }}</td></tr>
-    {% endfor %}</tbody>
-  </table>
-</section>
 {% endblock %}

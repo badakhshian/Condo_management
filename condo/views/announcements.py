@@ -36,6 +36,9 @@ def new():
         if _save(item):
             item.author_id = current_user.id
             db.session.add(item)
+            from .. import notify
+            notify.send(notify.everyone(), f"New notice: {item.title}", url=url_for("announcements.index"),
+                        body=item.body[:300], kind="notice")
             db.session.commit()
             flash("Announcement posted.", "success")
             return redirect(url_for("announcements.index"))

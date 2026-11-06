@@ -19,14 +19,19 @@
       <a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
     {% elif current_user.unit_id %}
       {% if nav_board %}<a href="{{ url_for('directory.board') }}" class="{{ 'active' if ep.startswith(('directory', 'residents')) }}">Directory</a>{% endif %}
-      <a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">My account</a>
+      <a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">Statement</a>
     {% endif %}
     <a href="{{ url_for('maintenance.index') }}" class="{{ 'active' if ep.startswith('maintenance') }}">Maintenance</a>
+    {% if not current_user.is_admin and (current_user.role == 'owner' or nav_board) %}<a href="{{ url_for('reimbursements.index') }}" class="{{ 'active' if ep.startswith('reimbursements') }}">Reimbursements</a>{% endif %}
     <a href="{{ url_for('announcements.index') }}" class="{{ 'active' if ep.startswith('announcements') }}">Notices</a>
     <a href="{{ url_for('documents.index') }}" class="{{ 'active' if ep.startswith('documents') }}">Documents</a>
     <a href="{{ url_for('amenities.index') }}" class="{{ 'active' if ep.startswith('amenities') }}">Amenities</a>
   </nav>
   <div class="user">
+    <a class="bell {{ 'has-unread' if unread }}" href="{{ url_for('notifications.index') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+      {% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}
+    </a>
     <a href="{{ url_for('auth.account') }}">{{ current_user.name }}</a>
     <span class="tag">{{ current_user.role_label }}</span>
     <form method="post" action="{{ url_for('auth.logout') }}" class="inline">

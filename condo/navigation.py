@@ -11,7 +11,7 @@ from flask_login import current_user
 TOP_LEVEL = {
     "dashboard.index", "units.index", "directory.contacts", "directory.board", "directory.accounts",
     "directory.index", "billing.index", "maintenance.index", "announcements.index", "documents.index",
-    "amenities.index", "auth.login", "billing.my_account",
+    "amenities.index", "auth.login", "billing.my_account", "notifications.index", "reimbursements.index",
 }
 
 
@@ -47,6 +47,8 @@ def parent_for(endpoint, args):
         if admin:
             return "Accounting", url_for("billing.index")
         return "Dashboard", url_for("dashboard.index")
+    if endpoint.startswith("reimbursements."):
+        return "Reimbursements", url_for("reimbursements.index")
     if endpoint.startswith("maintenance."):
         return "Maintenance", url_for("maintenance.index")
     if endpoint.startswith("announcements."):

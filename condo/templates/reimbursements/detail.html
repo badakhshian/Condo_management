@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Reimbursement #{{ r.id }}{% endblock %}
+{% block content %}
+<div class="head"><h1>Reimbursement #{{ r.id }} · {{ r.amount_cents|money }}</h1>
+  <span class="badge reimb-{{ r.status }}">{{ r.status_label }}</span></div>
+<div class="grid two wide-left">
+  <section class="card">
+    <dl class="props">
+      <dt>For</dt><dd>{{ r.description }}</dd>
+      {% if r.vendor %}<dt>Paid to</dt><dd>{{ r.vendor }}</dd>{% endif %}
+      <dt>Amount</dt><dd><strong>{{ r.amount_cents|money }}</strong></dd>
+      <dt>Date paid</dt><dd>{{ r.spent_on.strftime('%B %d, %Y') }}</dd>
+      <dt>Unit</dt><dd>{{ r.unit.number }}{% if r.unit.owner_display %} · {{ r.unit.owner_display }}{% endif %}</dd>
+      <dt>Requested by</dt><dd>{{ r.requested_by.name }} on {{ r.created_at.strftime('%b %d, %Y') }}</dd>
+      <dt>Reimburse by</dt><dd>{{ methods[r.settle_method] }}</dd>
+      <dt>Category</dt><dd>{{ categories.get(r.category, 'Other') }}</dd>
+      {% if r.request %}<dt>Repair</dt><dd><a href="{{ url_for('maintenance.detail', request_id=r.request_id) }}">#{{ r.request_id }} · {{ r.request.title }}</a></dd>{% endif %}
+    </dl>
+    <h2>Receipts</h2>
+    <ul class="list">{% for f in r.files %}
+      <li><a href="{{ url_for('reimbursements.download', file_row_id=f.id) }}" target="_blank" rel="noopener">{{ f.file.filename }}</a>
+        <span class="muted">· {{ human_size(f.file.size) }}</span></li>{% endfor %}</ul>
+  </section>
+  <aside>
+    <div class="card">
+      <h2>Progress</h2>
+      <ol class="steps">
+        <li class="done">Requested by {{ r.requested_by.name }}</li>
+        <li class="{{ 'done' if r.decided_at else 'current' if r.status == 'submitted' }}">
+          {% if r.status == 'declined' %}Declined by {{ r.decided_by }}{% elif r.decided_at %}Approved by {{ r.decided_by }}{% else %}President's approval{% endif %}
+          {% if r.decision_note %}<div class="excerpt prose">{{ r.decision_note }}</div>{% endif %}</li>
+        {% if r.status != 'declined' %}
+        <li class="{{ 'done' if r.settled_at else 'current' if r.status == 'approved' }}">
+          {% if r.settled_at %}{{ 'Credited' if r.settle_method == 'credit' else 'Paid back' }} by {{ r.settled_by }} on {{ r.settled_at.strftime('%b %d, %Y') }}{% if r.settle_reference %} · {{ r.settle_reference }}{% endif %}
+          {% else %}Recorded by accounting{% endif %}</li>
+        {% endif %}
+      </ol>
+    </div>
+    {% if can_decide %}
+    <form method="post" action="{{ url_for('reimbursements.decide', reimb_id=r.id) }}" class="card building-insurance">
+      {{ csrf() }}
+      <h2>Your decision</h2>
+      <label>Note <span class="muted">(required to decline)</span><textarea name="note" rows="2"></textarea></label>
+      <div class="actions"><button class="btn primary" name="decision" value="approve">Approve</button>
+        <button class="btn danger" name="decision" value="decline">Decline</button></div>
+    </form>
+    {% endif %}
+    {% if can_settle %}
+    <form method="post" action="{{ url_for('reimbursements.settle', reimb_id=r.id) }}" class="card building-insurance">
+      {{ csrf() }}
+      <h2>Record it</h2>
+      <p class="muted">{% if r.settle_method == 'credit' %}Adds a {{ r.amount_cents|money }} credit to unit {{ r.unit.number }}'s account (shown in Accounting as an owner-paid cost).
+        {% else %}Records a {{ r.amount_cents|money }} building cost paid back to unit {{ r.unit.number }}.{% endif %}</p>
+      <div class="row">
+        <label>Date <input type="date" name="settled_on" value="{{ today.isoformat() }}"></label>
+        <label>Reference <input name="reference" maxlength="120" placeholder="{{ 'e.g. e-transfer #' if r.settle_method == 'transfer' else 'optional' }}"></label>
+      </div>
+      <button class="btn primary">{{ 'Credit the account' if r.settle_method == 'credit' else 'Record payback' }}</button>
+    </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
