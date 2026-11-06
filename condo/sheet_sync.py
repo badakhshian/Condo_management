@@ -28,7 +28,7 @@ import urllib.request
 from datetime import date, datetime
 
 from .extensions import db
-from .models import OWNER_ROLES, Charge, allowed_positions, Expense, Owner, Payment, Setting, Unit, utcnow
+from .models import OWNER_ROLES, Charge, allowed_positions, hand_over_policies, Expense, Owner, Payment, Setting, Unit, utcnow
 
 ORIGIN = "sheet"
 UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
@@ -441,8 +441,11 @@ def _sync_owners(contacts, units):
         owner.is_primary = is_primary
         owner.notes = c["notes"] or None
         owner.positions = [p for p in c.get("board", []) if p in allowed_positions(c["role"])]
+    db.session.flush()
     for key, owner in current.items():
         if key not in keep:
+            if owner.policies:
+                hand_over_policies(owner)
             db.session.delete(owner)
 
 

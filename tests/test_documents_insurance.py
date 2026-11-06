@@ -88,66 +88,101 @@ def test_bad_uploads_rejected(admin_client):
 
 # --- personal insurance -------------------------------------------------------------
 
-def add_policy(client, owner, until, start=None):
+def add_policy(client, unit_obj, group, until, start=None, holder=None):
     start = start or (until - timedelta(days=365))
-    return client.post(f"/people/{owner.id}/insurance/new", content_type="multipart/form-data", data={
-        "provider": "Desjardins", "policy_number": "H-1", "valid_from": start.isoformat(),
-        "valid_until": until.isoformat(), "file": (io.BytesIO(PDF), "cert.pdf")})
+    data = {"provider": "Desjardins", "policy_number": "H-1", "valid_from": start.isoformat(),
+            "valid_until": until.isoformat(), "file": (io.BytesIO(PDF), "cert.pdf")}
+    if holder is not None:
+        data["policyholder_id"] = str(holder.id)
+    return client.post(f"/units/{unit_obj.id}/insurance/{group}/new", content_type="multipart/form-data", data=data)
 
 
-def test_unit_page_shows_tenants_and_insurance(admin_client):
+def test_one_policy_covers_all_owners(admin_client):
     u = unit("101")
-    alice = Owner(unit=u, name="Alice Chen", role="owner", email="alice@test.com")
+    mostafa = Owner(unit=u, name="Mostafa B", role="owner", is_primary=True)
+    delara = Owner(unit=u, name="Delara A", role="co-owner")
     tom = Owner(unit=u, name="Tom Renter", role="tenant")
-    db.session.add_all([alice, tom])
+    db.session.add_all([mostafa, delara, tom])
     db.session.commit()
     page = admin_client.get(f"/units/{u.id}").data.decode()
-    assert "Tenants" in page and "Tom Renter" in page and "No insurance" in page
+    assert "Owners’ insurance" in page and "Tenant insurance" in page and "None on file yet" in page
+    form = admin_client.get(f"/units/{u.id}/insurance/owners/new").data.decode()
+    assert "Mostafa B, Delara A" in form and 'name="policyholder_id"' in form
 
-    assert add_policy(admin_client, tom, date.today() + timedelta(days=200)).status_code == 302
-    assert add_policy(admin_client, alice, date.today() + timedelta(days=10)).status_code == 302
+    assert add_policy(admin_client, u, "owners", date.today() + timedelta(days=200), holder=delara).status_code == 302
+    for person in (mostafa, delara):  # one policy, both owners covered
+        assert db.session.get(Owner, person.id).insurance_state == "valid"
+    assert db.session.get(Owner, tom.id).insurance_state == "missing"  # tenants need their own
     u = db.session.get(Unit, u.id)
-    assert u.group_insurance("tenants") == "valid" and u.group_insurance("owners") == "expiring"
+    assert u.group_insurance("owners") == "valid" and u.group_insurance("tenants") == "missing"
     page = admin_client.get(f"/units/{u.id}").data.decode()
-    assert "Expiring soon" in page and "Certificate" in page
-
-    # Renewal keeps history; the latest end date counts.
-    add_policy(admin_client, alice, date.today() + timedelta(days=375), start=date.today() + timedelta(days=10))
-    alice = db.session.get(Owner, alice.id)
-    assert len(alice.policies) == 2 and alice.insurance_state == "valid"
+    assert page.count("View certificate") == 1 and "policyholder Delara A" in page
 
 
-def test_insurance_dates_and_file_required(admin_client):
-    o = Owner(unit=unit("101"), name="Alice", role="owner")
+def test_household_renewal_and_expiry(admin_client):
+    u = unit("101")
+    o = Owner(unit=u, name="Alice", role="owner")
     db.session.add(o)
     db.session.commit()
-    resp = admin_client.post(f"/people/{o.id}/insurance/new", content_type="multipart/form-data",
+    add_policy(admin_client, u, "owners", date.today() + timedelta(days=10))
+    assert db.session.get(Unit, u.id).group_insurance("owners") == "expiring"
+    add_policy(admin_client, u, "owners", date.today() + timedelta(days=375), start=date.today() + timedelta(days=10))
+    u = db.session.get(Unit, u.id)
+    assert len(u.policies_for("owners")) == 2 and u.group_insurance("owners") == "valid"
+
+
+def test_insurance_needs_members_dates_and_file(admin_client):
+    u = unit("101")
+    resp = admin_client.get(f"/units/{u.id}/insurance/tenants/new")
+    assert resp.status_code == 302  # no tenants yet
+    db.session.add(Owner(unit=u, name="Alice", role="owner"))
+    db.session.commit()
+    resp = admin_client.post(f"/units/{u.id}/insurance/owners/new", content_type="multipart/form-data",
                              data={"valid_from": "2026-12-01", "valid_until": "2026-01-01"})
     assert resp.status_code == 400
     assert db.session.scalar(db.select(db.func.count(InsurancePolicy.id))) == 0
 
 
-def test_who_can_upload_and_see_personal_insurance(app, client):
+def test_removing_policyholder_keeps_household_cover(admin_client):
+    u = unit("101")
+    a, b = Owner(unit=u, name="Ann", role="owner"), Owner(unit=u, name="Ben", role="co-owner")
+    db.session.add_all([a, b])
+    db.session.commit()
+    add_policy(admin_client, u, "owners", date.today() + timedelta(days=100), holder=a)
+    admin_client.post(f"/owners/{a.id}/delete")
+    policy = db.session.scalar(db.select(InsurancePolicy))
+    assert policy is not None and policy.owner.name == "Ben"
+    assert db.session.get(Owner, b.id).insurance_state == "valid"
+
+
+def test_old_person_link_redirects(admin_client):
+    o = Owner(unit=unit("101"), name="Tom", role="tenant")
+    db.session.add(o)
+    db.session.commit()
+    resp = admin_client.get(f"/people/{o.id}/insurance/new")
+    assert resp.headers["Location"].endswith(f"/units/{o.unit_id}/insurance/tenants/new?holder={o.id}")
+
+
+def test_who_can_upload_and_see_household_insurance(app, client):
     u101 = unit("101")
-    bob_unit = user("bob@test.com").unit  # unit 102, Bob is a tenant there
-    alice_c = Owner(unit=u101, name="Alice Chen", role="owner", email="alice@test.com")
-    tenant_c = Owner(unit=u101, name="Tom Renter", role="tenant", email="tom@x.com")
-    bob_c = Owner(unit=bob_unit, name="Bob", role="tenant", email="bob@test.com")
-    other_c = Owner(unit=bob_unit, name="Landlord", role="owner", email="landlord@x.com")
-    db.session.add_all([alice_c, tenant_c, bob_c, other_c])
+    u102 = user("bob@test.com").unit  # Bob is a tenant of 102
+    db.session.add_all([Owner(unit=u101, name="Alice Chen", role="owner"), Owner(unit=u101, name="Tom", role="tenant"),
+                        Owner(unit=u102, name="Bob", role="tenant"), Owner(unit=u102, name="Landlord", role="owner")])
     db.session.commit()
 
-    login(client, "alice@test.com")  # owner of 101: can manage anyone in 101, nobody in 102
-    assert add_policy(client, tenant_c, date.today() + timedelta(days=100)).status_code == 302
-    assert client.get(f"/people/{bob_c.id}/insurance/new").status_code == 403
-    pol = db.session.get(Owner, tenant_c.id).current_policy
+    login(client, "alice@test.com")  # owner of 101: both of 101's households, nothing in 102
+    assert add_policy(client, u101, "tenants", date.today() + timedelta(days=100)).status_code == 302
+    assert add_policy(client, u101, "owners", date.today() + timedelta(days=100)).status_code == 302
+    assert client.get(f"/units/{u102.id}/insurance/tenants/new").status_code == 403
+    pol = db.session.get(Unit, u101.id).current_policy("tenants")
     assert client.get(f"/insurance/{pol.id}/file").data == PDF
-    assert b"Home insurance" in client.get("/").data
+    dash = client.get("/").data.decode()
+    assert "Owners’ insurance" in dash and "Tenant insurance" in dash
     client.post("/logout")
 
-    login(client, "bob@test.com")  # tenant of 102: only their own record
-    assert client.get(f"/people/{bob_c.id}/insurance/new").status_code == 200
-    assert client.get(f"/people/{other_c.id}/insurance/new").status_code == 403
+    login(client, "bob@test.com")  # tenant of 102: only 102's tenant policy
+    assert client.get(f"/units/{u102.id}/insurance/tenants/new").status_code == 200
+    assert client.get(f"/units/{u102.id}/insurance/owners/new").status_code == 403
     assert client.get(f"/insurance/{pol.id}/file").status_code == 403  # another unit's certificate
 
 

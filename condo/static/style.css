@@ -153,3 +153,8 @@ form .btn.primary + a { margin-left: .8rem; }
 .checks .check { margin-bottom: .5rem; }
 .badge.board { color: #7c4dcc; }
 @media (prefers-color-scheme: dark) { .badge.board { color: #b79bf2; } }
+.household-insurance { margin-top: .6rem; padding: .7rem .85rem; border-radius: 8px; display: grid; gap: .3rem;
+  background: color-mix(in srgb, var(--text) 4%, transparent); border-left: 3px solid var(--border); }
+.ins-box-valid { border-left-color: var(--ok); }
+.ins-box-expiring { border-left-color: var(--warn); }
+.ins-box-expired, .ins-box-missing { border-left-color: var(--danger); }

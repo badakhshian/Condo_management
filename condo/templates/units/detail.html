@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import balance, post_button, insurance_badge, person %}
+{% from "_macros.html" import balance, post_button, insurance_badge, person, household_insurance %}
 {% block title %}Unit {{ unit.number }}{% endblock %}
 {% block content %}
 <div class="head"><h1>Unit {{ unit.number }}</h1>
@@ -47,6 +47,7 @@
     {% else %}
       <p class="muted">{% if group == 'owners' %}{% if unit.owner_name %}Recorded as “{{ unit.owner_name }}”, but no contact details yet.{% else %}No owners recorded.{% endif %}{% else %}No tenant: owner-occupied or vacant.{% endif %}</p>
     {% endfor %}
+    {{ household_insurance(unit, group) }}
   </section>
   {% endfor %}
   <section class="card">

@@ -4,7 +4,7 @@ import re
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from ..extensions import db
-from ..models import BOARD_POSITIONS, OWNER_ROLES, SINGLE_HOLDER_POSITIONS, Owner, Unit, allowed_positions
+from ..models import hand_over_policies, BOARD_POSITIONS, OWNER_ROLES, SINGLE_HOLDER_POSITIONS, Owner, Unit, allowed_positions
 from ..utils import admin_required
 
 bp = Blueprint("owners", __name__)
@@ -190,9 +190,11 @@ def delete(owner_id):
     if owner.origin == "sheet":
         flash("This owner comes from the Google Sheet's Owners tab. Remove them there.", "error")
         return redirect(url_for("units.detail", unit_id=unit_id))
+    kept = hand_over_policies(owner) if owner.policies else False
     db.session.delete(owner)
     db.session.commit()
-    flash(f"{owner.name} removed.", "success")
+    flash(f"{owner.name} removed." + (" Their household insurance now lists another member as policyholder."
+                                      if kept else ""), "success")
     return redirect(url_for("units.detail", unit_id=unit_id))
 
 

@@ -80,14 +80,27 @@ class Unit(db.Model):
     def tenants(self):
         return [o for o in self.owners if o.role == "tenant"]
 
+    def members(self, group):
+        """People who need cover in a group: 'owners' (owners and co-owners) or 'tenants'."""
+        people = self.tenants if group == "tenants" else self.owner_contacts
+        return [o for o in people if o.needs_insurance]
+
+    def policies_for(self, group):
+        return db.session.scalars(
+            db.select(InsurancePolicy).where(InsurancePolicy.unit_id == self.id, InsurancePolicy.holder_group == group)
+            .order_by(InsurancePolicy.valid_until.desc(), InsurancePolicy.id.desc())).all()
+
+    def current_policy(self, group):
+        """One policy covers the household: all the unit's owners, or all its tenants."""
+        policies = self.policies_for(group)
+        return policies[0] if policies else None
+
     def group_insurance(self, group):
-        """Best insurance state among the unit's owners ('owners') or tenants ('tenants').
-        One valid policy covers the household. None when nobody is in the group."""
-        people = [o for o in (self.tenants if group == "tenants" else self.owner_contacts) if o.needs_insurance]
-        if not people:
+        """Insurance state of the owners' or tenants' shared policy; None when nobody is in the group."""
+        if not self.members(group):
             return None
-        rank = {"valid": 0, "expiring": 1, "expired": 2, "missing": 3}
-        return min((o.insurance_state for o in people), key=rank.get)
+        p = self.current_policy(group)
+        return insurance_state(p.valid_until if p else None)
 
     @property
     def owner_display(self):
@@ -347,6 +360,7 @@ class Owner(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="owners")
+    # Policies where this person is the named policyholder (each covers their whole group).
     policies = db.relationship("InsurancePolicy", back_populates="owner", cascade="all, delete-orphan",
                                passive_deletes=True,
                                order_by="(InsurancePolicy.valid_until.desc(), InsurancePolicy.id.desc())")
@@ -370,8 +384,13 @@ class Owner(db.Model):
         return [BOARD_POSITIONS[k] for k in self.positions]
 
     @property
+    def insurance_group(self):
+        return "tenants" if self.role == "tenant" else "owners"
+
+    @property
     def current_policy(self):
-        return self.policies[0] if self.policies else None
+        """The household policy that covers this person (shared with co-owners or co-tenants)."""
+        return self.unit.current_policy(self.insurance_group) if self.needs_insurance and self.unit else None
 
     @property
     def insurance_state(self):
@@ -450,9 +469,12 @@ INSURANCE_STATE_LABELS = {"valid": "Insured", "expiring": "Expiring soon", "expi
 
 
 class InsurancePolicy(db.Model):
-    """A home-insurance policy for an owner or tenant. Renewals add a new row; the latest counts."""
+    """A home-insurance policy covering a unit's owners together, or its tenants together.
+    `owner` is the named policyholder. Renewals add a new row; the latest end date counts."""
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey("owner.id", ondelete="CASCADE"), nullable=False, index=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), index=True)
+    holder_group = db.Column(db.String(10))  # 'owners' or 'tenants'
     provider = db.Column(db.String(200))
     policy_number = db.Column(db.String(100))
     valid_from = db.Column(db.Date, nullable=False)
@@ -461,8 +483,21 @@ class InsurancePolicy(db.Model):
     created_at = db.Column(db.DateTime, default=utcnow)
 
     owner = db.relationship("Owner", back_populates="policies")
+    unit = db.relationship("Unit")
     file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)
 
     @property
     def state(self):
         return insurance_state(self.valid_until)
+
+
+def hand_over_policies(person):
+    """Before removing a person, pass the household policies they hold to someone else in
+    the same group, so removing one co-owner doesn't drop the household's insurance."""
+    others = [o for o in person.unit.members(person.insurance_group) if o.id != person.id] if person.unit else []
+    if not others:
+        return False
+    heir = next((o for o in others if o.is_primary), others[0])
+    for policy in list(person.policies):
+        policy.owner = heir
+    return True

@@ -1,13 +1,20 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Insurance · {{ person.name }}{% endblock %}
+{% block title %}Insurance · Unit {{ unit.number }}{% endblock %}
 {% block content %}
-<h1>Home insurance <span class="muted">· {{ person.name }}, unit {{ person.unit.number }} ({{ person.role_label }})</span></h1>
+<h1>{{ 'Tenant' if group == 'tenants' else 'Owners’' }} insurance <span class="muted">· Unit {{ unit.number }}</span></h1>
 <form method="post" enctype="multipart/form-data" class="card narrow">
   {{ csrf() }}
-  <p class="muted">Attach the insurance certificate and enter the policy period.
-    {% if person.role == 'tenant' %}Tenants need tenant (renter's) insurance with liability coverage.{% else %}Co-owners need their own policy, including civil liability.{% endif %}
-    When the policy is renewed, add the new one here; earlier policies are kept.</p>
+  <p class="muted">
+    {% if group == 'tenants' %}One tenant (renter's) policy with liability coverage covers the household:
+    {% else %}One home-insurance policy, including civil liability, covers the unit's owners together:
+    {% endif %}<strong>{{ members|map(attribute='name')|join(', ') }}</strong>.
+    {% if last %}When it's renewed, add the new policy here; earlier ones are kept.{% endif %}</p>
+  {% if members|length > 1 %}
+  <label>Policyholder <select name="policyholder_id">
+    {% for m in members %}<option value="{{ m.id }}" {{ 'selected' if form.get('policyholder_id')|string == m.id|string }}>{{ m.name }}</option>{% endfor %}
+  </select></label>
+  {% else %}<input type="hidden" name="policyholder_id" value="{{ members[0].id }}">{% endif %}
   <div class="row">
     <label>Insurer <input name="provider" maxlength="200" value="{{ form.get('provider', '') }}" placeholder="e.g. Desjardins"></label>
     <label>Policy number <input name="policy_number" maxlength="100" value="{{ form.get('policy_number', '') }}"></label>
@@ -18,6 +25,6 @@
   </div>
   <label>Certificate (PDF or photo, up to 4 MB) <input type="file" name="file" accept="{{ accept }}" required></label>
   <button class="btn primary">Save insurance</button>
-  <a href="{{ url_for('units.detail', unit_id=person.unit_id) if current_user.is_admin else url_for('dashboard.index') }}">Cancel</a>
+  <a href="{{ url_for('units.detail', unit_id=unit.id) if current_user.is_admin else url_for('dashboard.index') }}">Cancel</a>
 </form>
 {% endblock %}

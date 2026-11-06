@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import balance, status_badge, insurance_badge %}
+{% from "_macros.html" import balance, status_badge, insurance_badge, household_insurance %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Welcome, {{ current_user.name.split(' ')[0] }}</h1>
@@ -33,12 +33,7 @@
       <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">View statement</a>
       {% if my_insurance %}
       <h2 style="margin-top:1.2rem">Home insurance</h2>
-      {% for o in my_insurance %}{% set p = o.current_policy %}
-        <div class="person"><div class="line"><span><strong>{{ o.name }}</strong> <span class="tag">{{ o.role_label }}</span> {{ insurance_badge(o.insurance_state) }}</span>
-          <a class="btn small" href="{{ url_for('insurance.new', owner_id=o.id) }}">{{ 'Upload renewal' if p else 'Upload insurance' }}</a></div>
-          {% if p %}<div class="policy muted">{{ p.provider or 'Policy' }}: {{ p.valid_from.strftime('%b %d, %Y') }} – {{ p.valid_until.strftime('%b %d, %Y') }}
-            {% if p.file %}· <a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">certificate</a>{% endif %}</div>{% endif %}</div>
-      {% endfor %}{% endif %}
+      {% for group in my_insurance %}{{ household_insurance(unit, group) }}{% endfor %}{% endif %}
     {% else %}
       <h2>No unit linked</h2><p class="muted">Contact the management office to link your account to a unit.</p>
     {% endif %}

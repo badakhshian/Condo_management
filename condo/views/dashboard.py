@@ -7,7 +7,7 @@ from ..extensions import db
 from ..models import ACTIVE_STATUSES, Announcement, Booking, MaintenanceRequest, Owner, Unit
 from .directory import board_members
 from .documents import current_building_insurance
-from .insurance import can_manage
+from .insurance import can_manage_group
 from .maintenance import can_decide
 
 bp = Blueprint("dashboard", __name__)
@@ -69,7 +69,8 @@ def index():
     if unit and current_user.role == "owner":  # don't miss older ones beyond the latest five
         to_approve = db.session.scalars(db.select(MaintenanceRequest).where(
             MaintenanceRequest.unit_id == unit.id, MaintenanceRequest.status == "awaiting_owner")).all()
-    my_insurance = [o for o in unit.owners if o.needs_insurance and can_manage(o)] if unit else []
+    my_insurance = [g for g in ("owners", "tenants")
+                    if unit and unit.members(g) and can_manage_group(unit.id, g)]
     return render_template("dashboard_resident.html", unit=unit, my_requests=my_requests,
                            my_bookings=my_bookings, announcements=announcements, to_approve=to_approve,
                            my_insurance=my_insurance, building=current_building_insurance(current_user),
