@@ -50,13 +50,5 @@
     {{ household_insurance(unit, group) }}
   </section>
   {% endfor %}
-  <section class="card">
-    <h2>Website accounts <a class="btn small" href="{{ url_for('residents.new', unit_id=unit.id) }}">Add</a></h2>
-    {% if unit.residents %}<ul class="list">
-      {% for r in unit.residents %}<li><a href="{{ url_for('residents.edit', user_id=r.id) }}">{{ r.name }}</a>
-        <span class="tag">{{ r.role_label }}</span> <span class="muted">{{ r.email }}{% if r.phone %} · {{ r.phone }}{% endif %}</span>
-        {% if not r.active %}<span class="badge status-closed">Inactive</span>{% endif %}</li>{% endfor %}
-    </ul>{% else %}<p class="muted">Nobody from this unit can sign in yet.</p>{% endif %}
-  </section>
 </div>
 {% endblock %}

@@ -298,7 +298,7 @@ def _parse_owners(rows, warnings):
         contacts.append({"row": n, "unit": unit, "name": name, "email": email, "phone": get(row, "phone"),
                          "address": get(row, "address"), "role": _owner_role(get(row, "role")),
                          "primary": get(row, "primary").lower() in TRUTHY, "notes": get(row, "notes"),
-                         "board": _board_positions(get(row, "board"), n, warnings)})
+                         "board": _board_positions(get(row, "board"), n, warnings) if col["board"] is not None else None})
     _resolve_same_as(contacts, warnings)
     return contacts
 
@@ -440,7 +440,10 @@ def _sync_owners(contacts, units):
         owner.role = c["role"]
         owner.is_primary = is_primary
         owner.notes = c["notes"] or None
-        owner.positions = [p for p in c.get("board", []) if p in allowed_positions(c["role"])]
+        if c.get("board") is not None:  # the sheet has a Board role column: it decides
+            owner.positions = [p for p in c["board"] if p in allowed_positions(c["role"])]
+        else:  # positions are assigned in the Directory; keep them unless the role no longer allows them
+            owner.positions = [p for p in owner.positions if p in allowed_positions(c["role"])]
     db.session.flush()
     for key, owner in current.items():
         if key not in keep:

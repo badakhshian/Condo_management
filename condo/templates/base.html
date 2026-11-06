@@ -18,6 +18,7 @@
       <a href="{{ url_for('directory.index') }}" class="{{ 'active' if ep.startswith(('directory', 'owners', 'residents')) }}">Directory</a>
       <a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Billing</a>
     {% elif current_user.unit_id %}
+      {% if nav_board %}<a href="{{ url_for('directory.board') }}" class="{{ 'active' if ep.startswith(('directory', 'residents')) }}">Directory</a>{% endif %}
       <a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">My account</a>
     {% endif %}
     <a href="{{ url_for('maintenance.index') }}" class="{{ 'active' if ep.startswith('maintenance') }}">Maintenance</a>

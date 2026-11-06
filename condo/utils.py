@@ -55,6 +55,51 @@ def admin_required(view):
     return wrapped
 
 
+def board_positions_of(user):
+    """Board positions held by the person whose contact email matches this account."""
+    from .extensions import db
+    from .models import Owner
+    if not user or not getattr(user, "is_authenticated", False) or not user.email:
+        return []
+    people = db.session.scalars(db.select(Owner).where(db.func.lower(Owner.email) == user.email.lower(),
+                                                       Owner.board_roles.is_not(None))).all()
+    return sorted({k for o in people for k in o.positions})
+
+
+def board_has_accounts():
+    """True once at least one board member can sign in (has an active account)."""
+    from .extensions import db
+    from .models import Owner, User
+    emails = [e.lower() for e in db.session.scalars(
+        db.select(Owner.email).where(Owner.board_roles.is_not(None), Owner.email.is_not(None)))]
+    if not emails:
+        return False
+    return db.session.scalar(db.select(db.func.count(User.id)).where(
+        db.func.lower(User.email).in_(emails), User.active.is_(True))) > 0
+
+
+def can_manage_accounts(user=None):
+    """Website accounts are managed by the board. Until a board member has an account,
+    managers keep access so the first board accounts can be created."""
+    user = user or current_user
+    if not user.is_authenticated:
+        return False
+    if board_positions_of(user):
+        return True
+    return user.is_admin and not board_has_accounts()
+
+
+def board_required(view):
+    @wraps(view)
+    @login_required
+    def wrapped(*args, **kwargs):
+        if not can_manage_accounts():
+            abort(403)
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
 def can_access_unit(unit_id):
     return current_user.is_admin or (unit_id is not None and current_user.unit_id == unit_id)
 

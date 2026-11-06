@@ -158,3 +158,9 @@ form .btn.primary + a { margin-left: .8rem; }
 .ins-box-valid { border-left-color: var(--ok); }
 .ins-box-expiring { border-left-color: var(--warn); }
 .ins-box-expired, .ins-box-missing { border-left-color: var(--danger); }
+.board-table td { vertical-align: top; }
+.holder { display: flex; justify-content: space-between; gap: .8rem; align-items: baseline; padding: .15rem 0; }
+.holder .excerpt { display: block; }
+.assign-form { display: flex; gap: .5rem; align-items: center; }
+.assign-form select { margin: 0; min-width: 12rem; }
+@media (max-width: 760px) { .assign-form { flex-wrap: wrap; } }

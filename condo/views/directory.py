@@ -7,11 +7,13 @@ residents views; this module lists, searches and exports.
 import csv
 import io
 
-from flask import Blueprint, Response, abort, redirect, render_template, request, url_for
+from flask import Blueprint, Response, abort, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, Owner, Unit, User
-from ..utils import admin_required
+from ..models import (BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
+                      Owner, Unit, User, allowed_positions)
+from ..utils import admin_required, board_has_accounts, board_positions_of, board_required, can_manage_accounts
 
 bp = Blueprint("directory", __name__, url_prefix="/directory")
 
@@ -58,6 +60,20 @@ def search_accounts(q="", role=""):
     return db.session.scalars(stmt).all()
 
 
+def can_manage_board(user=None):
+    user = user or current_user
+    return user.is_authenticated and (user.is_admin or bool(board_positions_of(user)))
+
+
+def visible_tabs():
+    tabs = TABS if current_user.is_admin else [t for t in TABS if t[0] == "board"]
+    if not can_manage_accounts():
+        tabs = [t for t in tabs if t[0] != "accounts"]
+    elif not current_user.is_admin:
+        tabs = tabs + [("accounts", "Accounts")]
+    return tabs
+
+
 def _counts():
     counts = dict(db.session.execute(db.select(Owner.role, db.func.count(Owner.id)).group_by(Owner.role)).all())
     out = {g: sum(counts.get(r, 0) for r in spec["roles"]) for g, spec in GROUPS.items()}
@@ -73,22 +89,73 @@ def index():
 
 
 @bp.route("/accounts")
-@admin_required
+@board_required
 def accounts():
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")
     users = search_accounts(q, role)
     emails = sorted({u.email for u in users if u.email and u.active})
     return render_template("directory/accounts.html", users=users, q=q, role=role, roles=ROLE_LABELS,
-                           emails=emails, tab="accounts", tabs=TABS, counts=_counts())
+                           bootstrap=not board_has_accounts(),
+                           emails=emails, tab="accounts", tabs=visible_tabs(), counts=_counts())
 
 
 @bp.route("/board")
-@admin_required
+@login_required
 def board():
+    if not can_manage_board():
+        abort(403)
     members = board_members()
     emails = sorted({p.email for _, _, people in members for p in people if p.email})
-    return render_template("directory/board.html", members=members, emails=emails, tab="board", tabs=TABS,
-                           counts=_counts())
+    candidates = db.session.scalars(db.select(Owner).join(Unit).where(Owner.role.in_(("owner", "co-owner", "contact")))
+                                    .order_by(Unit.number, Owner.name)).all()
+    eligible = {key: [c for c in candidates if key in allowed_positions(c.role)] for key in BOARD_POSITIONS}
+    return render_template("directory/board.html", members=members, emails=emails, eligible=eligible,
+                           single=SINGLE_HOLDER_POSITIONS, tab="board", tabs=visible_tabs(), counts=_counts())
+
+
+@bp.route("/board/assign", methods=["POST"])
+@login_required
+def assign():
+    if not can_manage_board():
+        abort(403)
+    key = request.form.get("position", "")
+    raw = request.form.get("owner_id", "")
+    person = db.session.get(Owner, int(raw)) if raw.isdigit() else None
+    if key not in BOARD_POSITIONS or person is None:
+        flash("Choose a person for the position.", "error")
+        return redirect(url_for("directory.board"))
+    if key not in allowed_positions(person.role):
+        flash(f"{person.name} can't be {BOARD_POSITIONS[key]}: only co-owners sit on the board"
+              + (" (an outside contact can do Accounting)." if person.role == "contact" else "."), "error")
+        return redirect(url_for("directory.board"))
+    if key in person.positions:
+        flash(f"{person.name} is already {BOARD_POSITIONS[key]}.", "info")
+        return redirect(url_for("directory.board"))
+    if key in SINGLE_HOLDER_POSITIONS:
+        for other in db.session.scalars(db.select(Owner).where(Owner.board_roles.like(f"%{key}%"))):
+            if key in other.positions:
+                other.positions = [p for p in other.positions if p != key]
+                flash(f"{BOARD_POSITIONS[key]} moved from {other.name} to {person.name}.", "info")
+    person.positions = person.positions + [key]
+    db.session.commit()
+    flash(f"{person.name} is now {BOARD_POSITIONS[key]}.", "success")
+    return redirect(url_for("directory.board"))
+
+
+@bp.route("/board/unassign", methods=["POST"])
+@login_required
+def unassign():
+    if not can_manage_board():
+        abort(403)
+    key = request.form.get("position", "")
+    raw = request.form.get("owner_id", "")
+    person = db.session.get(Owner, int(raw)) if raw.isdigit() else None
+    if person is None or key not in person.positions:
+        abort(400)
+    person.positions = [p for p in person.positions if p != key]
+    db.session.commit()
+    flash(f"{person.name} is no longer {BOARD_POSITIONS[key]}.", "success")
+    return redirect(url_for("directory.board"))
 
 
 @bp.route("/<group>")
@@ -106,12 +173,14 @@ def contacts(group):
             ~Unit.owners.any(Owner.role.in_(GROUPS["owners"]["roles"]))).order_by(Unit.number)).all()
     return render_template("directory/contacts.html", people=people, q=q, role=role, roles=role_choices,
                            emails=emails, group=group, spec=GROUPS[group], units_without=without,
-                           tab=group, tabs=TABS, counts=_counts())
+                           tab=group, tabs=visible_tabs(), counts=_counts())
 
 
 @bp.route("/<group>/export.csv")
-@admin_required
+@login_required
 def export(group):
+    if not (can_manage_accounts() if group == "accounts" else current_user.is_admin):
+        abort(403)
     buf = io.StringIO()
     writer = csv.writer(buf)
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")

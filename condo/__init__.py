@@ -63,11 +63,19 @@ def create_app(test_config=None):
     app.jinja_env.filters.update(money=money, phone=phone_display, tel=phone_href, one_line=one_line,
                                  initials=initials)
 
+    def _nav_board():
+        from flask_login import current_user
+        from .utils import board_positions_of
+        try:
+            return bool(current_user.is_authenticated and not current_user.is_admin and board_positions_of(current_user))
+        except Exception:
+            return False
+
     @app.context_processor
     def inject_globals():
         from datetime import date
         return {"condo_name": app.config["CONDO_NAME"], "ephemeral_db": app.config["EPHEMERAL_DB"],
-                "today": date.today(),
+                "today": date.today(), "nav_board": _nav_board(),
                 "STATUS_LABELS": models.REQUEST_STATUSES, "PRIORITY_LABELS": models.REQUEST_PRIORITIES}
 
     from flask import render_template

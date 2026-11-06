@@ -2,7 +2,8 @@
 {% block title %}Accounts · Directory{% endblock %}
 {% block content %}
 {% include "directory/_tabs.html" %}
-<p class="muted">People who can sign in to this website: staff (managers) and anyone else you give access to, such as owners or tenants.</p>
+<p class="muted">People who can sign in to this website: staff (managers) and anyone else given access, such as owners or tenants. Accounts are managed by the board.</p>
+{% if bootstrap %}<div class="flash flash-info">No board member has an account yet, so managers can set accounts up for now. Once a board member's account exists (same email as on their Directory entry), only the board can manage accounts.</div>{% endif %}
 <div class="head">
   <form class="search" method="get" style="margin:0">
     <input name="q" placeholder="Search name, email, phone or unit" value="{{ q }}">

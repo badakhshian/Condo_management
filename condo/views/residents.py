@@ -5,7 +5,7 @@ from flask_login import current_user
 
 from ..extensions import db
 from ..models import ROLE_LABELS, ROLES, Unit, User
-from ..utils import admin_required
+from ..utils import admin_required, board_required
 
 bp = Blueprint("residents", __name__, url_prefix="/residents")
 
@@ -65,14 +65,14 @@ def _units():
 
 
 @bp.route("/")
-@admin_required
+@board_required
 def index():
     """Old address of the accounts list; it now lives in the Directory."""
     return redirect(url_for("directory.accounts"), code=301)
 
 
 @bp.route("/new", methods=["GET", "POST"])
-@admin_required
+@board_required
 def new():
     user = User()
     if request.method == "POST":
@@ -92,7 +92,7 @@ def new():
 
 
 @bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
-@admin_required
+@board_required
 def edit(user_id):
     user = db.session.get(User, user_id) or abort(404)
     if request.method == "POST":

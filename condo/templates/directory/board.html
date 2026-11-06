@@ -1,25 +1,38 @@
 {% extends "base.html" %}
+{% from "_macros.html" import csrf %}
 {% block title %}Board · Directory{% endblock %}
 {% block content %}
 {% include "directory/_tabs.html" %}
 <div class="head">
-  <p class="muted" style="margin:0">The syndicate's board of directors. Give someone a position from their Edit page.</p>
+  <p class="muted" style="margin:0">The syndicate's board of directors. Assign positions here. Only co-owners sit on the board; an outside contact can be listed for Accounting.</p>
   {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email the board ({{ emails|length }})</a>{% endif %}
 </div>
 <div class="card">
-<table>
-  <thead><tr><th>Position</th><th>Name</th><th>Unit</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+<table class="board-table">
+  <thead><tr><th>Position</th><th>Held by</th><th>Assign</th></tr></thead>
   <tbody>{% for key, label, people in members %}
-    {% for o in people %}
-    <tr><td>{% if loop.first %}<strong>{{ label }}</strong>{% endif %}</td>
-      <td>{{ o.name }}{% if o.role == 'contact' %} <span class="tag">Outside contact</span>{% endif %}</td>
-      <td><a href="{{ url_for('units.detail', unit_id=o.unit_id) }}">{{ o.unit.number }}</a></td>
-      <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
-      <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
-      <td>{% if o.origin != 'sheet' %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory') }}">Edit</a>{% else %}<span class="tag">from sheet</span>{% endif %}</td></tr>
-    {% else %}
-    {% if key != 'director' %}<tr><td><strong>{{ label }}</strong></td><td colspan="5" class="muted">Vacant</td></tr>{% endif %}
-    {% endfor %}
+    <tr>
+      <td><strong>{{ label }}</strong>{% if key not in single %}<div class="excerpt">Several people allowed</div>{% endif %}</td>
+      <td>{% for o in people %}
+          <div class="holder">
+            <span><strong>{{ o.name }}</strong> <span class="muted">· unit {{ o.unit.number }}</span>{% if o.role == 'contact' %} <span class="tag">Outside contact</span>{% endif %}
+              {% if o.email %}<span class="excerpt"><a href="mailto:{{ o.email }}">{{ o.email }}</a>{% if o.phone %} · <a href="{{ o.phone|tel }}">{{ o.phone|phone }}</a>{% endif %}</span>{% endif %}</span>
+            <form method="post" action="{{ url_for('directory.unassign') }}" class="inline" onsubmit="return confirm('Remove {{ o.name|e }} as {{ label }}?')">
+              {{ csrf() }}<input type="hidden" name="position" value="{{ key }}"><input type="hidden" name="owner_id" value="{{ o.id }}">
+              <button class="link-btn danger">Remove</button></form>
+          </div>
+        {% else %}<span class="muted">Vacant</span>{% endfor %}</td>
+      <td>{% set options = eligible[key]|rejectattr('id', 'in', people|map(attribute='id')|list)|list %}
+        {% if options %}
+        <form method="post" action="{{ url_for('directory.assign') }}" class="assign-form"
+              {% if key in single and people %}onsubmit="return confirm('{{ label }} has one holder: assigning replaces {{ people[0].name|e }}.')"{% endif %}>
+          {{ csrf() }}<input type="hidden" name="position" value="{{ key }}">
+          <select name="owner_id" required><option value="">Choose a person…</option>
+            {% for c in options %}<option value="{{ c.id }}">{{ c.name }} — unit {{ c.unit.number }}{% if c.role == 'contact' %} (contact){% endif %}</option>{% endfor %}</select>
+          <button class="btn small">{{ 'Replace' if key in single and people else 'Assign' }}</button>
+        </form>
+        {% else %}<span class="muted">Nobody else eligible</span>{% endif %}</td>
+    </tr>
   {% endfor %}</tbody>
 </table>
 </div>
