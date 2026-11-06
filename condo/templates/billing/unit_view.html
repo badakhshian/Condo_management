@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import balance %}
+{% block title %}Accounting · Unit {{ unit.number }} · {{ period.label }}{% endblock %}
+{% block content %}
+<div class="head"><h1>Accounting <span class="muted">· Unit {{ unit.number }}</span></h1>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">Full statement</a>
+    {% if current_user.is_admin %}
+    <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">Add charge</a>
+    <a class="btn primary" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">Record payment</a>
+    {% endif %}
+  </div></div>
+{% include "billing/_period_bar.html" %}
+{% if unit.owner_display %}<p class="muted">{{ unit.owner_display }}{% if unit.ownership_share %} · {{ '%.2f%%'|format(unit.ownership_share * 100) }} of the building{% endif %}</p>{% endif %}
+
+<div class="stats">
+  <div class="stat"><span>{{ billed|money }}</span>Billed · {{ period.label }}</div>
+  <div class="stat"><span class="credit">{{ paid|money }}</span>Paid · {{ period.label }}</div>
+  <div class="stat"><span>{{ balance(unit.balance) }}</span>{{ 'Owed today' if unit.balance > 0 else 'In credit today' if unit.balance < 0 else 'Balance today' }}</div>
+  <div class="stat"><span>{{ unit.monthly_fee_cents|money }}</span>Monthly fee</div>
+</div>
+
+<div class="grid two money-panels">
+  <section class="card panel-out">
+    <div class="card-head"><h2>Charges <span class="muted count">{{ charges|length }}</span></h2>
+      <span>{{ (billed + opening)|money }}</span></div>
+    {% if charges %}<table>
+      <thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th></tr></thead>
+      <tbody>{% for c in charges %}
+        <tr><td class="nowrap">{{ c.due_date.strftime('%b %d' if period.view == 'month' else '%Y-%m-%d') }}</td>
+          <td>{{ c.description|truncate(80) }}{% if c.kind == 'opening' %} <span class="tag">Opening balance</span>{% endif %}</td>
+          <td class="num">{{ c.amount_cents|money }}</td></tr>
+      {% endfor %}</tbody>
+    </table>{% else %}<p class="muted">Nothing billed in {{ period.label }}.</p>{% endif %}
+  </section>
+  <section class="card panel-in">
+    <div class="card-head"><h2>Payments <span class="muted count">{{ payments|length }}</span></h2>
+      <span class="credit">{{ paid|money }}</span></div>
+    {% if payments %}<table>
+      <thead><tr><th>Date</th><th>Details</th><th class="num">Amount</th></tr></thead>
+      <tbody>{% for p in payments %}
+        <tr><td class="nowrap">{{ p.paid_on.strftime('%b %d' if period.view == 'month' else '%Y-%m-%d') }}</td>
+          <td class="muted">{{ p.label|truncate(80) }}{% if p.method == 'purchase credit' %} <span class="tag">credit</span>{% endif %}</td>
+          <td class="num">{{ p.amount_cents|money }}</td></tr>
+      {% endfor %}</tbody>
+    </table>{% else %}<p class="muted">No payments in {{ period.label }}.</p>{% endif %}
+  </section>
+</div>
+
+{% if months %}
+<section class="card">
+  <h2>{{ period.year }} by month</h2>
+  <table>
+    <thead><tr><th>Month</th><th class="num">Billed</th><th class="num">Paid</th><th class="num">Difference</th></tr></thead>
+    <tbody>{% for m in months %}{% set diff = m.billed - m.paid %}
+      <tr class="{{ 'muted' if not (m.billed or m.paid) }}"><td><a href="{{ url_for('billing.index', view='month', year=period.year, month=m.month, **period.unit_args) }}">{{ m.name }}</a></td>
+        <td class="num">{{ m.billed|money if m.billed else '—' }}</td><td class="num">{{ m.paid|money if m.paid else '—' }}</td>
+        <td class="num {{ 'owed' if diff > 0 else 'credit' if diff < 0 }}">{{ diff|money if (m.billed or m.paid) else '—' }}</td></tr>
+    {% endfor %}</tbody>
+    <tfoot><tr><th>Total</th><th class="num">{{ billed|money }}</th><th class="num">{{ paid|money }}</th><th class="num">{{ (billed - paid)|money }}</th></tr></tfoot>
+  </table>
+  {% if opening %}<p class="muted">Not included above: opening balance of {{ opening|money }} carried over from the previous records.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

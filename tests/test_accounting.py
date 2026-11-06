@@ -94,9 +94,56 @@ def test_nav_says_accounting(admin_client):
     assert ">Accounting</a>" in page and ">Billing</a>" not in page
 
 
-def test_accounting_is_admin_only(alice_client):
-    assert alice_client.get("/accounting/").status_code == 403
+def test_owner_sees_only_their_unit(alice_client):
+    seed()
+    page = alice_client.get("/accounting/").data.decode()
+    assert "Accounting <span class=\"muted\">· Unit 101" in page
+    assert 'name="unit"' not in page and "Hydra" not in page  # no unit picker, no building costs
+    assert "$400.00" in page and "$350.00" not in page  # unit 102's payment hidden
+    # Asking for another unit still shows their own.
+    other = alice_client.get(f"/accounting/?unit={unit('102').id}").data.decode()
+    assert "· Unit 101" in other and "· Unit 102" not in other
     assert alice_client.get("/accounting/costs/new").status_code == 403
+    assert alice_client.get("/accounting/payments/new").status_code == 403
+
+
+def test_tenant_goes_to_statement(client):
+    from .conftest import login
+    login(client, "bob@test.com")
+    resp = client.get("/accounting/")
+    assert resp.status_code == 302 and "/accounting/unit/" in resp.headers["Location"]
+
+
+def test_manager_unit_filter(admin_client):
+    seed()
+    u = unit("101")
+    page = admin_client.get(f"/accounting/?view=year&year=2026&unit={u.id}").data.decode()
+    assert "· Unit 101" in page and "<h2>Charges" in page and "Hydra" not in page
+    assert f'value="{u.id}" selected' in page
+    assert f"unit={u.id}" in page.split('aria-label="Previous"')[0].split("period-nav")[1]  # arrows keep the unit
+    allpage = admin_client.get("/accounting/?view=year&year=2026").data.decode()
+    assert "All units" in allpage and "Hydra" in allpage
+
+
+def test_board_member_sees_all_units_read_only(app, client):
+    from condo.models import Owner, User
+    from .conftest import login
+    o = Owner(unit=unit("101"), name="Alice Chen", role="owner", email="alice@test.com")
+    o.positions = ["treasurer"]
+    db.session.add(o)
+    db.session.commit()
+    seed()
+    login(client, "alice@test.com")
+    page = client.get("/accounting/").data.decode()
+    assert "All units" in page and "Hydra" in page and "+ Cost" not in page and "Add charge" not in page
+    assert client.get("/accounting/costs/new").status_code == 403
+
+
+def test_sync_banner_removed(admin_client):
+    from condo.models import Setting
+    Setting.put("sheet", {"url": "https://docs.google.com/spreadsheets/d/" + "x" * 30, "auto": True})
+    db.session.commit()
+    assert b"come from the Google Sheet" not in admin_client.get("/accounting/").data
 
 
 def test_guess_cost_category():

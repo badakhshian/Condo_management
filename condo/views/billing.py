@@ -94,10 +94,37 @@ def generate_dues(year, month, due_day=1):
     return created, skipped
 
 
+def accounting_scope(user=None):
+    """'all' for managers and the board, 'own' for other owners (their unit only), else None."""
+    from ..utils import board_positions_of
+    user = user or current_user
+    if user.is_admin or board_positions_of(user):
+        return "all"
+    if user.role == "owner" and user.unit_id is not None:
+        return "own"
+    return None
+
+
 @bp.route("/")
-@admin_required
+@login_required
 def index():
+    scope = accounting_scope()
+    if scope is None:  # tenants keep their unit statement
+        if current_user.unit_id:
+            return redirect(url_for("billing.ledger", unit_id=current_user.unit_id))
+        abort(403)
     period = resolve_period(request.args)
+    if scope == "own":
+        unit = current_user.unit
+    else:
+        raw = request.args.get("unit", "")
+        unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
+    if unit is not None and scope == "all":
+        for key in ("prev", "next"):
+            period[key] = {**period[key], "unit": unit.id}
+    period["unit_args"] = {"unit": unit.id} if unit is not None and scope == "all" else {}
+    if unit is not None:
+        return _unit_view(unit, period, scope)
     start, end = period["start"], period["end"]
     payments = db.session.scalars(db.select(Payment).where(Payment.paid_on.between(start, end))
                                   .order_by(Payment.paid_on.desc(), Payment.id.desc())).all()
@@ -135,10 +162,34 @@ def index():
     from ..models import Reimbursement
     pending = db.session.scalar(db.select(db.func.count(Reimbursement.id)).where(
         Reimbursement.status.in_(("submitted", "approved"))))
-    return render_template("billing/index.html", period=period, pending_reimbursements=pending, payments=payments, costs=costs,
+    return render_template("billing/index.html", period=period, pending_reimbursements=pending, scope=scope,
+                           all_units=units, unit=None, payments=payments, costs=costs,
                            paid_total=paid_total, cost_total=cost_total, categories=categories, months=months,
                            rows=rows, outstanding=outstanding, today=date.today(), sheet=sheet,
                            last_sync=Setting.get("sheet_last_sync"))
+
+
+def _unit_view(unit, period, scope):
+    """One unit's accounting for the period: what it was billed, what it paid, its balance."""
+    start, end = period["start"], period["end"]
+    charges = db.session.scalars(db.select(Charge).where(Charge.unit_id == unit.id, Charge.due_date.between(start, end))
+                                 .order_by(Charge.due_date.desc(), Charge.id.desc())).all()
+    payments = db.session.scalars(db.select(Payment).where(Payment.unit_id == unit.id, Payment.paid_on.between(start, end))
+                                  .order_by(Payment.paid_on.desc(), Payment.id.desc())).all()
+    billed = sum(c.amount_cents for c in charges if c.kind != "opening")
+    opening = sum(c.amount_cents for c in charges if c.kind == "opening")
+    paid = sum(p.amount_cents for p in payments)
+    months = []
+    if period["view"] == "year":
+        for m in range(1, 13):
+            ms, me = date(period["year"], m, 1), date(period["year"], m, calendar.monthrange(period["year"], m)[1])
+            b = sum(c.amount_cents for c in charges if ms <= c.due_date <= me and c.kind != "opening")
+            pd = sum(p.amount_cents for p in payments if ms <= p.paid_on <= me)
+            months.append({"month": m, "name": calendar.month_name[m], "billed": b, "paid": pd})
+    all_units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if scope == "all" else []
+    return render_template("billing/unit_view.html", period=period, unit=unit, scope=scope, all_units=all_units,
+                           charges=charges, payments=payments, billed=billed, opening=opening, paid=paid,
+                           months=months, today=date.today())
 
 
 @bp.route("/costs/new", methods=["GET", "POST"])

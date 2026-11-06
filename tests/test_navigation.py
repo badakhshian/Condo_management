@@ -53,5 +53,5 @@ def test_resident_back_links_go_to_dashboard(alice_client):
         User.email == "alice@test.com")), title="Tap", description="Drips")
     db.session.add(req)
     db.session.commit()
-    assert back(alice_client.get(f"/accounting/unit/{u.id}")) == ("/", "Dashboard")
+    assert back(alice_client.get(f"/accounting/unit/{u.id}")) == ("/accounting/", "Accounting")
     assert back(alice_client.get(f"/maintenance/{req.id}")) == ("/maintenance/", "Maintenance")

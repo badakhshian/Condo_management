@@ -475,3 +475,18 @@ def run_auto_sync():
 def month_name(period):
     y, m = (int(x) for x in period.split("-"))
     return f"{calendar.month_name[m]} {y}"
+
+
+def clashing_entries(plan):
+    """Charges entered in the app (e.g. by the Excel import) that block the sheet's own
+    opening balance or monthly fee for the same unit and month."""
+    wanted = set()
+    for e in plan.get("entries", []):
+        if e["category"] in ("opening", "dues") and e["amount_cents"]:
+            kind = "opening" if e["category"] == "opening" else "dues"
+            wanted.add((e["unit"], kind, e["date"][:7]))
+    if not wanted:
+        return []
+    rows = db.session.scalars(db.select(Charge).join(Unit).where(Charge.origin.is_(None), Charge.period.is_not(None),
+                                                                Charge.kind.in_(("opening", "dues")))).all()
+    return [c for c in rows if (c.unit.number, c.kind, c.period) in wanted]

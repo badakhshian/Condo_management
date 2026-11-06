@@ -3,35 +3,16 @@
 {% block title %}Accounting · {{ period.label }}{% endblock %}
 {% block content %}
 <div class="head"><h1>Accounting</h1>
-  <div class="actions">
+  {% if current_user.is_admin %}<div class="actions">
     <a class="btn" href="{{ url_for('sheet.index') }}">Google Sheet</a>
     <a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a>
     <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
     <a class="btn" href="{{ url_for('reimbursements.index') }}">Reimbursements{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
-  </div></div>
+  </div>{% endif %}</div>
 
-<div class="period-bar card">
-  <nav class="tabs" aria-label="Period">
-    <a href="{{ url_for('billing.index', view='year', year=period.year) }}" class="{{ 'active' if period.view == 'year' }}">Year</a>
-    <a href="{{ url_for('billing.index', view='month', year=period.year, month=period.month if period.view == 'month' else (today.month if period.year == today.year else 1)) }}" class="{{ 'active' if period.view == 'month' }}">Month</a>
-  </nav>
-  <div class="period-nav">
-    <a class="btn small" href="{{ url_for('billing.index', **period.prev) }}" aria-label="Previous">‹</a>
-    <strong>{{ period.label }}</strong>
-    <a class="btn small" href="{{ url_for('billing.index', **period.next) }}" aria-label="Next">›</a>
-  </div>
-  <form method="get" class="period-pick">
-    <input type="hidden" name="view" value="{{ period.view }}">
-    <select name="year">{% for y in range(today.year + 1, 2014, -1) %}<option {{ 'selected' if y == period.year }}>{{ y }}</option>{% endfor %}</select>
-    {% if period.view == 'month' %}<select name="month">{% for m in range(1, 13) %}<option value="{{ m }}" {{ 'selected' if m == period.month }}>{{ ['January','February','March','April','May','June','July','August','September','October','November','December'][m-1] }}</option>{% endfor %}</select>{% endif %}
-    <button class="btn small">Go</button>
-  </form>
-</div>
+{% include "billing/_period_bar.html" %}
 
-{% if sheet.get('url') %}
-<div class="flash flash-info">Fees, payments and costs come from the Google Sheet{% if sheet.get('auto') %} and update automatically{% endif %}.
-  {% if last_sync %}Last sync {{ last_sync.at.replace('T', ' ') }} UTC.{% endif %} <a href="{{ url_for('sheet.index') }}">Manage</a></div>
-{% else %}
+{% if not sheet.get('url') and current_user.is_admin %}
 <form method="post" action="{{ url_for('billing.generate') }}" class="card inline-form">
   {{ csrf() }}
   <strong>Monthly dues</strong>
@@ -53,7 +34,7 @@
   <table>
     <thead><tr><th>Unit</th><th>Owner</th><th class="num">Billed · {{ period.label }}</th><th class="num">Paid · {{ period.label }}</th><th class="num">Balance today</th></tr></thead>
     <tbody>{% for r in rows %}
-      <tr><td><a href="{{ url_for('billing.ledger', unit_id=r.unit.id) }}">{{ r.unit.number }}</a></td>
+      <tr><td><a href="{{ url_for('billing.index', view=period.view, year=period.year, month=period.month, unit=r.unit.id) }}">{{ r.unit.number }}</a></td>
         <td class="muted">{{ r.unit.owner_display or '—' }}</td>
         <td class="num">{{ r.billed|money }}</td><td class="num">{{ r.paid|money }}</td><td class="num">{{ balance(r.balance) }}</td></tr>
     {% endfor %}</tbody>
@@ -63,7 +44,7 @@
   <section class="card panel-in">
     <div class="card-head"><h2>Payments <span class="muted count">{{ payments|length }}</span></h2>
       <span class="credit">{{ paid_total|money }}</span>
-      <a class="btn small primary" href="{{ url_for('billing.new_payment') }}">+ Payment</a></div>
+      {% if current_user.is_admin %}<a class="btn small primary" href="{{ url_for('billing.new_payment') }}">+ Payment</a>{% endif %}</div>
     {% if payments %}<table>
       <thead><tr><th>Date</th><th>Unit</th><th>Details</th><th class="num">Amount</th></tr></thead>
       <tbody>{% for p in payments %}
@@ -78,7 +59,7 @@
   <section class="card panel-out">
     <div class="card-head"><h2>Costs <span class="muted count">{{ costs|length }}</span></h2>
       <span class="owed">{{ cost_total|money }}</span>
-      <a class="btn small primary" href="{{ url_for('billing.new_cost') }}">+ Cost</a></div>
+      {% if current_user.is_admin %}<a class="btn small primary" href="{{ url_for('billing.new_cost') }}">+ Cost</a>{% endif %}</div>
     {% if categories %}<div class="cat-chips">{% for label, amount in categories %}<span class="tag">{{ label }} {{ amount|money }}</span>{% endfor %}</div>{% endif %}
     {% if costs %}<table>
       <thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th><th></th></tr></thead>
@@ -88,7 +69,7 @@
             {% if x.paid_by %}<div class="excerpt">{{ x.paid_by }}</div>{% endif %}
             {% if x.approved_by %}<div class="excerpt">Approved: {{ x.approved_by|truncate(60) }}</div>{% endif %}</td>
           <td class="num">{{ x.cost_cents|money }}</td>
-          <td>{% if x.origin == 'credit' %}<span class="tag" title="Recorded as a purchase credit on the unit">credit</span>{% elif x.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet">sheet</span>{% else %}{{ post_button(url_for('billing.delete_cost', cost_id=x.id), '×', cls='link-btn danger', confirm='Remove this cost?') }}{% endif %}</td></tr>
+          <td>{% if x.origin == 'credit' %}<span class="tag" title="Recorded as a purchase credit on the unit">credit</span>{% elif x.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet">sheet</span>{% elif current_user.is_admin %}{{ post_button(url_for('billing.delete_cost', cost_id=x.id), '×', cls='link-btn danger', confirm='Remove this cost?') }}{% endif %}</td></tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">No costs in {{ period.label }}.</p>{% endif %}
   </section>

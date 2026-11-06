@@ -7,6 +7,18 @@
   purchase credits and building expenses come from the sheet's <strong>Transactions</strong> tab, and owner contacts from an optional <strong>Owners</strong> tab; the <strong>Balances</strong> tab is used as a cross-check.
   Each sync replaces only what came from the sheet. Entries typed into the app by hand are kept.</p>
 
+{% if clashes %}
+<form method="post" action="{{ url_for('sheet.resolve_clashes') }}" class="card building-insurance"
+      onsubmit="return confirm('Remove these {{ clashes|length }} old entries and load the sheet\'s own figures instead?')">
+  {{ csrf() }}
+  <h2>{{ clashes|length }} old entr{{ 'y' if clashes|length == 1 else 'ies' }} block the sheet</h2>
+  <p>These were entered in the app before the sheet was linked (for example by the Excel import). The sheet has its own figures for the same unit and month, so its lines were skipped and <strong>balances don't match the sheet</strong>.</p>
+  <table><thead><tr><th>Unit</th><th>Type</th><th>Month</th><th>Description</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for c in clashes %}<tr><td>{{ c.unit.number }}</td><td>{{ 'Opening balance' if c.kind == 'opening' else 'Monthly fee' }}</td>
+      <td>{{ c.period }}</td><td class="muted">{{ c.description|truncate(70) }}</td><td class="num">{{ c.amount_cents|money }}</td></tr>{% endfor %}</tbody></table>
+  <button class="btn primary">Replace with the sheet's entries</button>
+</form>
+{% endif %}
 <div class="grid two">
   <form method="post" class="card">
     {{ csrf() }}

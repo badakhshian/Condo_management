@@ -63,7 +63,7 @@ def test_login_ignores_external_next(client):
     assert resp.headers["Location"] == "/"
 
 
-@pytest.mark.parametrize("path", ["/units/", "/residents/", "/accounting/", "/announcements/new",
+@pytest.mark.parametrize("path", ["/units/", "/residents/", "/announcements/new",
                                   "/amenities/new", "/accounting/payments/new"])
 def test_resident_blocked_from_admin_pages(alice_client, path):
     assert alice_client.get(path).status_code == 403

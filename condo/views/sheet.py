@@ -35,7 +35,9 @@ def index():
         db.session.commit()
         flash("Sheet link saved. Preview a sync to check what it will load.", "success")
         return redirect(url_for("sheet.index"))
-    return render_template("sheet/index.html", cfg=cfg, last=Setting.get("sheet_last_sync"),
+    plan = _latest_plan()
+    clashes = sheet_sync.clashing_entries(plan) if plan else []
+    return render_template("sheet/index.html", cfg=cfg, last=Setting.get("sheet_last_sync"), clashes=clashes,
                            last_check=Setting.get("sheet_last_check"), last_error=Setting.get("sheet_last_error"),
                            cron_ready=bool(os.environ.get("CRON_SECRET")))
 
@@ -98,6 +100,31 @@ def apply(batch_id):
     problems = len(summary["mismatches"]) + len(summary["skipped"])
     flash("Sheet loaded." + (f" {problems} item(s) need a look — see below." if problems else
                              " Every unit's balance matches the sheet."), "success" if not problems else "info")
+    return redirect(url_for("sheet.index"))
+
+
+def _latest_plan():
+    batches = db.session.scalars(db.select(ImportBatch).order_by(ImportBatch.created_at.desc()).limit(20)).all()
+    return next((b.payload for b in batches if b.payload.get("kind") == "sheet" and b.payload.get("loaded")), None)
+
+
+@bp.route("/resolve-clashes", methods=["POST"])
+@admin_required
+def resolve_clashes():
+    """Remove app-entered charges that block the sheet's entries, then load the sheet again."""
+    plan = _latest_plan()
+    if not plan:
+        flash("Load the sheet once first.", "error")
+        return redirect(url_for("sheet.index"))
+    clashes = sheet_sync.clashing_entries(plan)
+    for c in clashes:
+        db.session.delete(c)
+    db.session.flush()
+    summary = sheet_sync.apply(plan)
+    problems = len(summary["mismatches"]) + len(summary["skipped"])
+    flash(f"Removed {len(clashes)} old entr{'y' if len(clashes) == 1 else 'ies'} and re-applied the sheet."
+          + (" Every unit's balance now matches the sheet." if not problems else f" {problems} item(s) still need a look."),
+          "success" if not problems else "info")
     return redirect(url_for("sheet.index"))
 
 

@@ -111,7 +111,7 @@ def test_flow_preview_confirm_auto(admin_client, monkeypatch):
     assert db.session.scalar(db.select(db.func.count(Expense.id))) == 1
     admin_client.post("/sheet/auto", data={"auto": "on"})
     assert sheet_sync.config()["auto"] is True
-    assert b"come from the Google Sheet" in admin_client.get("/accounting/").data
+    assert b"Generate" not in admin_client.get("/accounting/").data  # dues come from the sheet
 
 
 def test_preview_from_uploaded_file(admin_client):
@@ -225,3 +225,21 @@ def test_owners_tab_same_as_address():
     addr = {c["name"]: c["address"] for c in plan["owners"]}
     assert addr["Wei Chen"] == addr["Bob Okafor"] == "12 Elm St, Laval"
     assert addr["Eve"] == "" and any('"Same as Nobody"' in w for w in plan["warnings"])
+
+
+def test_resolve_clashes_with_imported_openings(admin_client):
+    from condo.models import ImportBatch
+    u101 = db.session.scalar(db.select(Unit).where(Unit.number == "101"))
+    # The Excel import loaded an opening balance first...
+    db.session.add(Charge(unit=u101, kind="opening", period="2026-09", due_date=date(2026, 9, 30), amount_cents=224766,
+                          description="Opening balance (owed) from spreadsheet"))
+    db.session.commit()
+    resp = admin_client.post("/sheet/preview", data={"workbook": (io.BytesIO(make_sheet()), "log.xlsx")},
+                             content_type="multipart/form-data")
+    admin_client.post(resp.headers["Location"] + "/apply")
+    assert db.session.get(Unit, u101.id).balance != 5000  # ...so the sheet's opening was skipped
+    page = admin_client.get("/sheet/").data.decode()
+    assert "1 old entry block the sheet" in page and "$2,247.66" in page
+    admin_client.post("/sheet/resolve-clashes")
+    assert db.session.get(Unit, u101.id).balance == 5000  # now matches the Balances tab
+    assert "block the sheet" not in admin_client.get("/sheet/").data.decode()

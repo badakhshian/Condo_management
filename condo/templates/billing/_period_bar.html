@@ -1,0 +1,23 @@
+{% set months_names = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+{% set ua = period.unit_args %}
+<div class="period-bar card">
+  <nav class="tabs" aria-label="Period">
+    <a href="{{ url_for('billing.index', view='year', year=period.year, **ua) }}" class="{{ 'active' if period.view == 'year' }}">Year</a>
+    <a href="{{ url_for('billing.index', view='month', year=period.year, month=period.month if period.view == 'month' else (today.month if period.year == today.year else 1), **ua) }}" class="{{ 'active' if period.view == 'month' }}">Month</a>
+  </nav>
+  <div class="period-nav">
+    <a class="btn small" href="{{ url_for('billing.index', **period.prev) }}" aria-label="Previous">‹</a>
+    <strong>{{ period.label }}</strong>
+    <a class="btn small" href="{{ url_for('billing.index', **period.next) }}" aria-label="Next">›</a>
+  </div>
+  <form method="get" class="period-pick">
+    <input type="hidden" name="view" value="{{ period.view }}">
+    <select name="year" aria-label="Year">{% for y in range(today.year + 1, 2014, -1) %}<option {{ 'selected' if y == period.year }}>{{ y }}</option>{% endfor %}</select>
+    {% if period.view == 'month' %}<select name="month" aria-label="Month">{% for m in range(1, 13) %}<option value="{{ m }}" {{ 'selected' if m == period.month }}>{{ months_names[m-1] }}</option>{% endfor %}</select>{% endif %}
+    {% if scope == 'all' %}
+    <select name="unit" aria-label="Unit"><option value="">All units</option>
+      {% for u in all_units %}<option value="{{ u.id }}" {{ 'selected' if unit and unit.id == u.id }}>Unit {{ u.number }}</option>{% endfor %}</select>
+    {% else %}<span class="tag">Unit {{ unit.number }}</span>{% endif %}
+    <button class="btn small">Go</button>
+  </form>
+</div>

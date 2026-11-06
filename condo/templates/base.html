@@ -19,7 +19,8 @@
       <a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
     {% elif current_user.unit_id %}
       {% if nav_board %}<a href="{{ url_for('directory.board') }}" class="{{ 'active' if ep.startswith(('directory', 'residents')) }}">Directory</a>{% endif %}
-      <a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">Statement</a>
+      {% if current_user.role == 'owner' or nav_board %}<a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
+      {% else %}<a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">Statement</a>{% endif %}
     {% endif %}
     <a href="{{ url_for('maintenance.index') }}" class="{{ 'active' if ep.startswith('maintenance') }}">Maintenance</a>
     {% if not current_user.is_admin and (current_user.role == 'owner' or nav_board) %}<a href="{{ url_for('reimbursements.index') }}" class="{{ 'active' if ep.startswith('reimbursements') }}">Reimbursements</a>{% endif %}
