@@ -94,7 +94,11 @@ def _units():
 
 
 def _back(owner, unit, from_directory=False):
-    """After saving, return to the Directory tab the person was added or edited from, or to the unit."""
+    """After saving, return to the page the person was added or edited from (the Directory tab
+    or the unit page), falling back to the unit."""
+    from ..navigation import safe_back
+    if safe_back():
+        return safe_back()
     if from_directory or request.args.get("next") == "directory":
         from .directory import group_for_role
         return url_for("directory.contacts", group=group_for_role(owner.role))
@@ -191,7 +195,8 @@ def delete(owner_id):
     db.session.commit()
     flash(f"{owner.name} removed." + (" Their household insurance now lists another member as policyholder."
                                       if kept else ""), "success")
-    return redirect(url_for("units.detail", unit_id=unit_id))
+    from ..navigation import safe_back
+    return redirect(safe_back() or url_for("units.detail", unit_id=unit_id))
 
 
 @bp.route("/owners/")

@@ -39,11 +39,11 @@
     <span class="field-hint">At least 8 characters. Share it with the person privately.</span></label>
   <label class="check"><input type="checkbox" name="must_change" {{ 'checked' if form.get('must_change') }}> Ask them to change it at their first sign-in</label>
   {% else %}
-  <p class="muted">Password: <a href="{{ url_for('residents.set_password', user_id=user.id) }}">set a new password</a>{% if user.must_change_password %} · <span class="tag">must change at next sign-in</span>{% endif %}</p>
+  <p class="muted">Password: <a href="{{ url_for('residents.set_password', user_id=user.id, back=safe_back() or url_for('directory.accounts')) }}">set a new password</a>{% if user.must_change_password %} · <span class="tag">must change at next sign-in</span>{% endif %}</p>
   {% endif %}
   {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> Account active</label>{% endif %}
   <button class="btn primary">Save</button>
-  <a href="{{ url_for('directory.accounts') }}">Cancel</a>
+  <a href="{{ safe_back() or url_for('directory.accounts') }}">Cancel</a>
 </form>
 <script>
   (function () {

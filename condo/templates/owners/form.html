@@ -41,10 +41,10 @@
   <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
   <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
   <button class="btn primary">Save</button>
-  <a href="{{ url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index') }}">Cancel</a>
+  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index')) }}">Cancel</a>
 </form>
 {% if owner and owner.origin != 'sheet' %}
-<form method="post" action="{{ url_for('owners.delete', owner_id=owner.id) }}" class="card narrow danger-zone"
+<form method="post" action="{{ url_for('owners.delete', owner_id=owner.id, back=safe_back()) }}" class="card narrow danger-zone"
       onsubmit="return confirm('Remove {{ owner.name|e }} from unit {{ unit.number }}? Their insurance records are removed too.')">
   {{ csrf() }}
   <div class="inline-form"><span>Remove <strong>{{ owner.name }}</strong> from unit {{ unit.number }}.</span>

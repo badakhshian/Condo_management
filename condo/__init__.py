@@ -60,6 +60,8 @@ def create_app(test_config=None):
     register_cli(app)
 
     from .utils import initials, money, one_line, phone_display, phone_href
+    from .navigation import here, safe_back
+    app.jinja_env.globals.update(here=here, safe_back=safe_back)
     app.jinja_env.filters.update(money=money, phone=phone_display, tel=phone_href, one_line=one_line,
                                  initials=initials)
 

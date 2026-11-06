@@ -37,6 +37,9 @@ def can_view(policy, user=None):
 
 
 def _back(unit):
+    from ..navigation import safe_back
+    if safe_back():
+        return safe_back()
     if request.args.get("next") == "dashboard" or not current_user.is_admin:
         return url_for("dashboard.index")
     return url_for("units.detail", unit_id=unit.id)

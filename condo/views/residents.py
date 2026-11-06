@@ -6,6 +6,7 @@ from flask_login import current_user
 
 from ..extensions import db
 from ..models import ROLE_LABELS, ROLES, Unit, User
+from ..navigation import safe_back
 from ..utils import admin_required, board_required
 
 bp = Blueprint("residents", __name__, url_prefix="/residents")
@@ -117,7 +118,7 @@ def new():
             db.session.add(user)
             db.session.commit()
             flash(f"Account for {user.name} created.", "success")
-            return redirect(url_for("directory.accounts"))
+            return redirect(safe_back() or url_for("directory.accounts"))
         for e in errors:
             flash(e, "error")
         return render_template("residents/form.html", user=user, form=request.form, units=_units(),
@@ -139,7 +140,7 @@ def edit(user_id):
         if not errors:
             db.session.commit()
             flash(f"{user.name} updated.", "success")
-            return redirect(url_for("directory.accounts"))
+            return redirect(safe_back() or url_for("directory.accounts"))
         db.session.rollback()
         for e in errors:
             flash(e, "error")

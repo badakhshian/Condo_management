@@ -26,6 +26,6 @@
   </div>
   <label>Certificate (PDF or photo, up to 4 MB) <input type="file" name="file" accept="{{ accept }}" required></label>
   <button class="btn primary">Save insurance</button>
-  <a href="{{ url_for('units.detail', unit_id=unit.id) if current_user.is_admin else url_for('dashboard.index') }}">Cancel</a>
+  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if current_user.is_admin else url_for('dashboard.index')) }}">Cancel</a>
 </form>
 {% endblock %}

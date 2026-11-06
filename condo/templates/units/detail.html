@@ -38,7 +38,7 @@
     <div class="card-head">
       <h2>{{ title }} {% if people %}<span class="muted count">{{ people|length }}</span>{% endif %}</h2>
       {% set gi = unit.group_insurance(group) %}{% if gi %}{{ insurance_badge(gi) }}{% endif %}
-      <a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id, role='tenant' if group == 'tenants' else 'owner') }}">+ {{ 'Tenant' if group == 'tenants' else 'Owner' }}</a>
+      <a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id, role='tenant' if group == 'tenants' else 'owner', back=here()) }}">+ {{ 'Tenant' if group == 'tenants' else 'Owner' }}</a>
     </div>
     {% for o in people %}
       {% set prev = people[loop.index0 - 1] if not loop.first else none %}

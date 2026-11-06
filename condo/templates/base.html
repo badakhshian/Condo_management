@@ -47,23 +47,9 @@
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
   {% endwith %}
-  {% if back and not hide_back %}<a class="back-link" href="{{ back.url }}" data-fallback="{{ back.url }}">← Back to {{ back.label }}</a>{% endif %}
+  {% if back and not hide_back %}<a class="back-link" href="{{ back.url }}">← Back to {{ back.label }}</a>{% endif %}
   {% block content %}{% endblock %}
 </main>
-<script>
-  /* "Back" returns to the previous portal page (keeping its filters and tabs) when there is one;
-     it skips a form you just submitted, and otherwise goes to the page's logical parent. */
-  (function () {
-    var link = document.querySelector('.back-link');
-    if (!link) return;
-    var ref = document.referrer, here = location.href;
-    var fromPortal = ref && ref.indexOf(location.origin + '/') === 0 && ref.split('#')[0] !== here.split('#')[0];
-    var fromForm = /\/(new|edit|login)(\/|\?|$)|\/(insurance|owners)\/new/.test(ref || '');
-    if (fromPortal && !fromForm && history.length > 1) {
-      link.textContent = '← Back';
-      link.addEventListener('click', function (e) { e.preventDefault(); history.back(); });
-    }
-  })();
-</script>
+
 </body>
 </html>

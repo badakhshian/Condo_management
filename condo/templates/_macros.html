@@ -29,7 +29,7 @@
       </div>
       <div class="person-actions">
         {% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>
-        {% else %}<a class="link-btn" href="{{ url_for('owners.edit', owner_id=o.id) }}">Edit</a>{% endif %}
+        {% else %}<a class="link-btn" href="{{ url_for('owners.edit', owner_id=o.id, back=here()) }}">Edit</a>{% endif %}
       </div>
     </div>
     {% if o.email or o.phone %}<div class="person-line">
@@ -59,8 +59,8 @@
   {% endif %}
   <div class="person-line">
     {% if p and p.file %}<a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">View certificate</a>{% endif %}
-    <a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group) }}">{{ 'Add renewal' if p else 'Add insurance' }}</a>
-    {% if p and unit.members(group)|length > 1 %}<a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, separate=1) }}">Add another person's own policy</a>{% endif %}
+    <a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, back=here()) }}">{{ 'Add renewal' if p else 'Add insurance' }}</a>
+    {% if p and unit.members(group)|length > 1 %}<a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, separate=1, back=here()) }}">Add another person's own policy</a>{% endif %}
   </div>
   {% for x in unit.extra_policies(group) %}
   <div class="person-line muted extra-policy">Also: {{ x.owner.name }} · {{ x.provider or 'Policy' }}{% if x.policy_number %} #{{ x.policy_number }}{% endif %}

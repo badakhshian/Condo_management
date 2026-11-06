@@ -68,10 +68,44 @@ def parent_for(endpoint, args):
     return "Dashboard", url_for("dashboard.index")
 
 
+def here():
+    """The current page's path and query, to pass as ?back= on links into edit pages."""
+    return request.full_path.rstrip("?")
+
+
+def safe_back():
+    """The ?back= page a link came from, if it is a page of this portal (never another site)."""
+    target = request.args.get("back", "") or request.form.get("back", "")
+    if not target.startswith("/") or target.startswith("//") or "\\" in target:
+        return None
+    return target
+
+
+def label_for(path):
+    from .extensions import db
+    from .models import Unit
+    import re
+
+    bare = path.split("?", 1)[0]
+    m = re.match(r"^/units/(\d+)$", bare)
+    if m:
+        unit = db.session.get(Unit, int(m.group(1)))
+        return f"unit {unit.number}" if unit else "the unit"
+    for prefix, label in (("/directory", "Directory"), ("/accounting", "Accounting"), ("/maintenance", "Maintenance"),
+                          ("/documents", "Documents"), ("/reimbursements", "Reimbursements"), ("/units", "Units"),
+                          ("/notifications", "Notifications"), ("/sheet", "Google Sheet")):
+        if bare.startswith(prefix):
+            return label
+    return "the previous page"
+
+
 def back_link():
     try:
         if not current_user.is_authenticated:
             return None
+        came_from = safe_back()
+        if came_from and request.endpoint not in TOP_LEVEL:
+            return {"label": label_for(came_from), "url": came_from}
         parent = parent_for(request.endpoint, request.view_args or {})
     except Exception:  # never break a page over its back link
         return None
