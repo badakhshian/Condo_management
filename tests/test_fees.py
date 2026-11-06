@@ -9,6 +9,9 @@ from .conftest import login
 from .test_staff import staff
 
 
+PERIOD_2026 = {"basis": "annual", "starts_on": "2026-01-01", "ends_on": "2026-12-31"}
+
+
 def unit(number):
     return db.session.scalar(db.select(Unit).where(Unit.number == number))
 
@@ -27,7 +30,7 @@ def test_split_by_weight_adds_up_exactly():
 
 def test_workbook_rate_for_unit_161(app):
     # The 2026 budget of $34,691 split by unit 161's share gives $4,027.37 a year in the workbook.
-    s = FeeSchedule(year=2026, annual_total_cents=3469100)
+    s = FeeSchedule(year=2026, amount_cents=3469100)
     u = Unit(id=901, number="161", ownership_share=402737 / 3469100)
     other = Unit(id=902, number="999", ownership_share=1 - 402737 / 3469100)
     rows = {r["unit"].number: r for r in s.unit_fees([u, other])}
@@ -37,7 +40,7 @@ def test_workbook_rate_for_unit_161(app):
 
 def test_save_schedule_with_override_and_apply(admin_client):
     set_shares(0.5, 0.3, 0.2)
-    resp = admin_client.post("/accounting/fees/2026", data={"annual_total": "12,000", "override_%d" % unit("201").id: "1,200"})
+    resp = admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "12,000", "override_%d" % unit("201").id: "1,200"})
     assert resp.status_code == 302
     s = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == 2026))
     rows = {r["unit"].number: r for r in s.unit_fees([unit("101"), unit("102"), unit("201")])}
@@ -54,7 +57,7 @@ def test_save_schedule_with_override_and_apply(admin_client):
 
 def test_fixed_amounts_cannot_exceed_budget(admin_client):
     set_shares(0.5, 0.3, 0.2)
-    admin_client.post("/accounting/fees/2026", data={"annual_total": "1,000", "override_%d" % unit("101").id: "2,000"})
+    admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "1,000", "override_%d" % unit("101").id: "2,000"})
     assert db.session.scalar(db.select(FeeSchedule)) is None
 
 
@@ -111,7 +114,9 @@ def test_equal_and_custom_splits(admin_client):
 
 def test_owner_sees_own_fee_and_specials(app, admin_client):
     set_shares(0.5, 0.3, 0.2)
-    admin_client.post("/accounting/fees/%d" % date.today().year, data={"annual_total": "12,000"})
+    y = date.today().year
+    admin_client.post("/accounting/fees/%d" % y, data={"amount": "12,000", "basis": "annual",
+                                                        "starts_on": f"{y}-01-01", "ends_on": f"{y}-12-31"})
     admin_client.post("/accounting/specials/new", data={"title": "Elevator", "method": "share", "total": "1,000",
                                                         "deadline": (date.today() + timedelta(days=5)).isoformat()})
     sc = db.session.scalar(db.select(SpecialContribution))
@@ -123,7 +128,7 @@ def test_owner_sees_own_fee_and_specials(app, admin_client):
     login(admin_client, "alice@test.com")
     page = admin_client.get("/accounting/").data.decode()
     assert "Elevator" in page and "$6,000.00" in page
-    assert admin_client.post("/accounting/fees/2026", data={"annual_total": "1"}).status_code in (302, 403)
+    assert admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "1"}).status_code in (302, 403)
     assert db.session.scalar(db.select(FeeSchedule)).annual_total_cents == 1200000
 
 
@@ -135,6 +140,68 @@ def test_permissions(app, client):
     login(client, "staff@x.com")
     page = client.get("/accounting/fees")
     assert page.status_code == 200 and "+ Special contribution" not in page.data.decode()
-    assert client.post("/accounting/fees/2026", data={"annual_total": "5"}).status_code in (302, 403)
+    assert client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "5"}).status_code in (302, 403)
     assert db.session.scalar(db.select(FeeSchedule)) is None
     assert client.get("/accounting/specials/new").status_code in (302, 403)
+
+
+def test_monthly_basis_and_custom_period(admin_client):
+    set_shares(0.5, 0.3, 0.2)
+    admin_client.post("/accounting/fees/2026", data={"basis": "monthly", "amount": "3,000", "starts_on": "2026-04-01",
+                                                     "ends_on": "2027-03-31", "override_%d" % unit("201").id: "500"})
+    s = db.session.scalar(db.select(FeeSchedule))
+    assert (s.basis, s.months, s.monthly_total_cents, s.annual_total_cents) == ("monthly", 12, 300000, 3600000)
+    rows = {r["unit"].number: r for r in s.unit_fees([unit("101"), unit("102"), unit("201")])}
+    assert rows["201"]["monthly"] == 50000 and rows["201"]["annual"] == 600000
+    assert rows["101"]["monthly"] == 156250 and rows["102"]["monthly"] == 93750  # 2,500 split 5:3
+    page = admin_client.get("/accounting/fees?year=2026").data.decode()
+    assert "$36,000.00" in page and "$3,000.00" in page and "Jan 31, 2027" in page  # reminder date
+    # a half-year period entered as an annual figure
+    admin_client.post("/accounting/fees/2027", data={"basis": "annual", "amount": "6,000", "starts_on": "2027-04-01",
+                                                     "ends_on": "2027-09-30"})
+    half = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == 2027))
+    assert (half.months, half.monthly_total_cents) == (6, 100000)
+
+
+def test_period_validation(admin_client):
+    admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "1,200"})
+    resp = admin_client.post("/accounting/fees/2027", data={"basis": "annual", "amount": "1", "starts_on": "2026-06-01",
+                                                            "ends_on": "2027-05-31"}, follow_redirects=True)
+    assert "already fees for a period starting in 2026" in resp.data.decode() and db.session.scalar(db.select(db.func.count(FeeSchedule.id))) == 1
+    resp = admin_client.post("/accounting/fees/2028", data={"basis": "annual", "amount": "1", "starts_on": "2028-06-01",
+                                                            "ends_on": "2028-01-01"}, follow_redirects=True)
+    assert "end date must be after" in resp.data.decode()
+
+
+def test_board_reminded_two_months_before_end(app, admin_client):
+    from condo.views.fees import check_renewals
+    admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "12,000"})
+    s = db.session.scalar(db.select(FeeSchedule))
+    assert s.renewal_date == date(2026, 10, 31)
+    with app.test_request_context():
+        assert check_renewals(date(2026, 10, 30)) == 0
+        assert check_renewals(date(2026, 10, 31)) == 1
+        assert check_renewals(date(2026, 11, 15)) == 0  # only once
+    admin = db.session.scalar(db.select(User).where(User.email == "admin@test.com"))
+    note = db.session.scalar(db.select(Notification).where(Notification.user_id == admin.id, Notification.kind == "fees"))
+    assert "Dec 31, 2026" in note.title and "/accounting/fees?year=2027" in note.url
+    assert s.renewal_notified_at is not None
+
+
+def test_no_reminder_when_next_period_is_set(app, admin_client):
+    from condo.views.fees import check_renewals
+    admin_client.post("/accounting/fees/2026", data={**PERIOD_2026, "amount": "12,000"})
+    admin_client.post("/accounting/fees/2027", data={"basis": "annual", "amount": "12,500", "starts_on": "2027-01-01",
+                                                     "ends_on": "2027-12-31"})
+    with app.test_request_context():
+        assert check_renewals(date(2026, 11, 15)) == 0
+
+
+def test_cron_runs_renewal_check(app, client, monkeypatch):
+    from condo import sheet_sync
+    monkeypatch.setenv("CRON_SECRET", "s3cret")
+    monkeypatch.setattr(sheet_sync, "run_auto_sync", lambda: "not configured")
+    calls = []
+    monkeypatch.setattr("condo.views.fees.check_renewals", lambda: calls.append(1) or 0)
+    assert client.get("/sheet/cron", headers={"Authorization": "Bearer s3cret"}).status_code == 200
+    assert calls == [1]

@@ -152,6 +152,12 @@ def cron():
     if not secret or not hmac.compare_digest(given, f"Bearer {secret}"):
         abort(403)
     try:
+        from .fees import check_renewals
+        check_renewals()  # reminds the board two months before the condo-fee period ends
+    except Exception:  # never let the reminder stop the sheet sync
+        db.session.rollback()
+        current_app.logger.exception("Fee renewal check failed")
+    try:
         status = sheet_sync.run_auto_sync()
         Setting.put("sheet_last_error", None)
         db.session.commit()

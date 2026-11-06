@@ -1,13 +1,13 @@
 """Accounting > Fees & contributions: annual condo-fee rates per unit, and special contributions
 with deadlines and per-unit payment progress."""
-from datetime import date
+from datetime import date, timedelta
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from .. import notify
 from ..extensions import db
-from ..models import (SPECIAL_STATUS_LABELS, SPLIT_METHODS, Charge, FeeOverride, FeeSchedule, SpecialContribution,
+from ..models import (FEE_BASES, SPECIAL_STATUS_LABELS, add_months, SPLIT_METHODS, Charge, FeeOverride, FeeSchedule, SpecialContribution,
                       SpecialShare, Unit, split_by_weight, utcnow)
 from ..utils import parse_date, parse_money, permission_required
 
@@ -22,9 +22,38 @@ def _money(cents):
     return f"${cents / 100:,.2f}"
 
 
+def _period_defaults(year, previous):
+    """Start and end dates offered for a new period: right after the previous one, else the calendar year."""
+    start = previous.end + timedelta(days=1) if previous and previous.end.year in (year - 1, year) else date(year, 1, 1)
+    return start, add_months(start, 12) - timedelta(days=1)
+
+
+def check_renewals(today=None):
+    """Tell the board, once, when a fee period ends within two months and no next period is set yet."""
+    today = today or date.today()
+    sent = 0
+    schedules = db.session.scalars(db.select(FeeSchedule).order_by(FeeSchedule.year)).all()
+    for s in schedules:
+        if s.renewal_notified_at or not (s.renewal_date <= today <= s.end + timedelta(days=31)):
+            continue
+        if any(o.start > s.end - timedelta(days=1) for o in schedules if o.id != s.id):
+            continue  # the next period is already set
+        nxt = s.end + timedelta(days=1)
+        notify.send(notify.board(), f"Condo fees: the current rates end on {s.end:%b %d, %Y}",
+                    url=url_for("fees.index", year=nxt.year),
+                    body=f"Set the condo fees for the period starting {nxt:%b %d, %Y} and apply them to the units.",
+                    kind="fees", include_actor=True)
+        s.renewal_notified_at = utcnow()
+        sent += 1
+    if sent:
+        db.session.commit()
+    return sent
+
+
 @bp.route("/fees")
 @permission_required("accounting")
 def index():
+    check_renewals()
     years = db.session.scalars(db.select(FeeSchedule).order_by(FeeSchedule.year.desc())).all()
     try:
         year = int(request.args.get("year", date.today().year))
@@ -37,30 +66,73 @@ def index():
     prev_rows = {r["unit"].id: r for r in previous.unit_fees(units)} if previous else {}
     missing_shares = [u.number for u in units if not u.ownership_share]
     specials = db.session.scalars(db.select(SpecialContribution).order_by(SpecialContribution.deadline.desc())).all()
+    if schedule:
+        starts, ends, basis, amount = schedule.start, schedule.end, schedule.basis, schedule.amount_cents
+    else:
+        starts, ends = _period_defaults(year, previous)
+        basis = previous.basis if previous else "annual"
+        amount = previous.amount_cents if previous else None
+    form = {"starts_on": starts.isoformat(), "ends_on": ends.isoformat(), "basis": basis,
+            "amount": f"{amount / 100:.2f}" if amount is not None else ""}
+    today = date.today()
+    renewal_due = (schedule is not None and schedule.renewal_date <= today <= schedule.end
+                   and not any(y.start > schedule.end - timedelta(days=1) for y in years if y.id != schedule.id))
     return render_template("fees/index.html", year=year, schedule=schedule, previous=previous, rows=rows,
                            prev_rows=prev_rows, years=years, units=units, missing_shares=missing_shares,
-                           specials=specials, labels=SPECIAL_STATUS_LABELS, today=date.today())
+                           specials=specials, labels=SPECIAL_STATUS_LABELS, today=today, form=form,
+                           bases=FEE_BASES, renewal_due=renewal_due,
+                           next_year=(schedule.end + timedelta(days=1)).year if schedule else year + 1)
 
 
 @bp.route("/fees/<int:year>", methods=["POST"])
 @permission_required("accounting_edit")
 def save_schedule(year):
+    errors, dates = [], {}
+    basis = request.form.get("basis", "annual")
+    if basis not in FEE_BASES:
+        errors.append("Choose annual total or monthly total.")
     try:
-        total = parse_money(request.form.get("annual_total"))
+        total = parse_money(request.form.get("amount"))
     except ValueError as e:
-        flash(f"Annual budget: {e}", "error")
-        return redirect(url_for("fees.index", year=year))
+        errors.append(f"{FEE_BASES.get(basis, 'Total')}: {e}")
+        total = 0
+    for field, label in (("starts_on", "Start date"), ("ends_on", "End date")):
+        try:
+            dates[field] = parse_date(request.form.get(field), label)
+        except ValueError as e:
+            errors.append(str(e))
     schedule = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == year))
+    if len(dates) == 2:
+        if dates["ends_on"] <= dates["starts_on"]:
+            errors.append("The end date must be after the start date.")
+        else:
+            for other in db.session.scalars(db.select(FeeSchedule)):
+                if other is schedule:
+                    continue
+                if other.year == dates["starts_on"].year:
+                    errors.append(f"There are already fees for a period starting in {other.year}.")
+                elif other.start <= dates["ends_on"] and other.end >= dates["starts_on"]:
+                    errors.append(f"These dates overlap the period {other.start:%b %d, %Y} – {other.end:%b %d, %Y}.")
+    if errors:
+        for e in errors:
+            flash(e, "error")
+        return redirect(url_for("fees.index", year=year))
     if schedule is None:
-        schedule = FeeSchedule(year=year, annual_total_cents=total)
+        schedule = FeeSchedule(amount_cents=total)
         db.session.add(schedule)
-    schedule.annual_total_cents = total
+    if schedule.id and schedule.end != dates["ends_on"]:
+        schedule.renewal_notified_at = None  # a new end date gets its own reminder
+    schedule.year = dates["starts_on"].year
+    schedule.starts_on, schedule.ends_on = dates["starts_on"], dates["ends_on"]
+    basis_changed = schedule.id is not None and schedule.basis != basis
+    schedule.basis = basis
+    schedule.amount_cents = total
     schedule.notes = request.form.get("notes", "").strip() or None
-    # Per-unit overrides: a filled box fixes that unit's annual fee; an empty one follows the share.
+    # Per-unit fixed amounts, in the same terms as the total (a year or a month).
     existing = {o.unit_id: o for o in schedule.overrides}
     for unit in _units():
         raw = request.form.get(f"override_{unit.id}", "").strip()
-        if raw:
+        if raw and not basis_changed:
             try:
                 cents = parse_money(raw)
             except ValueError as e:
@@ -68,20 +140,22 @@ def save_schedule(year):
                 db.session.rollback()
                 return redirect(url_for("fees.index", year=year))
             if unit.id in existing:
-                existing[unit.id].annual_cents = cents
+                existing[unit.id].amount_cents = cents
             else:
-                schedule.overrides.append(FeeOverride(unit_id=unit.id, annual_cents=cents))
+                schedule.overrides.append(FeeOverride(unit_id=unit.id, amount_cents=cents))
         elif unit.id in existing:
-            db.session.delete(existing[unit.id])
+            schedule.overrides.remove(existing[unit.id])
     db.session.flush()
-    fixed = sum(o.annual_cents for o in schedule.overrides)
-    if fixed > total:
+    if sum(o.amount_cents for o in schedule.overrides) > total:
         db.session.rollback()
-        flash("The fixed unit amounts add up to more than the annual budget.", "error")
+        flash("The fixed unit amounts add up to more than the total.", "error")
         return redirect(url_for("fees.index", year=year))
     db.session.commit()
-    flash(f"{year} condo fees saved: {_money(total)} a year in total.", "success")
-    return redirect(url_for("fees.index", year=year))
+    flash(f"Condo fees saved for {schedule.start:%b %d, %Y} – {schedule.end:%b %d, %Y}: "
+          f"{_money(schedule.annual_total_cents)} in total, {_money(schedule.monthly_total_cents)} a month."
+          + (" Fixed unit amounts were cleared because you switched between annual and monthly." if basis_changed
+             and existing else ""), "success")
+    return redirect(url_for("fees.index", year=schedule.year))
 
 
 @bp.route("/fees/<int:year>/apply", methods=["POST"])
@@ -234,8 +308,13 @@ def delete_special(special_id):
 
 def unit_summary(unit, year=None):
     """An owner's view: their annual fee for the year and their special contributions."""
-    year = year or date.today().year
-    schedule = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == year))
+    today = date.today()
+    if year:
+        schedule = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == year))
+    else:  # the period running today, else the one for this calendar year
+        schedule = next((s for s in db.session.scalars(db.select(FeeSchedule)) if s.start <= today <= s.end), None) \
+            or db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == today.year))
+        year = schedule.year if schedule else today.year
     fee = None
     if schedule:
         fee = next((r for r in schedule.unit_fees(_units()) if r["unit"].id == unit.id), None)
@@ -245,4 +324,4 @@ def unit_summary(unit, year=None):
         row = next((r for r in sc.status_rows() if r["unit"].id == unit.id), None)
         if row:
             specials.append((sc, row))
-    return {"year": year, "fee": fee, "specials": specials}
+    return {"year": year, "fee": fee, "specials": specials, "schedule": schedule}

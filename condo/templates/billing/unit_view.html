@@ -24,7 +24,8 @@
   <section class="card">
     <h2>Condo fee · {{ fees.year }}</h2>
     {% if fees.fee %}
-      <dl class="props"><dt>Annual</dt><dd><strong>{{ fees.fee.annual|money }}</strong></dd>
+      <dl class="props"><dt>Period</dt><dd>{{ fees.schedule.start.strftime('%b %d, %Y') }} – {{ fees.schedule.end.strftime('%b %d, %Y') }}</dd>
+        <dt>{{ 'Total for the period' if fees.schedule.months != 12 else 'Annual' }}</dt><dd><strong>{{ fees.fee.annual|money }}</strong></dd>
         <dt>Monthly</dt><dd>{{ fees.fee.monthly|money }}</dd>
         {% if fees.fee.share %}<dt>Ownership share</dt><dd>{{ '%.2f%%'|format(fees.fee.share * 100) }}</dd>{% endif %}</dl>
     {% else %}<p class="muted">The {{ fees.year }} rates haven't been set yet. Current monthly fee: {{ unit.monthly_fee_cents|money }}.</p>{% endif %}

@@ -757,29 +757,81 @@ def split_by_weight(total_cents, weights):
     return parts
 
 
+def add_months(d, months):
+    """The same day `months` later (or earlier), clamped to the month's last day."""
+    import calendar
+    from datetime import date
+    m = d.month - 1 + months
+    y, m = d.year + m // 12, m % 12 + 1
+    return date(y, m, min(d.day, calendar.monthrange(y, m)[1]))
+
+
+FEE_BASES = {"annual": "Annual total", "monthly": "Monthly total"}
+RENEWAL_NOTICE_MONTHS = 2
+
+
 class FeeSchedule(db.Model):
-    """The building's condo-fee budget for one year, split between units by ownership share."""
+    """The building's condo fees for one period (normally a year), split between units by ownership
+    share. The board enters either the total for the whole period or the total per month."""
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.Integer, nullable=False, unique=True)
-    annual_total_cents = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False, unique=True)  # the year the period starts in
+    amount_cents = db.Column("annual_total_cents", db.Integer, nullable=False)  # in `basis` terms
+    basis = db.Column(db.String(10), nullable=False, default="annual", server_default="annual")
+    starts_on = db.Column(db.Date)
+    ends_on = db.Column(db.Date)
     notes = db.Column(db.Text)
     applied_at = db.Column(db.DateTime)
+    renewal_notified_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=utcnow)
 
     overrides = db.relationship("FeeOverride", back_populates="schedule", cascade="all, delete-orphan")
 
+    @property
+    def start(self):
+        from datetime import date
+        return self.starts_on or date(self.year, 1, 1)
+
+    @property
+    def end(self):
+        from datetime import date
+        return self.ends_on or date(self.year, 12, 31)
+
+    @property
+    def months(self):
+        """Whole months in the period (Jan 1 – Dec 31 is 12)."""
+        return max(round(((self.end - self.start).days + 1) / 30.4375), 1)
+
+    @property
+    def renewal_date(self):
+        return add_months(self.end, -RENEWAL_NOTICE_MONTHS)
+
+    def _to_annual(self, cents):
+        return cents * self.months if self.basis == "monthly" else cents
+
+    def _to_monthly(self, cents):
+        return cents if self.basis == "monthly" else round(cents / self.months)
+
+    @property
+    def annual_total_cents(self):
+        """Total for the whole period."""
+        return self._to_annual(self.amount_cents)
+
+    @property
+    def monthly_total_cents(self):
+        return self._to_monthly(self.amount_cents)
+
     def unit_fees(self, units):
-        """[{unit, share, annual, monthly, override}] for every unit. Overrides are kept as set;
-        the rest of the budget is split by ownership share."""
-        fixed = {o.unit_id: o.annual_cents for o in self.overrides}
+        """[{unit, share, annual, monthly, amount, override}] for every unit. Fixed amounts are kept
+        as set; the rest of the total is split by ownership share. `amount` is in the schedule's basis."""
+        fixed = {o.unit_id: o.amount_cents for o in self.overrides}
         rest = [u for u in units if u.id not in fixed]
-        remaining = self.annual_total_cents - sum(v for k, v in fixed.items() if any(u.id == k for u in units))
+        remaining = self.amount_cents - sum(v for k, v in fixed.items() if any(u.id == k for u in units))
         split = split_by_weight(max(remaining, 0), {u.id: (u.ownership_share or 0) for u in rest})
         rows = []
         for u in units:
-            annual = fixed.get(u.id, split.get(u.id, 0))
-            rows.append({"unit": u, "share": u.ownership_share, "annual": annual, "monthly": round(annual / 12),
-                         "override": u.id in fixed})
+            amount = fixed.get(u.id, split.get(u.id, 0))
+            rows.append({"unit": u, "share": u.ownership_share, "amount": amount, "annual": self._to_annual(amount),
+                         "monthly": self._to_monthly(amount), "override": u.id in fixed})
         return rows
 
 
@@ -787,7 +839,7 @@ class FeeOverride(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     schedule_id = db.Column(db.Integer, db.ForeignKey("fee_schedule.id", ondelete="CASCADE"), nullable=False)
     unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"), nullable=False)
-    annual_cents = db.Column(db.Integer, nullable=False)
+    amount_cents = db.Column("annual_cents", db.Integer, nullable=False)  # in the schedule's basis
 
     schedule = db.relationship("FeeSchedule", back_populates="overrides")
     __table_args__ = (db.UniqueConstraint("schedule_id", "unit_id", name="uq_fee_override_unit"),)
