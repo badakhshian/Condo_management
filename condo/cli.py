@@ -18,6 +18,9 @@ def bootstrap():
 
     db.create_all()
     upgrade_schema()
+    from .models import link_admin_accounts
+    if link_admin_accounts():
+        db.session.commit()
     email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
     password = os.environ.get("ADMIN_PASSWORD") or ""
     if not email or len(password) < 8:
@@ -26,7 +29,7 @@ def bootstrap():
         return
     if db.session.scalar(db.select(User).where(User.email == email)):
         return
-    user = User(email=email, name=os.environ.get("ADMIN_NAME", "Manager"), role="admin")
+    user = User(email=email, name=os.environ.get("ADMIN_NAME", "Administrator"), role="admin")
     user.set_password(password)
     db.session.add(user)
     db.session.commit()

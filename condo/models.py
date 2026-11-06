@@ -12,7 +12,11 @@ def utcnow():
 
 
 ROLES = ("admin", "owner", "tenant")
-ROLE_LABELS = {"admin": "Manager", "owner": "Owner", "tenant": "Tenant"}
+# Accounts are owners or tenants. Managing the building comes from holding a board position
+# (Directory > Board). "admin" only remains for the first, temporary account until its person
+# is in the Directory with a board position; it is then converted automatically.
+ROLE_LABELS = {"owner": "Owner", "tenant": "Tenant", "admin": "Administrator (temporary)"}
+ACCOUNT_ROLES = {"owner": "Owner", "tenant": "Tenant"}
 
 
 class User(UserMixin, db.Model):
@@ -36,8 +40,31 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     @property
-    def is_admin(self):
+    def board_positions(self):
+        """Board positions of the Directory person with this account's email (cached per request)."""
+        from flask import has_request_context, request
+        cache = {}
+        if has_request_context():  # cache for this request only
+            req = request._get_current_object()
+            cache = req.__dict__.setdefault("_board_positions", {})
+        if self.id not in cache:
+            people = db.session.scalars(db.select(Owner).where(
+                db.func.lower(Owner.email) == (self.email or "").lower(), Owner.board_roles.is_not(None))).all()
+            cache[self.id] = [k for k in BOARD_POSITIONS if any(k in o.positions for o in people)]
+        return cache[self.id]
+
+    @property
+    def is_board(self):
+        return bool(self.board_positions)
+
+    @property
+    def is_temp_admin(self):
         return self.role == "admin"
+
+    @property
+    def is_admin(self):
+        """Can manage the building: board members (and the temporary first account)."""
+        return self.role == "admin" or self.is_board
 
     @property
     def is_active(self):  # Flask-Login hook: deactivated users cannot log in
@@ -45,6 +72,8 @@ class User(UserMixin, db.Model):
 
     @property
     def role_label(self):
+        if self.is_board:
+            return ", ".join(BOARD_POSITIONS[k] for k in self.board_positions)
         return ROLE_LABELS.get(self.role, self.role)
 
 
@@ -644,3 +673,23 @@ class ReimbursementFile(db.Model):
 
     reimbursement = db.relationship("Reimbursement", back_populates="files")
     file = db.relationship("StoredFile", cascade="all, delete-orphan", single_parent=True)
+
+
+def link_admin_accounts():
+    """Turn temporary administrator accounts into the person's own account once that person is
+    in the Directory (same email) with a board position. Returns the converted accounts."""
+    from flask import has_request_context, request
+    if has_request_context():
+        request._get_current_object().__dict__.pop("_board_positions", None)
+    converted = []
+    for user in db.session.scalars(db.select(User).where(User.role == "admin")).all():
+        person = db.session.scalar(db.select(Owner).where(db.func.lower(Owner.email) == user.email.lower(),
+                                                         Owner.board_roles.is_not(None)))
+        if person is None or not person.positions:
+            continue
+        user.role = "tenant" if person.role == "tenant" else "owner"
+        user.unit_id = person.unit_id
+        if user.name.strip().lower() in ("building manager", "manager", "administrator", "admin", ""):
+            user.name = person.name[:120]
+        converted.append(user)
+    return converted

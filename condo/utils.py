@@ -57,13 +57,9 @@ def admin_required(view):
 
 def board_positions_of(user):
     """Board positions held by the person whose contact email matches this account."""
-    from .extensions import db
-    from .models import Owner
     if not user or not getattr(user, "is_authenticated", False) or not user.email:
         return []
-    people = db.session.scalars(db.select(Owner).where(db.func.lower(Owner.email) == user.email.lower(),
-                                                       Owner.board_roles.is_not(None))).all()
-    return sorted({k for o in people for k in o.positions})
+    return list(user.board_positions)
 
 
 def board_has_accounts():
@@ -86,7 +82,7 @@ def can_manage_accounts(user=None):
         return False
     if board_positions_of(user):
         return True
-    return user.is_admin and not board_has_accounts()
+    return user.is_temp_admin and not board_has_accounts()
 
 
 def board_required(view):

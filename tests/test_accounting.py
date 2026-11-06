@@ -125,7 +125,7 @@ def test_manager_unit_filter(admin_client):
     assert "All units" in allpage and "Hydra" in allpage
 
 
-def test_board_member_sees_all_units_read_only(app, client):
+def test_board_member_manages_accounting(app, client):
     from condo.models import Owner, User
     from .conftest import login
     o = Owner(unit=unit("101"), name="Alice Chen", role="owner", email="alice@test.com")
@@ -135,8 +135,8 @@ def test_board_member_sees_all_units_read_only(app, client):
     seed()
     login(client, "alice@test.com")
     page = client.get("/accounting/").data.decode()
-    assert "All units" in page and "Hydra" in page and "+ Cost" not in page and "Add charge" not in page
-    assert client.get("/accounting/costs/new").status_code == 403
+    assert "All units" in page and "Hydra" in page and "+ Cost" in page and "Add charge" in page
+    assert client.get("/accounting/costs/new").status_code == 200
 
 
 def test_sync_banner_removed(admin_client):

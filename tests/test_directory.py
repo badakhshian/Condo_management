@@ -19,7 +19,7 @@ def test_directory_tabs_and_counts(admin_client):
     assert b'Tenants <span class="count">1</span>' in page
     assert b'Accounts <span class="count">3</span>' in page  # fixture logins: admin, alice, bob
     accounts = admin_client.get("/directory/accounts").data
-    assert b"Admin" in accounts and b"Manager" in accounts
+    assert b"Admin" in accounts and b"Administrator (temporary)" in accounts
     assert b"Directory" in admin_client.get("/").data
 
 
@@ -54,6 +54,7 @@ def test_edit_from_directory_returns_to_tab(admin_client):
 
 
 def test_accounts_search_and_export(admin_client):
-    assert b"Bob" not in admin_client.get("/directory/accounts?role=admin").data.split(b"<tbody>")[1]
+    tenants = admin_client.get("/directory/accounts?role=tenant").data.split(b"<tbody>")[1]
+    assert b"Bob" in tenants and b"Admin" not in tenants
     csv = admin_client.get("/directory/accounts/export.csv").data
     assert b"admin@test.com" in csv and b"bob@test.com" in csv

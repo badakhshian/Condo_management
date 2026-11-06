@@ -11,7 +11,7 @@ from flask import Blueprint, Response, abort, flash, redirect, render_template, 
 from flask_login import current_user, login_required
 
 from ..extensions import db
-from ..models import (BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
+from ..models import (ACCOUNT_ROLES, BOARD_POSITIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
                       Owner, Unit, User, allowed_positions)
 from ..utils import admin_required, board_has_accounts, board_positions_of, board_required, can_manage_accounts
 
@@ -51,7 +51,7 @@ def search_contacts(group, q="", role=""):
 
 def search_accounts(q="", role=""):
     stmt = db.select(User).outerjoin(Unit).order_by(User.role != "admin", User.name)
-    if role in ROLE_LABELS:
+    if role in ACCOUNT_ROLES:
         stmt = stmt.where(User.role == role)
     if q:
         like = f"%{q}%"
@@ -94,7 +94,8 @@ def accounts():
     q, role = request.args.get("q", "").strip(), request.args.get("role", "")
     users = search_accounts(q, role)
     emails = sorted({u.email for u in users if u.email and u.active})
-    return render_template("directory/accounts.html", users=users, q=q, role=role, roles=ROLE_LABELS,
+    return render_template("directory/accounts.html", users=users, q=q, role=role,
+                           roles={"board": "Board members", **ACCOUNT_ROLES},
                            bootstrap=not board_has_accounts(),
                            emails=emails, tab="accounts", tabs=visible_tabs(), counts=_counts())
 
@@ -137,8 +138,13 @@ def assign():
                 other.positions = [p for p in other.positions if p != key]
                 flash(f"{BOARD_POSITIONS[key]} moved from {other.name} to {person.name}.", "info")
     person.positions = person.positions + [key]
+    from ..models import link_admin_accounts
+    converted = link_admin_accounts()
     db.session.commit()
     flash(f"{person.name} is now {BOARD_POSITIONS[key]}.", "success")
+    for u in converted:
+        flash(f"The temporary administrator account ({u.email}) is now {u.name}'s own account, as "
+              f"{BOARD_POSITIONS[key]}.", "info")
     return redirect(url_for("directory.board"))
 
 

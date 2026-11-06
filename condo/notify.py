@@ -7,7 +7,9 @@ nothing waits unseen.
 from flask_login import current_user
 
 from .extensions import db
-from .models import Notification, Owner, User
+from .models import BOARD_POSITIONS, Notification, Owner, User
+
+BOARD_KEYS = tuple(BOARD_POSITIONS)
 
 
 def _active(stmt):
@@ -15,7 +17,9 @@ def _active(stmt):
 
 
 def admins():
-    return _active(db.select(User).where(User.role == "admin"))
+    """People who manage the building: board members with an account, plus any temporary admin."""
+    temp = _active(db.select(User).where(User.role == "admin"))
+    return temp + [u for u in with_positions(list(BOARD_KEYS)) if u not in temp]
 
 
 def unit_owner_accounts(unit_id):
@@ -40,8 +44,7 @@ def accounting():
 
 
 def board():
-    return with_positions(["president", "vice-president", "treasurer", "secretary", "accounting", "director"]) \
-        or admins()
+    return with_positions(list(BOARD_KEYS)) or admins()
 
 
 def everyone():

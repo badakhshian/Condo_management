@@ -6,7 +6,7 @@ Built with Flask, SQLAlchemy and SQLite. It renders pages on the server and need
 
 ## Features
 
-| Area | Managers | Owners / tenants |
+| Area | Board (managers) | Owners / tenants |
 |---|---|---|
 | **Dashboard** | Occupancy, outstanding dues, units that owe money, active maintenance, upcoming bookings | Their unit's balance, their requests and bookings, latest notices |
 | **Units** | Create, edit and delete units (floor, bedrooms, area, parking, monthly dues) | — |
@@ -33,6 +33,8 @@ python3 -m venv .venv
 .venv/bin/flask --app condo seed
 .venv/bin/flask --app condo run
 ```
+
+Managing the building comes from holding a board position (Directory → Board): an account whose email matches a board member gets full management access. Accounts themselves are Owner or Tenant. The first account created from `ADMIN_EMAIL` is a temporary administrator; once its person is added in the Directory with that email and given a board position, it becomes their own account.
 
 Then open http://127.0.0.1:5000 and sign in with a demo account:
 

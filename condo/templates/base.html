@@ -43,6 +43,11 @@
 </header>
 {% endif %}
 {% if ephemeral_db %}<div class="banner">No database is connected, so changes are temporary and will be lost. Connect a Postgres database (DATABASE_URL) to keep data.</div>{% endif %}
+{% if current_user.is_authenticated and current_user.is_temp_admin and not current_user.is_board %}
+<div class="banner">You're using the temporary administrator account. To make it your own: add yourself in
+  <a href="{{ url_for('directory.contacts', group='owners') }}">Directory → Owners</a> with the email {{ current_user.email }},
+  then give yourself your position in <a href="{{ url_for('directory.board') }}">Directory → Board</a>.</div>
+{% endif %}
 <main class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}

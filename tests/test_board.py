@@ -104,7 +104,7 @@ def test_accounts_are_board_only_once_a_board_member_has_an_account(app, client)
     dash = client.get("/").data.decode()
     assert 'href="/directory/board"' in dash
     assert client.get("/directory/accounts").status_code == 200
-    assert client.get("/directory/owners").status_code == 403  # other tabs stay with managers
+    assert client.get("/directory/owners").status_code == 200  # board members manage the building
     resp = client.post("/residents/new", data={"name": "New Person", "email": "new@x.com", "role": "tenant",
                                                "unit_id": str(unit("102").id), "password": "password123"})
     assert resp.status_code == 302
