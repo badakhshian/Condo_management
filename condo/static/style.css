@@ -511,3 +511,22 @@ td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
 .vote-choice { padding: .55rem .7rem; border: 1px solid var(--border); border-radius: 9px; margin-bottom: .45rem; }
 .vote-choice:has(input:checked) { border-color: var(--primary); background: var(--gold-soft); }
 .card .prose + .props { margin-top: .9rem; }
+
+/* The orange belongs to the menu itself, so it covers every icon even when the menu has to scroll. */
+.rail::before { content: none; }
+.rail { background: linear-gradient(180deg, rgba(232, 97, 44, .78), rgba(201, 79, 29, .78)); overscroll-behavior: contain; }
+@media (prefers-color-scheme: dark) { .rail { background: linear-gradient(180deg, rgba(217, 88, 31, .72), rgba(184, 70, 26, .72)); } }
+/* Short screens (iPad in landscape, small laptops): tighter icons so the whole menu fits. */
+@media (min-width: 761px) and (max-height: 760px) {
+  .rail { top: 10px; bottom: 10px; padding: 10px 8px; gap: 2px; }
+  .rail-mark { width: 42px; height: 42px; margin-bottom: 4px; font-size: .9rem; }
+  .rail-item, .rail .rail-item.bell { width: 46px; height: 46px; }
+  .rail svg { width: 24px; height: 24px; }
+  .rail-avatar { width: 34px; height: 34px; }
+  .rail-spacer { min-height: 6px; margin-bottom: 4px; }
+}
+@media (min-width: 761px) and (max-height: 620px) {
+  .rail-item, .rail .rail-item.bell { width: 40px; height: 40px; }
+  .rail svg { width: 21px; height: 21px; }
+  .rail-mark { width: 36px; height: 36px; font-size: .8rem; }
+}
