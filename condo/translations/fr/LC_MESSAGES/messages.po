@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:56+0000\n"
+"POT-Creation-Date: 2026-11-07 04:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -344,6 +344,9 @@ msgstr "Ajouter un compte"
 
 msgid "Add amenity"
 msgstr "Ajouter un équipement"
+
+msgid "Add an email address to create a sign-in account for this person."
+msgstr "Ajoutez une adresse courriel pour créer un compte de connexion à cette personne."
 
 msgid "Add an owner"
 msgstr "Ajouter un copropriétaire"
@@ -1823,6 +1826,9 @@ msgstr "Aucune demande."
 msgid "No routine maintenance yet."
 msgstr "Aucun entretien courant pour l’instant."
 
+msgid "No sign-in account yet. Create one so they can use the portal; you choose their first password."
+msgstr "Pas encore de compte de connexion. Créez-en un pour que la personne puisse utiliser le portail; vous choisissez son premier mot de passe."
+
 msgid "No special contributions."
 msgstr "Aucune cotisation spéciale."
 
@@ -2651,8 +2657,15 @@ msgstr "Lien de la feuille enregistré. Faites un aperçu de la synchronisation 
 msgid "Sign in"
 msgstr "Se connecter"
 
+msgid "Sign-in account and password"
+msgstr "Compte de connexion et mot de passe"
+
 msgid "Sign-in email, role and unit"
 msgstr "Courriel de connexion, rôle et unité"
+
+#, python-format
+msgid "Signs in with %(email)s."
+msgstr "Se connecte avec %(email)s."
 
 msgid "Snow removal"
 msgstr "Déneigement"

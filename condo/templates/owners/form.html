@@ -34,6 +34,39 @@
   <button class="btn primary">{% trans %}Save{% endtrans %}</button>
   <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index')) }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
+{% if owner %}
+<section class="card narrow password-card">
+  <h2>{% trans %}Sign-in account and password{% endtrans %}{% if login and login.must_change_password %} <span class="tag">{% trans %}must change at next sign-in{% endtrans %}</span>{% endif %}{% if login and not login.active %} <span class="badge status-closed">{% trans %}Login off{% endtrans %}</span>{% endif %}</h2>
+  {% if login %}
+    <p class="muted">{% trans email=login.email %}Signs in with {{ email }}.{% endtrans %}
+      <a href="{{ url_for('residents.edit', user_id=login.id, back=here()) }}">{% trans %}Sign-in email, role and unit{% endtrans %}</a></p>
+    {% if login.id == current_user.id %}
+      <p class="muted">{% trans %}Change your own password from My profile.{% endtrans %} <a href="{{ url_for('auth.account') }}">{% trans %}My profile{% endtrans %}</a></p>
+    {% else %}
+    <div class="choice">
+      <div>
+        <h3>{{ icon('key') }} {% trans %}Set a password{% endtrans %}</h3>
+        <p class="muted">{% trans %}Type a password yourself, or generate one, to give to the person.{% endtrans %}</p>
+        <a class="btn" href="{{ url_for('residents.set_password', user_id=login.id, back=here()) }}">{% trans %}Set a password{% endtrans %}</a>
+      </div>
+      <div>
+        <h3>{{ icon('reset') }} {% trans %}Reset password{% endtrans %}</h3>
+        <p class="muted">{% trans %}For someone who forgot theirs: their current password stops working, a temporary one is shown to you once, and they choose their own at the next sign-in.{% endtrans %}</p>
+        <form method="post" action="{{ url_for('residents.reset_password', user_id=login.id, back=here()) }}"
+              onsubmit="return confirm({{ _('Reset the password of %(name)s? Their current password will stop working.', name=login.name)|tojson|forceescape }})">
+          {{ csrf() }}<button class="btn">{% trans %}Reset password{% endtrans %}</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  {% elif owner.email and owner.role != 'contact' %}
+    <p class="muted">{% trans %}No sign-in account yet. Create one so they can use the portal; you choose their first password.{% endtrans %}</p>
+    <a class="btn" href="{{ url_for('residents.new', back=here(), name=owner.name, email=owner.email, phone=owner.phone or '', unit_id=owner.unit_id, role='tenant' if owner.role == 'tenant' else 'owner') }}">{{ icon('user-plus') }} {% trans %}Create login{% endtrans %}</a>
+  {% else %}
+    <p class="muted">{% trans %}Add an email address to create a sign-in account for this person.{% endtrans %}</p>
+  {% endif %}
+</section>
+{% endif %}
 {% if owner and owner.origin != 'sheet' %}
 <form method="post" action="{{ url_for('owners.delete', owner_id=owner.id, back=safe_back()) }}" class="card narrow danger-zone"
       onsubmit="return confirm({{ _('Remove %(name)s from unit %(number)s? Their insurance records are removed too.', name=owner.name, number=unit.number)|tojson|forceescape }})">

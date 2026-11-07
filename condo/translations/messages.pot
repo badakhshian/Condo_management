@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:56+0000\n"
+"POT-Creation-Date: 2026-11-07 04:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -353,6 +353,9 @@ msgid "Add account"
 msgstr ""
 
 msgid "Add amenity"
+msgstr ""
+
+msgid "Add an email address to create a sign-in account for this person."
 msgstr ""
 
 msgid "Add an owner"
@@ -1878,6 +1881,11 @@ msgstr ""
 msgid "No routine maintenance yet."
 msgstr ""
 
+msgid ""
+"No sign-in account yet. Create one so they can use the portal; you choose"
+" their first password."
+msgstr ""
+
 msgid "No special contributions."
 msgstr ""
 
@@ -2729,7 +2737,14 @@ msgstr ""
 msgid "Sign in"
 msgstr ""
 
+msgid "Sign-in account and password"
+msgstr ""
+
 msgid "Sign-in email, role and unit"
+msgstr ""
+
+#, python-format
+msgid "Signs in with %(email)s."
 msgstr ""
 
 msgid "Snow removal"

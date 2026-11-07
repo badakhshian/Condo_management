@@ -158,6 +158,14 @@ def _get(owner_id):
     return owner
 
 
+def _login_for(owner):
+    """The sign-in account that belongs to this person (same email), if any."""
+    from ..models import User
+    if not owner.email:
+        return None
+    return db.session.scalar(db.select(User).where(db.func.lower(User.email) == owner.email.lower()))
+
+
 @bp.route("/owners/<int:owner_id>/edit", methods=["GET", "POST"])
 @admin_required
 def edit(owner_id):
@@ -176,11 +184,11 @@ def edit(owner_id):
         db.session.rollback()
         for e in errors:
             flash(e, "error")
-        return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=request.form,
+        return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), login=_login_for(owner), form=request.form,
                                roles=OWNER_ROLES), 400
     form = {k: getattr(owner, k) or "" for k in ("name", "email", "phone", "mailing_address", "role", "notes")}
     form["is_primary"] = owner.is_primary
-    return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), form=form, roles=OWNER_ROLES)
+    return render_template("owners/form.html", unit=owner.unit, owner=owner, sources=address_sources(owner.unit, owner), login=_login_for(owner), form=form, roles=OWNER_ROLES)
 
 
 @bp.route("/owners/<int:owner_id>/delete", methods=["POST"])

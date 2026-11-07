@@ -495,3 +495,4 @@ h2 .icon-btn svg { width: 16px; height: 16px; }
 .password-card h3 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--primary); }
 .login-help { font-size: .88rem; margin: .9rem 0 0; }
 td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
+.btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; margin-right: 4px; }

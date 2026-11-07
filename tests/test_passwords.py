@@ -114,3 +114,17 @@ def test_nobody_resets_their_own_or_without_board_rights(admin_client, client):
 
 def test_sign_in_page_explains_forgotten_passwords(client):
     assert "Forgot your password? Ask a board member to reset it for you." in client.get("/login").data.decode()
+
+
+def test_contact_page_has_the_password_panel(admin_client):
+    u = db.session.scalar(db.select(Unit).where(Unit.number == "102"))
+    with_login = Owner(unit=u, name="Bob", role="tenant", email="BOB@test.com")
+    no_login = Owner(unit=u, name="Olivia Owner", role="owner", email="olivia@x.com")
+    db.session.add_all([with_login, no_login])
+    db.session.commit()
+    bob = user("bob@test.com")
+    page = admin_client.get(f"/owners/{with_login.id}/edit").data.decode()
+    assert "Sign-in account and password" in page
+    assert f"/residents/{bob.id}/password" in page and f"/residents/{bob.id}/reset-password" in page
+    page = admin_client.get(f"/owners/{no_login.id}/edit").data.decode()
+    assert "No sign-in account yet." in page and "/residents/new?" in page and "email=olivia@x.com" in page
