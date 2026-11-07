@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% from "_macros.html" import csrf %}
 {% block title %}{{ (_('New staff account') if mode == 'staff' else _('New login')) if creating else (_('Edit %(name)s', name=user.name)) }}{% endblock %}
 {% block content %}
@@ -36,13 +37,35 @@
       <button type="button" class="btn small" id="pw-gen">{% trans %}Generate{% endtrans %}</button></span>
     <span class="field-hint">{% trans %}At least 8 characters. Share it with the person privately.{% endtrans %}</span></label>
   <label class="check"><input type="checkbox" name="must_change" {{ 'checked' if form.get('must_change') }}> {% trans %}Ask them to change it at their first sign-in{% endtrans %}</label>
-  {% else %}
-  <p class="muted">{% trans %}Password:{% endtrans %} <a href="{{ url_for('residents.set_password', user_id=user.id, back=safe_back() or url_for('directory.accounts')) }}">{% trans %}set a new password{% endtrans %}</a>{% if user.must_change_password %} · <span class="tag">{% trans %}must change at next sign-in{% endtrans %}</span>{% endif %}</p>
   {% endif %}
   {% if not creating %}<label class="check"><input type="checkbox" name="active" {{ 'checked' if form.get('active') }}> {% trans %}Account active{% endtrans %}</label>{% endif %}
   <div class="form-actions"><button class="btn primary">{% trans %}Save{% endtrans %}</button>
   <a href="{{ safe_back() or url_for('directory.accounts') }}">{% trans %}Cancel{% endtrans %}</a></div>
 </form>
+{% if not creating %}
+<section class="card narrow password-card">
+  <h2>{% trans %}Password{% endtrans %}{% if user.must_change_password %} <span class="tag">{% trans %}must change at next sign-in{% endtrans %}</span>{% endif %}</h2>
+  {% if user.id == current_user.id %}
+    <p class="muted">{% trans %}Change your own password from My profile.{% endtrans %} <a href="{{ url_for('auth.account') }}">{% trans %}My profile{% endtrans %}</a></p>
+  {% else %}
+  <div class="choice">
+    <div>
+      <h3>{{ icon('key') }} {% trans %}Set a password{% endtrans %}</h3>
+      <p class="muted">{% trans %}Type a password yourself, or generate one, to give to the person.{% endtrans %}</p>
+      <a class="btn" href="{{ url_for('residents.set_password', user_id=user.id, back=here()) }}">{% trans %}Set a password{% endtrans %}</a>
+    </div>
+    <div>
+      <h3>{{ icon('reset') }} {% trans %}Reset password{% endtrans %}</h3>
+      <p class="muted">{% trans %}For someone who forgot theirs: their current password stops working, a temporary one is shown to you once, and they choose their own at the next sign-in.{% endtrans %}</p>
+      <form method="post" action="{{ url_for('residents.reset_password', user_id=user.id, back=safe_back() or url_for('directory.accounts')) }}"
+            onsubmit="return confirm({{ _('Reset the password of %(name)s? Their current password will stop working.', name=user.name)|tojson|forceescape }})">
+        {{ csrf() }}<button class="btn">{% trans %}Reset password{% endtrans %}</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
 <script>
   (function () {
     var b = document.getElementById('pw-gen'), f = document.getElementById('pw');

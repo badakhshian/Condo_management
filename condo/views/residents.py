@@ -102,6 +102,21 @@ def set_password(user_id):
     return render_template("residents/password.html", user=user, form={"must_change": True})
 
 
+@bp.route("/<int:user_id>/reset-password", methods=["POST"])
+@board_required
+def reset_password(user_id):
+    """One click: a temporary password, shown once, that the person must replace at their next sign-in."""
+    user = db.session.get(User, user_id) or abort(404)
+    if user.id == current_user.id:
+        flash(_("Change your own password from My profile."), "info")
+        return redirect(url_for("auth.account"))
+    password = generate_password()
+    user.set_password(password)
+    user.must_change_password = True
+    db.session.commit()
+    return render_template("residents/password_done.html", user=user, password=password, reset=True)
+
+
 def _role_choices(user):
     choices = dict(RESIDENT_ROLES)
     if getattr(user, "role", None) == "admin":

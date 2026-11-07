@@ -26,11 +26,10 @@
         {% else %}{{ icon_link('pencil', url_for('owners.edit', owner_id=o.id, next='directory', back=here()), _('Edit')) }}{% endif %}
         {% set login = logins.get(o.email.lower()) if logins is not none and o.email and o.role != 'contact' else none %}
         {% if login %}
-          {% if login.id != current_user.id %}{{ icon_link('key', url_for('residents.set_password', user_id=login.id, back=here()), _('Set password')) }}{% else %}<span class="icon-btn blank"></span>{% endif %}
           {{ icon_link('login', url_for('residents.edit', user_id=login.id, back=here()), _('Login') ~ ': ' ~ _('Sign-in email, role and unit')) }}
         {% elif logins is not none and o.email and o.role != 'contact' %}
-          <span class="icon-btn blank"></span>{{ icon_link('user-plus', url_for('residents.new', back=here(), name=o.name, email=o.email, phone=o.phone or '', unit_id=o.unit_id, role='tenant' if o.role == 'tenant' else 'owner'), _('Create login')) }}
-        {% elif logins is not none %}<span class="icon-btn blank"></span><span class="icon-btn blank"></span>
+          {{ icon_link('user-plus', url_for('residents.new', back=here(), name=o.name, email=o.email, phone=o.phone or '', unit_id=o.unit_id, role='tenant' if o.role == 'tenant' else 'owner'), _('Create login')) }}
+        {% elif logins is not none %}<span class="icon-btn blank"></span>
         {% endif %}
         {% if o.origin != 'sheet' %}{{ icon_post('trash', url_for('owners.delete', owner_id=o.id, back=here()), _('Remove'), confirm=_('Remove %(name)s from unit %(number)s? Their insurance records are removed too.', name=o.name, number=o.unit.number), cls='danger') }}{% endif %}
       </div></td>{% endif %}

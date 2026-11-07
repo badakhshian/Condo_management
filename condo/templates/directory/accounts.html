@@ -23,8 +23,7 @@
   <thead><tr><th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Job / company{% endtrans %}</th><th>{% trans %}Access{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th></th></tr></thead>
   <tbody>
   {% for u in users %}
-    <tr class="{{ 'inactive' if not u.active }}"><td class="row-actions"><div class="row-actions-box">{{ icon_link('pencil', url_for('residents.edit', user_id=u.id, back=here()), _('Edit')) }}
-        {% if u.id != current_user.id %}{{ icon_link('key', url_for('residents.set_password', user_id=u.id, back=here()), _('Set password')) }}{% endif %}</div></td>
+    <tr class="{{ 'inactive' if not u.active }}"><td class="row-actions"><div class="row-actions-box">{{ icon_link('pencil', url_for('residents.edit', user_id=u.id, back=here()), _('Edit')) }}</div></td>
       <td><strong>{{ u.name }}</strong>{% if u.must_change_password %} <span class="tag" title="{{ _('Will choose their own password at next sign-in') }}">{% trans %}temporary{% endtrans %}</span>{% endif %}{% if not u.active %} <span class="badge status-closed">{% trans %}Inactive{% endtrans %}</span>{% endif %}</td>
       <td class="muted">{{ u.job_title or (_('Temporary administrator') if u.is_temp_admin else '—') }}</td>
       <td>{% if u.is_temp_admin %}<span class="tag">{% trans %}Everything{% endtrans %}</span>{% else %}{% for k in u.permission_keys %}<span class="tag">{{ perms[k].split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</span> {% else %}<span class="muted">{% trans %}None yet{% endtrans %}</span>{% endfor %}{% endif %}</td>

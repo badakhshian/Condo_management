@@ -491,3 +491,6 @@ h2 .icon-btn { width: 30px; height: 30px; }
 h2 .icon-btn svg { width: 16px; height: 16px; }
 .icon-btn.small { width: 28px; height: 28px; border-radius: 8px; }
 .icon-btn.small svg { width: 15px; height: 15px; }
+.password-card h3 { display: flex; align-items: center; gap: .4rem; font-size: 1rem; margin: 0 0 .3rem; }
+.password-card h3 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--primary); }
+.login-help { font-size: .88rem; margin: .9rem 0 0; }

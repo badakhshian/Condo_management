@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:37+0000\n"
+"POT-Creation-Date: 2026-11-07 02:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1294,7 +1294,16 @@ msgstr ""
 msgid "For repair request #%(id)s · %(title)s"
 msgstr ""
 
+msgid ""
+"For someone who forgot theirs: their current password stops working, a "
+"temporary one is shown to you once, and they choose their own at the next"
+" sign-in."
+msgstr ""
+
 msgid "For the special contribution"
+msgstr ""
+
+msgid "Forgot your password? Ask a board member to reset it for you."
 msgstr ""
 
 msgid "From"
@@ -2135,14 +2144,14 @@ msgstr ""
 msgid "Password must be at least 8 characters."
 msgstr ""
 
+msgid "Password reset"
+msgstr ""
+
 msgid "Password set"
 msgstr ""
 
 #, python-format
 msgid "Password set · %(name)s"
-msgstr ""
-
-msgid "Password:"
 msgstr ""
 
 msgid "Past deadline"
@@ -2547,6 +2556,13 @@ msgid "Requested by %(name)s"
 msgstr ""
 
 msgid "Reserved"
+msgstr ""
+
+msgid "Reset password"
+msgstr ""
+
+#, python-format
+msgid "Reset the password of %(name)s? Their current password will stop working."
 msgstr ""
 
 msgid "Resident &amp; management portal"
@@ -3062,6 +3078,9 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
+msgid "Type a password yourself, or generate one, to give to the person."
+msgstr ""
+
 msgid "Type it again"
 msgstr ""
 
@@ -3456,9 +3475,6 @@ msgstr ""
 
 #, python-format
 msgid "owed %(owed)s · credit %(credit)s"
-msgstr ""
-
-msgid "set a new password"
 msgstr ""
 
 msgid "sheet"

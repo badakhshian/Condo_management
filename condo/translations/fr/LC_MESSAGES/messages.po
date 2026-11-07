@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:37+0000\n"
+"POT-Creation-Date: 2026-11-07 02:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -1264,8 +1264,14 @@ msgstr "Pour"
 msgid "For repair request #%(id)s · %(title)s"
 msgstr "Pour la demande de réparation n° %(id)s · %(title)s"
 
+msgid "For someone who forgot theirs: their current password stops working, a temporary one is shown to you once, and they choose their own at the next sign-in."
+msgstr "Pour une personne qui a oublié le sien : son mot de passe actuel cesse de fonctionner, un mot de passe temporaire vous est affiché une seule fois, et elle choisit le sien à la prochaine connexion."
+
 msgid "For the special contribution"
 msgstr "Pour la cotisation spéciale"
+
+msgid "Forgot your password? Ask a board member to reset it for you."
+msgstr "Mot de passe oublié? Demandez à un membre du conseil de le réinitialiser."
 
 msgid "From"
 msgstr "Début"
@@ -2076,15 +2082,15 @@ msgstr "Mot de passe"
 msgid "Password must be at least 8 characters."
 msgstr "Le mot de passe doit contenir au moins 8 caractères."
 
+msgid "Password reset"
+msgstr "Mot de passe réinitialisé"
+
 msgid "Password set"
 msgstr "Mot de passe défini"
 
 #, python-format
 msgid "Password set · %(name)s"
 msgstr "Mot de passe défini · %(name)s"
-
-msgid "Password:"
-msgstr "Mot de passe :"
 
 msgid "Past deadline"
 msgstr "Échéance dépassée"
@@ -2481,6 +2487,13 @@ msgstr "Demandé par %(name)s"
 
 msgid "Reserved"
 msgstr "Réservé"
+
+msgid "Reset password"
+msgstr "Réinitialiser le mot de passe"
+
+#, python-format
+msgid "Reset the password of %(name)s? Their current password will stop working."
+msgstr "Réinitialiser le mot de passe de %(name)s? Son mot de passe actuel cessera de fonctionner."
 
 msgid "Resident &amp; management portal"
 msgstr "Portail des résidents et de la gestion"
@@ -2964,6 +2977,9 @@ msgstr "Deux fois par année"
 msgid "Type"
 msgstr "Type"
 
+msgid "Type a password yourself, or generate one, to give to the person."
+msgstr "Saisissez vous-même un mot de passe, ou générez-en un, à remettre à la personne."
+
 msgid "Type it again"
 msgstr "Saisissez-le de nouveau"
 
@@ -3338,9 +3354,6 @@ msgstr "facultative"
 #, python-format
 msgid "owed %(owed)s · credit %(credit)s"
 msgstr "dû %(owed)s · crédit %(credit)s"
-
-msgid "set a new password"
-msgstr "définir un nouveau mot de passe"
 
 msgid "sheet"
 msgstr "feuille"

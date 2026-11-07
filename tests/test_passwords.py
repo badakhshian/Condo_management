@@ -77,9 +77,40 @@ def test_create_login_from_directory(admin_client):
     assert "Create login" in owners and "email=olivia@x.com" in owners
     tenants = admin_client.get("/directory/tenants").data.decode()
     bob_id = db.session.scalar(db.select(User.id).where(User.email == "bob@test.com"))
-    assert f"/residents/{bob_id}/password" in tenants and f"/residents/{bob_id}/edit" in tenants
+    assert f"/residents/{bob_id}/password" not in tenants and f"/residents/{bob_id}/edit" in tenants
+    account = admin_client.get(f"/residents/{bob_id}/edit").data.decode()
+    assert f"/residents/{bob_id}/password" in account and f"/residents/{bob_id}/reset-password" in account
     form = admin_client.get(f"/residents/new?name=Olivia+Owner&email=olivia%40x.com&unit_id={u.id}&role=owner").data.decode()
     assert 'value="Olivia Owner"' in form and 'value="olivia@x.com"' in form and "Generate" in form
     admin_client.post("/residents/new", data={"name": "Olivia Owner", "email": "olivia@x.com", "role": "owner",
                                               "unit_id": str(u.id), "password": "Abcd-Efgh-Jkmn", "must_change": "on"})
     assert user("olivia@x.com").must_change_password
+
+
+
+def test_reset_password_from_the_account_page(admin_client, client):
+    bob = user("bob@test.com")
+    page = admin_client.post(f"/residents/{bob.id}/reset-password").data.decode()
+    assert "Password reset" in page and "It won't be shown again." in page
+    temp = page.split('<code id="secret">')[1].split("</code>")[0]
+    assert bob.must_change_password and bob.check_password(temp) and not bob.check_password("password123")
+    # Bob signs in with the temporary password and is sent to choose his own.
+    client.post("/logout")
+    client.post("/login", data={"email": "bob@test.com", "password": temp})
+    assert user("bob@test.com").must_change_password
+    assert "/account" in client.get("/").headers.get("Location", "")
+
+
+def test_nobody_resets_their_own_or_without_board_rights(admin_client, client):
+    admin = user("admin@test.com")
+    admin_client.post(f"/residents/{admin.id}/reset-password")
+    assert admin.check_password("password123")
+    client.post("/logout")
+    login(client, "alice@test.com")
+    bob = user("bob@test.com")
+    assert client.post(f"/residents/{bob.id}/reset-password").status_code in (302, 403)
+    assert bob.check_password("password123")
+
+
+def test_sign_in_page_explains_forgotten_passwords(client):
+    assert "Forgot your password? Ask a board member to reset it for you." in client.get("/login").data.decode()
