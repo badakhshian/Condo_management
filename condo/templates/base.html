@@ -6,44 +6,70 @@
   <title>{% block title %}{% endblock %}{% if self.title() %} · {% endif %}{{ condo_name }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="{{ 'with-rail' if current_user.is_authenticated }}">
 {% if current_user.is_authenticated %}
-<header class="topbar">
-  <a class="brand" href="{{ url_for('dashboard.index') }}">{{ condo_name }}</a>
-  <nav>
-    {% set ep = request.endpoint or '' %}
-    <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if ep.startswith('dashboard') }}">Dashboard</a>
-    {% if current_user.is_admin %}
-      <a href="{{ url_for('units.index') }}" class="{{ 'active' if ep.startswith('units') }}">Units</a>
-      <a href="{{ url_for('directory.index') }}" class="{{ 'active' if ep.startswith(('directory', 'owners', 'residents')) }}">Directory</a>
-      <a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
-    {% elif current_user.is_staff %}
-      {% if current_user.can('directory') %}<a href="{{ url_for('directory.index') }}" class="{{ 'active' if ep.startswith('directory') }}">Directory</a>{% endif %}
-      {% if current_user.can('accounting') %}<a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>{% endif %}
-    {% elif current_user.unit_id %}
-      {% if nav_board %}<a href="{{ url_for('directory.board') }}" class="{{ 'active' if ep.startswith(('directory', 'residents')) }}">Directory</a>{% endif %}
-      {% if current_user.role == 'owner' or nav_board %}<a href="{{ url_for('billing.index') }}" class="{{ 'active' if ep.startswith('billing') }}">Accounting</a>
-      {% else %}<a href="{{ url_for('billing.my_account') }}" class="{{ 'active' if ep.startswith('billing') }}">Statement</a>{% endif %}
-    {% endif %}
-    <a href="{{ url_for('maintenance.index') }}" class="{{ 'active' if ep.startswith('maintenance') }}">Projects &amp; Maintenance</a>
-    {% if not current_user.is_admin and (current_user.role == 'owner' or nav_board) %}<a href="{{ url_for('reimbursements.index') }}" class="{{ 'active' if ep.startswith('reimbursements') }}">Reimbursements</a>{% endif %}
-    <a href="{{ url_for('announcements.index') }}" class="{{ 'active' if ep.startswith('announcements') }}">Notices</a>
-    <a href="{{ url_for('documents.index') }}" class="{{ 'active' if ep.startswith('documents') }}">Documents</a>
-    {% if not current_user.is_staff %}<a href="{{ url_for('amenities.index') }}" class="{{ 'active' if ep.startswith('amenities') }}">Amenities</a>{% endif %}
-  </nav>
-  <div class="user">
-    <a class="bell {{ 'has-unread' if unread }}" href="{{ url_for('notifications.index') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
-      {% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}
-    </a>
-    <a href="{{ url_for('auth.account') }}">{{ current_user.name }}</a>
-    <span class="tag">{{ current_user.role_label }}</span>
-    <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="link">Sign out</button>
-    </form>
-  </div>
-</header>
+{% from "_icons.html" import icon %}
+{% set ep = request.endpoint or '' %}
+{# Menu nav_items: (icon, url, label, short label, active). Order = priority for the phone bar. #}
+{% set nav_items = [] %}
+{% set _ = nav_items.append(('home', url_for('dashboard.index'), 'Dashboard', 'Home', ep.startswith('dashboard'))) %}
+{% if current_user.is_admin %}
+  {% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees', 'reimbursements', 'sheet')))) %}
+  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
+  {% set _ = nav_items.append(('directory', url_for('directory.index'), 'Directory', 'Directory', ep.startswith(('directory', 'owners', 'residents')))) %}
+  {% set _ = nav_items.append(('units', url_for('units.index'), 'Units', 'Units', ep.startswith(('units', 'insurance', 'importer')))) %}
+{% elif current_user.is_staff %}
+  {% if current_user.can('accounting') %}{% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees')))) %}{% endif %}
+  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
+  {% if current_user.can('directory') %}{% set _ = nav_items.append(('directory', url_for('directory.index'), 'Directory', 'Directory', ep.startswith('directory'))) %}{% endif %}
+{% else %}
+  {% if current_user.unit_id and (current_user.role == 'owner' or nav_board) %}
+    {% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees')))) %}
+  {% elif current_user.unit_id %}
+    {% set _ = nav_items.append(('accounting', url_for('billing.my_account'), 'Statement', 'Statement', ep.startswith('billing'))) %}
+  {% endif %}
+  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
+  {% if current_user.unit_id and nav_board %}{% set _ = nav_items.append(('directory', url_for('directory.board'), 'Directory', 'Directory', ep.startswith(('directory', 'residents')))) %}{% endif %}
+  {% if current_user.role == 'owner' or nav_board %}{% set _ = nav_items.append(('reimburse', url_for('reimbursements.index'), 'Reimbursements', 'Refunds', ep.startswith('reimbursements'))) %}{% endif %}
+{% endif %}
+{% set _ = nav_items.append(('notices', url_for('announcements.index'), 'Notices', 'Notices', ep.startswith('announcements'))) %}
+{% set _ = nav_items.append(('documents', url_for('documents.index'), 'Documents', 'Documents', ep.startswith('documents'))) %}
+{% if not current_user.is_staff %}{% set _ = nav_items.append(('amenities', url_for('amenities.index'), 'Amenities', 'Amenities', ep.startswith('amenities'))) %}{% endif %}
+{% set desktop_order = ['home', 'units', 'directory', 'accounting', 'reimburse', 'projects', 'notices', 'documents', 'amenities'] %}
+<nav class="rail" aria-label="Main menu">
+  <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}">{{ condo_name|initials }}</a>
+  {% for key in desktop_order %}{% for it in nav_items if it[0] == key %}
+  <a href="{{ it[1] }}" class="rail-item{{ ' active' if it[4] }}{{ ' pin' if nav_items.index(it) < 4 }}"{% if it[4] %} aria-current="page"{% endif %}>{{ icon(it[0]) }}<span class="label">{{ it[2] }}</span><span class="short">{{ it[3] }}</span></a>
+  {% endfor %}{% endfor %}
+  <div class="rail-spacer"></div>
+  <a href="{{ url_for('notifications.index') }}" class="rail-item pin bell{{ ' active' if ep.startswith('notifications') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">{{ icon('bell') }}{% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}<span class="label">Alerts</span><span class="short">Alerts</span></a>
+  <details class="rail-menu">
+    <summary class="rail-item pin" aria-label="More"><span class="rail-avatar">{{ current_user.name|initials }}</span>{{ icon('more') }}<span class="short">More</span></summary>
+    <div class="rail-pop">
+      <div class="rail-pop-who"><strong>{{ current_user.name }}</strong><span class="tag">{{ current_user.role_label }}</span></div>
+      {% for it in nav_items if nav_items.index(it) >= 4 %}<a href="{{ it[1] }}" class="pop-only{{ ' active' if it[4] }}">{{ icon(it[0]) }}{{ it[2] }}</a>{% endfor %}
+      <a href="{{ url_for('auth.account') }}">{{ icon('user') }}My profile</a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button>{{ icon('logout') }}Sign out</button>
+      </form>
+    </div>
+  </details>
+</nav>
+<script>
+document.addEventListener('click', function (e) {
+  var m = document.querySelector('.rail-menu[open]');
+  if (m && !m.contains(e.target)) m.removeAttribute('open');
+});
+document.addEventListener('keydown', function (e) {
+  var m = document.querySelector('.rail-menu[open]');
+  if (m && e.key === 'Escape') { m.removeAttribute('open'); m.querySelector('summary').focus(); }
+});
+</script>
+<div class="page-top">
+  <a class="page-top-name" href="{{ url_for('dashboard.index') }}">{{ condo_name }}</a>
+  <a class="page-top-user" href="{{ url_for('auth.account') }}"><strong>{{ current_user.name }}</strong> <span class="tag">{{ current_user.role_label }}</span></a>
+</div>
 {% endif %}
 {% if ephemeral_db %}<div class="banner">No database is connected, so changes are temporary and will be lost. Connect a Postgres database (DATABASE_URL) to keep data.</div>{% endif %}
 {% if current_user.is_authenticated and current_user.is_temp_admin and not current_user.is_board %}

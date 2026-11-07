@@ -4,9 +4,9 @@ from condo.models import MaintenanceRequest, Unit, User
 from .conftest import login
 
 
-def test_nav_has_projects_and_maintenance_on_its_own_row(admin_client):
+def test_side_menu_has_projects_and_maintenance(admin_client):
     page = admin_client.get("/").data.decode()
-    assert "Projects &amp; Maintenance</a>" in page and ">Maintenance</a>" not in page
+    assert '<span class="label">Projects &amp; Maintenance</span>' in page and 'class="rail"' in page
 
 
 def test_board_adds_project_with_budget_and_target(admin_client):

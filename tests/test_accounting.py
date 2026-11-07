@@ -91,7 +91,7 @@ def test_old_billing_links_redirect(admin_client):
 
 def test_nav_says_accounting(admin_client):
     page = admin_client.get("/").data.decode()
-    assert ">Accounting</a>" in page and ">Billing</a>" not in page
+    assert '<span class="label">Accounting</span>' in page and "Billing" not in page
 
 
 def test_owner_sees_only_their_unit(alice_client):

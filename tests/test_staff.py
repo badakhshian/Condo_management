@@ -34,7 +34,7 @@ def test_staff_only_reach_what_they_were_given(app, client):
     db.session.commit()
     login(client, "staff@x.com")
     nav = client.get("/").data.decode()
-    assert ">Projects &amp; Maintenance</a>" in nav and ">Accounting</a>" not in nav and ">Directory</a>" not in nav
+    assert ">Projects &amp; Maintenance<" in nav and ">Accounting<" not in nav and ">Directory<" not in nav
     assert "Leak" in client.get("/maintenance/?tab=maintenance").data.decode()
     client.post(f"/maintenance/{req.id}/status", data={"status": "in_progress", "priority": "high"})
     assert db.session.get(MaintenanceRequest, req.id).status == "in_progress"

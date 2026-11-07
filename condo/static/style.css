@@ -338,3 +338,81 @@ h1 { color: var(--text); }
 .login { overflow: hidden; padding-top: 0 !important; }
 .login h1 { margin: 0 -1.25rem 1rem; padding: 1.1rem 1.25rem; color: var(--gold-light);
   background: linear-gradient(100deg, var(--brand) 0%, var(--brand-deep) 100%); border-bottom: 3px solid var(--gold); }
+
+/* ---- Floating side menu (semi-transparent DMBT orange pill) ---- */
+body.with-rail { padding-left: 128px; }
+.rail { position: fixed; z-index: 50; left: 16px; top: 16px; bottom: 16px; width: 96px; border-radius: 48px; padding: 16px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; overflow-y: auto; scrollbar-width: none;
+  box-shadow: 0 10px 30px rgba(120, 50, 15, .25), inset 0 0 0 1px rgba(235, 217, 163, .4); }
+/* The see-through orange sits on a layer behind the items, so the account pop-up isn't trapped inside the pill. */
+.rail::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, rgba(232, 97, 44, .78), rgba(201, 79, 29, .78));
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+.rail::-webkit-scrollbar { display: none; }
+.rail-mark { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--gold-light); color: #4A3510; font-weight: 800;
+  display: grid; place-items: center; font-size: 1.05rem; margin-bottom: 10px; box-shadow: inset 0 0 0 2px var(--gold); }
+.rail-mark:hover { text-decoration: none; filter: brightness(1.04); }
+.rail-item { position: relative; flex: none; width: 76px; padding: 7px 4px 6px; border-radius: 22px; color: #FFF6EA; display: flex;
+  flex-direction: column; align-items: center; gap: 3px; font-size: .68rem; font-weight: 600; text-align: center; line-height: 1.15;
+  cursor: pointer; text-shadow: 0 1px 1px rgba(90, 30, 5, .25); }
+.rail-item:hover { background: rgba(255, 255, 255, .16); text-decoration: none; color: #fff; }
+.rail-item.active { background: var(--gold-light); color: #4A3510; text-shadow: none; box-shadow: 0 2px 6px rgba(0, 0, 0, .15); }
+.rail svg { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rail .short { display: none; }
+.rail .rail-item.bell { display: flex; width: 76px; height: auto; border-radius: 22px; color: #FFF6EA; }
+.rail .rail-item.bell.active { color: #4A3510; }
+.rail .rail-item.bell:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.rail-spacer { flex: 1; min-height: 12px; border-bottom: 1px solid rgba(235, 217, 163, .45); width: 44px; margin-bottom: 8px; }
+.rail .bell-count { position: absolute; top: 2px; right: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #B42318;
+  color: #fff; font-size: .65rem; font-weight: 700; display: grid; place-items: center; box-shadow: 0 0 0 2px rgba(232, 97, 44, .9); text-shadow: none; }
+.rail-menu { position: static; flex: none; }
+.rail-menu summary { list-style: none; }
+.rail-menu summary::-webkit-details-marker { display: none; }
+.rail-menu summary svg { display: none; }
+.rail-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 0, 0, .18); border: 2px solid var(--gold-light);
+  color: var(--gold-light); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.rail-pop { position: fixed; z-index: 60; left: 122px; bottom: 16px; min-width: 220px; background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 14px; padding: 8px; box-shadow: 0 12px 32px rgba(60, 30, 10, .22); }
+.rail-pop-who { padding: 6px 10px 10px; border-bottom: 1px solid var(--border); margin-bottom: 4px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.rail-pop a, .rail-pop button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 8px;
+  color: var(--text); font: inherit; font-size: .92rem; background: none; border: 0; cursor: pointer; text-align: left; text-shadow: none; }
+.rail-pop a:hover, .rail-pop button:hover { background: var(--gold-soft); text-decoration: none; }
+.rail-pop a.active { color: var(--primary); font-weight: 600; }
+.rail-pop svg { width: 18px; height: 18px; color: var(--muted); }
+.rail-pop .pop-only { display: none; }
+.page-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 14px 24px 0; max-width: 1140px; margin: 0 auto; }
+.page-top-name { color: var(--gold-ink); font-weight: 700; font-size: .9rem; letter-spacing: .02em; }
+.page-top-user { color: var(--muted); font-size: .9rem; }
+.page-top-user strong { color: var(--text); font-weight: 600; }
+.page-top a:hover { text-decoration: none; }
+body.with-rail .banner { margin: 10px 24px 0; border-radius: 10px; border: 1px solid var(--gold); }
+@media (prefers-color-scheme: dark) {
+  .rail::before { background: linear-gradient(180deg, rgba(217, 88, 31, .72), rgba(184, 70, 26, .72)); }
+}
+
+/* Phone: the same pill floats along the bottom with the five most-used items and More. */
+@media (max-width: 760px) {
+  body.with-rail { padding-left: 0; padding-bottom: 96px; }
+  .rail { top: auto; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); width: auto; flex-direction: row;
+    border-radius: 34px; padding: 6px; gap: 0; overflow: visible; justify-content: space-between; }
+  .rail-mark, .rail-spacer, .rail-item:not(.pin), .rail .label { display: none; }
+  .rail .short { display: block; }
+  .rail-item, .rail .rail-item.bell { width: auto; flex: 1 1 0; min-width: 0; padding: 7px 2px 6px; border-radius: 26px; font-size: .64rem; }
+  .rail .bell-count { right: calc(50% - 22px); }
+  .rail-menu { flex: 1 1 0; display: flex; }
+  .rail-menu summary { flex: 1; }
+  .rail-menu summary svg { display: block; }
+  .rail-avatar { display: none; }
+  .rail-pop { left: auto; right: 10px; bottom: 84px; }
+  .rail-pop .pop-only { display: flex; }
+  .page-top { padding: 12px 16px 0; }
+  .page-top-user .tag { display: none; }
+  body.with-rail .banner { margin: 8px 12px 0; }
+}
+@media (min-width: 761px) and (max-height: 820px) {
+  .rail { padding: 12px 8px; }
+  .rail-mark { width: 44px; height: 44px; margin-bottom: 6px; font-size: .95rem; }
+  .rail-item { padding: 5px 4px 4px; gap: 2px; }
+  .rail svg { width: 22px; height: 22px; }
+  .rail-avatar { width: 36px; height: 36px; }
+}
