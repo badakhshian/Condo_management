@@ -29,6 +29,7 @@ from datetime import date, datetime
 
 from .extensions import db
 from .models import OWNER_ROLES, Charge, guess_cost_category, allowed_positions, hand_over_policies, Expense, Owner, Payment, Setting, Unit, utcnow
+from .i18n import gettext as _
 
 ORIGIN = "sheet"
 UNIT_RE = re.compile(r"^#?\s*(\d+)\s*$")
@@ -46,7 +47,7 @@ def export_url(sheet_url):
     """Turn any Google Sheets link into its .xlsx export URL."""
     m = SHEET_ID_RE.search(sheet_url or "")
     if not m:
-        raise SyncError("That doesn't look like a Google Sheets link (…/spreadsheets/d/…).")
+        raise SyncError(_("That doesn't look like a Google Sheets link (…/spreadsheets/d/…)."))
     return f"https://docs.google.com/spreadsheets/d/{m.group(1)}/export?format=xlsx"
 
 
@@ -58,14 +59,14 @@ def fetch(sheet_url):
             ctype = resp.headers.get("Content-Type", "")
     except urllib.error.HTTPError as exc:
         if exc.code in (401, 403, 404):
-            raise SyncError("Google refused access to the sheet. In the sheet, click Share and set "
-                            "General access to \"Anyone with the link\" (Viewer).") from exc
-        raise SyncError(f"Google returned an error ({exc.code}) for the sheet.") from exc
+            raise SyncError(_("Google refused access to the sheet. In the sheet, click Share and set "
+                            "General access to \"Anyone with the link\" (Viewer).")) from exc
+        raise SyncError(_("Google returned an error (%(code)s) for the sheet.", code=exc.code)) from exc
     except (urllib.error.URLError, TimeoutError) as exc:
-        raise SyncError("Couldn't reach Google Sheets. Try again in a minute.") from exc
+        raise SyncError(_("Couldn't reach Google Sheets. Try again in a minute.")) from exc
     if "html" in ctype or not data.startswith(b"PK"):
-        raise SyncError("Google sent a sign-in page instead of the sheet. Set General access to "
-                        "\"Anyone with the link\" (Viewer).")
+        raise SyncError(_("Google sent a sign-in page instead of the sheet. Set General access to "
+                        "\"Anyone with the link\" (Viewer)."))
     return data
 
 
@@ -133,10 +134,10 @@ def parse(data):
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except Exception as exc:
-        raise SyncError("The sheet couldn't be read as a spreadsheet.") from exc
+        raise SyncError(_("The sheet couldn't be read as a spreadsheet.")) from exc
     names = {n.lower(): n for n in wb.sheetnames}
     if "transactions" not in names:
-        raise SyncError('The sheet has no "Transactions" tab.')
+        raise SyncError(_('The sheet has no "Transactions" tab.'))
     rows = [list(r) for r in wb[names["transactions"]].iter_rows(values_only=True)]
     balances_rows = ([list(r) for r in wb[names["balances"]].iter_rows(values_only=True)]
                      if "balances" in names else [])
@@ -144,7 +145,7 @@ def parse(data):
                   if "owners" in names else None)
     wb.close()
     if not rows:
-        raise SyncError('The "Transactions" tab is empty.')
+        raise SyncError(_('The "Transactions" tab is empty.'))
 
     header = rows[0]
     col = {key: _header_index(header, *names_) for key, names_ in {
@@ -153,7 +154,7 @@ def parse(data):
     }.items()}
     missing = [k for k in ("date", "unit", "type", "amount") if col[k] is None]
     if missing:
-        raise SyncError(f'The "Transactions" tab is missing column(s): {", ".join(missing)}.')
+        raise SyncError(_('The "Transactions" tab is missing column(s): %(missing)s.', missing=", ".join(missing)))
 
     def get(row, key):
         i = col[key]

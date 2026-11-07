@@ -6,6 +6,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from ..extensions import db
 from ..models import hand_over_policies, BOARD_POSITIONS, OWNER_ROLES, SINGLE_HOLDER_POSITIONS, Owner, Unit, allowed_positions
 from ..utils import admin_required
+from ..i18n import gettext as _
 
 bp = Blueprint("owners", __name__)
 
@@ -18,11 +19,11 @@ def _apply_form(owner, form, unit=None):
     email = form.get("email", "").strip().lower()
     role = form.get("role", "owner")
     if not name:
-        errors.append("Name is required.")
+        errors.append(_("Name is required."))
     if email and not EMAIL_RE.match(email):
-        errors.append("That email address doesn't look right.")
+        errors.append(_("That email address doesn't look right."))
     if role not in OWNER_ROLES:
-        errors.append("Choose a role.")
+        errors.append(_("Choose a role."))
     if errors:
         return errors
     owner.name = name[:200]
@@ -41,10 +42,10 @@ def _apply_form(owner, form, unit=None):
     owner.role = role
     owner.is_primary = bool(form.get("is_primary"))
     owner.notes = form.get("notes", "").strip() or None
-    dropped = [BOARD_POSITIONS[p] for p in owner.positions if p not in allowed_positions(role)]
+    dropped = [str(BOARD_POSITIONS[p]) for p in owner.positions if p not in allowed_positions(role)]
     if dropped:  # e.g. an owner who became a tenant leaves the board
         owner.positions = [p for p in owner.positions if p in allowed_positions(role)]
-        flash(f"{owner.name} is no longer {', '.join(dropped)}: that role can't hold it.", "info")
+        flash(_("%(name)s is no longer %(dropped)s: that role can't hold it.", name=owner.name, dropped=', '.join(dropped)), "info")
     return []
 
 
@@ -116,7 +117,7 @@ def new_from_directory(group):
     raw = request.form.get("unit_id", "") if request.method == "POST" else request.args.get("unit_id", "")
     unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
     if request.method == "POST" and unit is None:
-        flash("Choose a unit.", "error")
+        flash(_("Choose a unit."), "error")
         return render_template("owners/form.html", unit=None, owner=None, units=_units(), sources=address_sources(None),
                                form=request.form, roles=OWNER_ROLES), 400
     if unit is None:
@@ -140,7 +141,7 @@ def new(unit_id, default_role=None, from_directory=False):
             _only_one_primary(owner)
             db.session.flush()
             db.session.commit()
-            flash(f"{owner.name} added to unit {unit.number}.", "success")
+            flash(_("%(name)s added to unit %(number)s.", name=owner.name, number=unit.number), "success")
             return redirect(_back(owner, unit, from_directory))
         for e in errors:
             flash(e, "error")
@@ -162,7 +163,7 @@ def _get(owner_id):
 def edit(owner_id):
     owner = _get(owner_id)
     if owner.origin == "sheet":
-        flash("This owner comes from the Google Sheet's Owners tab. Change it there; the next sync updates the app.",
+        flash(_("This owner comes from the Google Sheet's Owners tab. Change it there; the next sync updates the app."),
               "error")
         return redirect(url_for("units.detail", unit_id=owner.unit_id))
     if request.method == "POST":
@@ -170,7 +171,7 @@ def edit(owner_id):
         if not errors:
             _only_one_primary(owner)
             db.session.commit()
-            flash(f"{owner.name} updated.", "success")
+            flash(_("%(name)s updated.", name=owner.name), "success")
             return redirect(_back(owner, owner.unit))
         db.session.rollback()
         for e in errors:
@@ -188,13 +189,13 @@ def delete(owner_id):
     owner = _get(owner_id)
     unit_id = owner.unit_id
     if owner.origin == "sheet":
-        flash("This owner comes from the Google Sheet's Owners tab. Remove them there.", "error")
+        flash(_("This owner comes from the Google Sheet's Owners tab. Remove them there."), "error")
         return redirect(url_for("units.detail", unit_id=unit_id))
     kept = hand_over_policies(owner) if owner.policies else False
     db.session.delete(owner)
     db.session.commit()
-    flash(f"{owner.name} removed." + (" Their household insurance now lists another member as policyholder."
-                                      if kept else ""), "success")
+    flash(_("%(name)s removed. Their household insurance now lists another member as policyholder.", name=owner.name)
+          if kept else _("%(name)s removed.", name=owner.name), "success")
     from ..navigation import safe_back
     return redirect(safe_back() or url_for("units.detail", unit_id=unit_id))
 

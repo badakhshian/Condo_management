@@ -1,30 +1,30 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}My profile{% endblock %}
+{% block title %}{% trans %}My profile{% endtrans %}{% endblock %}
 {% block content %}
-<h1>My profile</h1>
+<h1>{% trans %}My profile{% endtrans %}</h1>
 <div class="grid two">
   <div class="card">
-    <h2>Details</h2>
+    <h2>{% trans %}Details{% endtrans %}</h2>
     <dl class="props">
-      <dt>Name</dt><dd>{{ current_user.name }}</dd>
-      <dt>Email</dt><dd>{{ current_user.email }}</dd>
-      <dt>Role</dt><dd>{{ current_user.role_label }}</dd>
-      <dt>Unit</dt><dd>{{ current_user.unit.number if current_user.unit else '—' }}</dd>
+      <dt>{% trans %}Name{% endtrans %}</dt><dd>{{ current_user.name }}</dd>
+      <dt>{% trans %}Email{% endtrans %}</dt><dd>{{ current_user.email }}</dd>
+      <dt>{% trans %}Role{% endtrans %}</dt><dd>{{ current_user.role_label }}</dd>
+      <dt>{% trans %}Unit{% endtrans %}</dt><dd>{{ current_user.unit.number if current_user.unit else '—' }}</dd>
     </dl>
   </div>
   <form method="post" class="card">
     {{ csrf() }}
-    <h2>Update</h2>
-    <label>Phone <input name="phone" value="{{ current_user.phone or '' }}"></label>
+    <h2>{% trans %}Update{% endtrans %}</h2>
+    <label>{% trans %}Phone{% endtrans %} <input name="phone" value="{{ current_user.phone or '' }}"></label>
     <fieldset>
-      <legend>{% if current_user.must_change_password %}Choose your own password (required){% else %}Change password (optional){% endif %}</legend>
-      {% if current_user.must_change_password %}<p class="flash flash-info">Your password was set by the board. Enter it as the current password, then choose your own.</p>{% endif %}
-      <label>Current password <input type="password" name="current_password"></label>
-      <label>New password <input type="password" name="new_password" minlength="8"></label>
-      <label>Confirm new password <input type="password" name="confirm_password"></label>
+      <legend>{% if current_user.must_change_password %}{% trans %}Choose your own password (required){% endtrans %}{% else %}{% trans %}Change password (optional){% endtrans %}{% endif %}</legend>
+      {% if current_user.must_change_password %}<p class="flash flash-info">{% trans %}Your password was set by the board. Enter it as the current password, then choose your own.{% endtrans %}</p>{% endif %}
+      <label>{% trans %}Current password{% endtrans %} <input type="password" name="current_password"></label>
+      <label>{% trans %}New password{% endtrans %} <input type="password" name="new_password" minlength="8"></label>
+      <label>{% trans %}Confirm new password{% endtrans %} <input type="password" name="confirm_password"></label>
     </fieldset>
-    <button class="btn primary">Save</button>
+    <button class="btn primary">{% trans %}Save{% endtrans %}</button>
   </form>
 </div>
 {% endblock %}

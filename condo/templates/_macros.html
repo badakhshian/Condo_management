@@ -7,13 +7,13 @@
 {% macro balance(cents) %}<span class="{{ 'owed' if cents > 0 else 'credit' if cents < 0 else '' }}">{{ cents|money }}</span>{% endmacro %}
 
 {% macro post_button(action, label, cls='btn danger small', confirm=None, extra={}) %}
-<form method="post" action="{{ action }}" class="inline"{% if confirm %} onsubmit="return confirm('{{ confirm }}')"{% endif %}>
+<form method="post" action="{{ action }}" class="inline"{% if confirm %} onsubmit="return confirm({{ confirm|string|tojson|forceescape }})"{% endif %}>
   {{ csrf() }}{% for k, v in extra.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
   <button class="{{ cls }}">{{ label }}</button>
 </form>
 {% endmacro %}
 
-{% macro insurance_badge(state) %}{% set labels = {'valid': 'Insured', 'expiring': 'Expiring soon', 'expired': 'Expired', 'missing': 'No insurance'} %}<span class="badge ins-{{ state }}">{{ labels.get(state, state) }}</span>{% endmacro %}
+{% macro insurance_badge(state) %}{% set labels = {'valid': _('Insured'), 'expiring': _('Expiring soon'), 'expired': _('Expired'), 'missing': _('No insurance')} %}<span class="badge ins-{{ state }}">{{ labels.get(state, state) }}</span>{% endmacro %}
 
 {% macro icon(name) %}<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{% if name == 'mail' %}<path d="M4 6h16v12H4z M4 7l8 6 8-6"/>{% elif name == 'phone' %}<path d="M6.6 3.5h3l1.4 4-2 1.3a11 11 0 0 0 6.2 6.2l1.3-2 4 1.4v3A2 2 0 0 1 18.4 19 15.5 15.5 0 0 1 4.5 5.6a2 2 0 0 1 2.1-2.1z"/>{% elif name == 'pin' %}<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>{% elif name == 'shield' %}<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/>{% endif %}</svg>{% endmacro %}
 
@@ -25,11 +25,11 @@
       <div class="person-name"><strong>{{ o.name }}</strong>
         {% if o.role != 'tenant' %}<span class="tag">{{ o.role_label }}</span>{% endif %}
         {% for label in o.position_labels %}<span class="badge board">{{ label }}</span>{% endfor %}
-        {% if o.is_primary %}<span class="badge status-open">Primary</span>{% endif %}
+        {% if o.is_primary %}<span class="badge status-open">{% trans %}Primary{% endtrans %}</span>{% endif %}
       </div>
       <div class="person-actions">
-        {% if o.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet's Owners tab">from sheet</span>
-        {% else %}<a class="link-btn" href="{{ url_for('owners.edit', owner_id=o.id, back=here()) }}">Edit</a>{% endif %}
+        {% if o.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet’s Owners tab') }}">{% trans %}from sheet{% endtrans %}</span>
+        {% else %}<a class="link-btn" href="{{ url_for('owners.edit', owner_id=o.id, back=here()) }}">{% trans %}Edit{% endtrans %}</a>{% endif %}
       </div>
     </div>
     {% if o.email or o.phone %}<div class="person-line">
@@ -37,9 +37,9 @@
       {% if o.phone %}<a class="meta nowrap" href="{{ o.phone|tel }}">{{ icon('phone') }}<span>{{ o.phone|phone }}</span></a>{% endif %}
     </div>{% endif %}
     <div class="person-line"><span class="meta muted">{{ icon('pin') }}<span>
-      {%- if same_address_as %}Same address as {{ same_address_as }}
+      {%- if same_address_as %}{% trans same_address_as=same_address_as %}Same address as {{ same_address_as }}{% endtrans %}
       {%- elif o.mailing_address %}{{ o.mailing_address|one_line }}
-      {%- else %}Lives in the unit{% endif %}</span></span></div>
+      {%- else %}{% trans %}Lives in the unit{% endtrans %}{% endif %}</span></span></div>
     {% if o.notes %}<div class="person-line excerpt">{{ o.notes }}</div>{% endif %}
   </div>
 </div>
@@ -49,23 +49,23 @@
 {% if state %}
 <div class="household-insurance ins-box-{{ state }}">
   <div class="meta">{{ icon('shield') }}<span class="meta-group">
-    <strong>{{ 'Tenant insurance' if group == 'tenants' else 'Owners’ insurance' }}</strong> {{ insurance_badge(state) }}</span></div>
+    <strong>{{ _('Tenant insurance') if group == 'tenants' else _('Owners’ insurance') }}</strong> {{ insurance_badge(state) }}</span></div>
   {% if p %}
-  <div class="person-line muted">{{ p.provider or 'Policy' }}{% if p.policy_number %} #{{ p.policy_number }}{% endif %}
-    · {{ p.valid_from.strftime('%b %d, %Y') }} – {{ p.valid_until.strftime('%b %d, %Y') }}
-    {% if unit.members(group)|length > 1 %}· policyholder {{ p.owner.name }}{% endif %}</div>
+  <div class="person-line muted">{{ p.provider or _('Policy') }}{% if p.policy_number %} #{{ p.policy_number }}{% endif %}
+    · {{ p.valid_from|fdate('medium') }} – {{ p.valid_until|fdate('medium') }}
+    {% if unit.members(group)|length > 1 %}{% trans name=p.owner.name %}· policyholder {{ name }}{% endtrans %}{% endif %}</div>
   {% else %}
-  <div class="person-line muted">One policy covers {{ 'the tenants' if group == 'tenants' else 'all owners of the unit' }}. None on file yet.</div>
+  <div class="person-line muted">{% if group == 'tenants' %}{% trans %}One policy covers the tenants. None on file yet.{% endtrans %}{% else %}{% trans %}One policy covers all owners of the unit. None on file yet.{% endtrans %}{% endif %}</div>
   {% endif %}
   <div class="person-line">
-    {% if p and p.file %}<a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">View certificate</a>{% endif %}
-    <a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, back=here()) }}">{{ 'Add renewal' if p else 'Add insurance' }}</a>
-    {% if p and unit.members(group)|length > 1 %}<a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, separate=1, back=here()) }}">Add another person's own policy</a>{% endif %}
+    {% if p and p.file %}<a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">{% trans %}View certificate{% endtrans %}</a>{% endif %}
+    <a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, back=here()) }}">{{ _('Add renewal') if p else _('Add insurance') }}</a>
+    {% if p and unit.members(group)|length > 1 %}<a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, separate=1, back=here()) }}">{% trans %}Add another person's own policy{% endtrans %}</a>{% endif %}
   </div>
   {% for x in unit.extra_policies(group) %}
-  <div class="person-line muted extra-policy">Also: {{ x.owner.name }} · {{ x.provider or 'Policy' }}{% if x.policy_number %} #{{ x.policy_number }}{% endif %}
-    · until {{ x.valid_until.strftime('%b %d, %Y') }}
-    {% if x.file %}<a href="{{ url_for('insurance.download', policy_id=x.id) }}" target="_blank" rel="noopener">certificate</a>{% endif %}</div>
+  <div class="person-line muted extra-policy">{% trans name=x.owner.name, policy=x.provider or _('Policy') %}Also: {{ name }} · {{ policy }}{% endtrans %}{% if x.policy_number %} #{{ x.policy_number }}{% endif %}
+    {% trans valid_until=x.valid_until|fdate('medium') %}· until {{ valid_until }}{% endtrans %}
+    {% if x.file %}<a href="{{ url_for('insurance.download', policy_id=x.id) }}" target="_blank" rel="noopener">{% trans %}certificate{% endtrans %}</a>{% endif %}</div>
   {% endfor %}
 </div>
 {% endif %}

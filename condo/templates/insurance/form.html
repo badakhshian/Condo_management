@@ -1,31 +1,31 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Insurance · Unit {{ unit.number }}{% endblock %}
+{% block title %}{% trans number=unit.number %}Insurance · Unit {{ number }}{% endtrans %}{% endblock %}
 {% block content %}
-<h1>{{ 'Tenant' if group == 'tenants' else 'Owners’' }} insurance <span class="muted">· Unit {{ unit.number }}</span></h1>
+<h1>{{ _('Tenant insurance') if group == 'tenants' else _('Owners’ insurance') }} <span class="muted">{% trans number=unit.number %}· Unit {{ number }}{% endtrans %}</span></h1>
 <form method="post" enctype="multipart/form-data" class="card narrow">
   {{ csrf() }}
   <p class="muted">
-    {% if group == 'tenants' %}One tenant (renter's) policy with liability coverage covers the household:
-    {% else %}One home-insurance policy, including civil liability, covers the unit's owners together:
+    {% if group == 'tenants' %}{% trans %}One tenant (renter's) policy with liability coverage covers the household:{% endtrans %}
+    {% else %}{% trans %}One home-insurance policy, including civil liability, covers the unit's owners together:{% endtrans %}
     {% endif %}<strong>{{ members|map(attribute='name')|join(', ') }}</strong>.
-    {% if separate %}The household is already covered by {{ last.owner.name }}'s policy, so this is <strong>optional</strong>: add it only if this person also keeps their own policy.
-    {% elif last %}When it's renewed, add the new policy here; earlier ones are kept. If one owner has filed the policy, the others don't need to.{% else %}Only one owner needs to file it; the others are covered by the same policy.{% endif %}</p>
+    {% if separate %}{% trans name=last.owner.name %}The household is already covered by {{ name }}'s policy, so this is{% endtrans %} <strong>{% trans %}optional{% endtrans %}</strong>{% trans %}: add it only if this person also keeps their own policy.{% endtrans %}
+    {% elif last %}{% trans %}When it's renewed, add the new policy here; earlier ones are kept. If one owner has filed the policy, the others don't need to.{% endtrans %}{% else %}{% trans %}Only one owner needs to file it; the others are covered by the same policy.{% endtrans %}{% endif %}</p>
   {% if members|length > 1 %}
-  <label>Policyholder <select name="policyholder_id">
+  <label>{% trans %}Policyholder{% endtrans %} <select name="policyholder_id">
     {% for m in members %}<option value="{{ m.id }}" {{ 'selected' if form.get('policyholder_id')|string == m.id|string }}>{{ m.name }}</option>{% endfor %}
   </select></label>
   {% else %}<input type="hidden" name="policyholder_id" value="{{ members[0].id }}">{% endif %}
   <div class="row">
-    <label>Insurer <input name="provider" maxlength="200" value="{{ form.get('provider', '') }}" placeholder="e.g. Desjardins"></label>
-    <label>Policy number <input name="policy_number" maxlength="100" value="{{ form.get('policy_number', '') }}"></label>
+    <label>{% trans %}Insurer{% endtrans %} <input name="provider" maxlength="200" value="{{ form.get('provider', '') }}" placeholder="{{ _('e.g. Desjardins') }}"></label>
+    <label>{% trans %}Policy number{% endtrans %} <input name="policy_number" maxlength="100" value="{{ form.get('policy_number', '') }}"></label>
   </div>
   <div class="row">
-    <label>Start date <input type="date" name="valid_from" required value="{{ form.get('valid_from', '') }}"></label>
-    <label>End date <input type="date" name="valid_until" required value="{{ form.get('valid_until', '') }}"></label>
+    <label>{% trans %}Start date{% endtrans %} <input type="date" name="valid_from" required value="{{ form.get('valid_from', '') }}"></label>
+    <label>{% trans %}End date{% endtrans %} <input type="date" name="valid_until" required value="{{ form.get('valid_until', '') }}"></label>
   </div>
-  <label>Certificate (PDF or photo, up to 4 MB) <input type="file" name="file" accept="{{ accept }}" required></label>
-  <button class="btn primary">Save insurance</button>
-  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if current_user.is_admin else url_for('dashboard.index')) }}">Cancel</a>
+  <label>{% trans %}Certificate (PDF or photo, up to 4 MB){% endtrans %} <input type="file" name="file" accept="{{ accept }}" required></label>
+  <button class="btn primary">{% trans %}Save insurance{% endtrans %}</button>
+  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if current_user.is_admin else url_for('dashboard.index')) }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
 {% endblock %}

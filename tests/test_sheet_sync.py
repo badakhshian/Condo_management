@@ -239,7 +239,7 @@ def test_resolve_clashes_with_imported_openings(admin_client):
     admin_client.post(resp.headers["Location"] + "/apply")
     assert db.session.get(Unit, u101.id).balance != 5000  # ...so the sheet's opening was skipped
     page = admin_client.get("/sheet/").data.decode()
-    assert "1 old entry block the sheet" in page and "$2,247.66" in page
+    assert "1 old entry blocks the sheet" in page and "$2,247.66" in page
     admin_client.post("/sheet/resolve-clashes")
     assert db.session.get(Unit, u101.id).balance == 5000  # now matches the Balances tab
     assert "block the sheet" not in admin_client.get("/sheet/").data.decode()

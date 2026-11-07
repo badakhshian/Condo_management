@@ -10,6 +10,7 @@ from .. import files
 from ..extensions import db
 from ..models import InsurancePolicy, Owner, Unit
 from ..utils import parse_date
+from ..i18n import gettext as _
 
 bp = Blueprint("insurance", __name__)
 
@@ -55,7 +56,7 @@ def new(unit_id, group):
         abort(403)
     members = unit.members(group)
     if not members:
-        flash(f"Add the unit's {group} first; the policy names one of them as policyholder.", "error")
+        flash(_("Add the unit's %(group)s first; the policy names one of them as policyholder.", group=group), "error")
         return redirect(_back(unit))
     last = unit.current_policy(group)
     if request.method == "POST":
@@ -64,7 +65,7 @@ def new(unit_id, group):
         if raw:
             holder = next((m for m in members if str(m.id) == raw), None)
             if holder is None:
-                errors.append("Choose the policyholder.")
+                errors.append(_("Choose the policyholder."))
         else:  # not chosen: the household's primary contact (or its only member)
             holder = next((m for m in members if m.is_primary), members[0])
         for field, label in (("valid_from", "Start date"), ("valid_until", "End date")):
@@ -73,7 +74,7 @@ def new(unit_id, group):
             except ValueError as exc:
                 errors.append(str(exc))
         if len(dates) == 2 and dates["valid_until"] < dates["valid_from"]:
-            errors.append("The end date is before the start date.")
+            errors.append(_("The end date is before the start date."))
         stored = files.take_upload(request.files.get("file"), errors, required=True)
         if not errors:
             db.session.add(InsurancePolicy(
@@ -82,7 +83,7 @@ def new(unit_id, group):
                 provider=request.form.get("provider", "").strip()[:200] or None,
                 policy_number=request.form.get("policy_number", "").strip()[:100] or None))
             db.session.commit()
-            flash(f"Insurance saved for the {group} of unit {unit.number}.", "success")
+            flash(_("Insurance saved for the %(group)s of unit %(number)s.", group=group, number=unit.number), "success")
             return redirect(_back(unit))
         for e in errors:
             flash(e, "error")
@@ -132,5 +133,5 @@ def delete(policy_id):
     unit_id = policy.unit_id
     db.session.delete(policy)
     db.session.commit()
-    flash("Insurance policy removed.", "success")
+    flash(_("Insurance policy removed."), "success")
     return redirect(url_for("units.detail", unit_id=unit_id))

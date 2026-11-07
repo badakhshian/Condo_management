@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Reimbursements{% endblock %}
+{% block title %}{% trans %}Reimbursements{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Reimbursements</h1>
-  {% if can_request %}<a class="btn primary" href="{{ url_for('reimbursements.new') }}">Request reimbursement</a>{% endif %}</div>
-<p class="muted">Paid for something for the building? Request it back here with the receipt. The president approves it, then accounting credits your account or pays you back.</p>
+<div class="head"><h1>{% trans %}Reimbursements{% endtrans %}</h1>
+  {% if can_request %}<a class="btn primary" href="{{ url_for('reimbursements.new') }}">{% trans %}Request reimbursement{% endtrans %}</a>{% endif %}</div>
+<p class="muted">{% trans %}Paid for something for the building? Request it back here with the receipt. The president approves it, then accounting credits your account or pays you back.{% endtrans %}</p>
 <nav class="tabs">
-  {% if waiting_for_me %}<a href="{{ url_for('reimbursements.index', show='mine') }}" class="{{ 'active' if show == 'mine' }}">Waiting for me</a>{% endif %}
-  <a href="{{ url_for('reimbursements.index', show='all') }}" class="{{ 'active' if show == 'all' }}">All</a>
+  {% if waiting_for_me %}<a href="{{ url_for('reimbursements.index', show='mine') }}" class="{{ 'active' if show == 'mine' }}">{% trans %}Waiting for me{% endtrans %}</a>{% endif %}
+  <a href="{{ url_for('reimbursements.index', show='all') }}" class="{{ 'active' if show == 'all' }}">{% trans %}All{% endtrans %}</a>
   {% for k, label in statuses.items() %}<a href="{{ url_for('reimbursements.index', show=k) }}" class="{{ 'active' if show == k }}">{{ label.split(':')[0] }}</a>{% endfor %}
 </nav>
 <div class="card">
 <table>
-  <thead><tr><th>#</th><th>Date paid</th><th>Unit</th><th>For</th><th class="num">Amount</th><th>How</th><th>Status</th></tr></thead>
+  <thead><tr><th>#</th><th>{% trans %}Date paid{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}For{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th>{% trans %}How{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th></tr></thead>
   <tbody>{% for r in items %}
-    <tr><td>{{ r.id }}</td><td class="nowrap">{{ r.spent_on.strftime('%Y-%m-%d') }}</td><td>{{ r.unit.number }}</td>
+    <tr><td>{{ r.id }}</td><td class="nowrap">{{ r.spent_on|fdate('iso') }}</td><td>{{ r.unit.number }}</td>
       <td><a href="{{ url_for('reimbursements.detail', reimb_id=r.id) }}">{{ r.description|truncate(60) }}</a>
-        <div class="excerpt">by {{ r.requested_by.name }}</div></td>
+        <div class="excerpt">{% trans name=r.requested_by.name %}by {{ name }}{% endtrans %}</div></td>
       <td class="num">{{ r.amount_cents|money }}</td>
-      <td class="muted">{{ 'Credit' if r.settle_method == 'credit' else 'Pay back' }}</td>
+      <td class="muted">{{ _('Credit') if r.settle_method == 'credit' else _('Pay back') }}</td>
       <td><span class="badge reimb-{{ r.status }}">{{ r.status_label }}</span></td></tr>
-  {% else %}<tr><td colspan="7" class="muted">Nothing here.</td></tr>{% endfor %}</tbody>
+  {% else %}<tr><td colspan="7" class="muted">{% trans %}Nothing here.{% endtrans %}</td></tr>{% endfor %}</tbody>
 </table>
 </div>
 {% endblock %}

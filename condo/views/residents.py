@@ -8,6 +8,7 @@ from ..extensions import db
 from ..models import ACCOUNT_ROLES, RESIDENT_ROLES, ROLE_LABELS, ROLES, STAFF_PERMISSIONS, Unit, User
 from ..navigation import safe_back
 from ..utils import admin_required, board_required
+from ..i18n import gettext as _
 
 bp = Blueprint("residents", __name__, url_prefix="/residents")
 
@@ -23,30 +24,30 @@ def _apply_form(user, form, creating):
     password = form.get("password", "")
 
     if not name:
-        errors.append("Name is required.")
+        errors.append(_("Name is required."))
     if not EMAIL_RE.match(email):
-        errors.append("A valid email is required.")
+        errors.append(_("A valid email is required."))
     else:
         existing = db.session.scalar(db.select(User).where(User.email == email))
         if existing and existing.id != user.id:
-            errors.append("Another account already uses that email.")
+            errors.append(_("Another account already uses that email."))
     allowed_roles = set(ACCOUNT_ROLES) | ({"admin"} if user.role == "admin" else set())
     if role not in allowed_roles:
-        errors.append("Choose Owner or Tenant. Managing the building comes from a board position.")
+        errors.append(_("Choose Owner or Tenant. Managing the building comes from a board position."))
     unit = None
     if role in RESIDENT_ROLES:
         unit = db.session.get(Unit, int(unit_id)) if str(unit_id or "").isdigit() else None
         if unit is None:
-            errors.append("Choose the unit this person owns or rents.")
+            errors.append(_("Choose the unit this person owns or rents."))
     if creating and len(password) < 8:
-        errors.append("Password must be at least 8 characters.")
+        errors.append(_("Password must be at least 8 characters."))
     elif password and len(password) < 8:
-        errors.append("New password must be at least 8 characters.")
+        errors.append(_("New password must be at least 8 characters."))
     if not creating and user.id == current_user.id:
         if user.role == "admin" and role != "admin" and not user.is_board:
-            errors.append("Assign yourself your board position in Directory > Board first, or you'd lose access.")
+            errors.append(_("Assign yourself your board position in Directory > Board first, or you'd lose access."))
         if not form.get("active"):
-            errors.append("You cannot deactivate your own account.")
+            errors.append(_("You cannot deactivate your own account."))
     if errors:
         return errors
 
@@ -81,17 +82,17 @@ def set_password(user_id):
     """The board sets (or generates) a password for one account."""
     user = db.session.get(User, user_id) or abort(404)
     if user.id == current_user.id:
-        flash("Change your own password from My profile.", "info")
+        flash(_("Change your own password from My profile."), "info")
         return redirect(url_for("auth.account"))
     if request.method == "POST":
         generated = request.form.get("action") == "generate"
         password = generate_password() if generated else request.form.get("password", "")
         if not generated:
             if len(password) < 8:
-                flash("The password must be at least 8 characters.", "error")
+                flash(_("The password must be at least 8 characters."), "error")
                 return render_template("residents/password.html", user=user, form=request.form), 400
             if password != request.form.get("confirm", ""):
-                flash("The two passwords don't match.", "error")
+                flash(_("The two passwords don't match."), "error")
                 return render_template("residents/password.html", user=user, form=request.form), 400
         user.set_password(password)
         user.must_change_password = bool(request.form.get("must_change"))
@@ -135,7 +136,7 @@ def new():
         if not errors:
             db.session.add(user)
             db.session.commit()
-            flash(f"Account for {user.name} created.", "success")
+            flash(_("Account for %(name)s created.", name=user.name), "success")
             return redirect(safe_back() or url_for("directory.accounts"))
         for e in errors:
             flash(e, "error")
@@ -155,7 +156,7 @@ def edit(user_id):
         errors = _apply_form(user, request.form, creating=False)
         if not errors:
             db.session.commit()
-            flash(f"{user.name} updated.", "success")
+            flash(_("%(name)s updated.", name=user.name), "success")
             return redirect(safe_back() or url_for("directory.accounts"))
         db.session.rollback()
         for e in errors:

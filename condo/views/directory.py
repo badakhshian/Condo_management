@@ -14,15 +14,16 @@ from ..extensions import db
 from ..models import (ACCOUNT_ROLES, BOARD_POSITIONS, STAFF_PERMISSIONS, INSURANCE_STATE_LABELS, OWNER_ROLES, ROLE_LABELS, SINGLE_HOLDER_POSITIONS,
                       Owner, Unit, User, allowed_positions)
 from ..utils import admin_required, board_has_accounts, board_positions_of, board_required, can_manage_accounts
+from ..i18n import gettext as _, lazy_gettext as _l
 
 bp = Blueprint("directory", __name__, url_prefix="/directory")
 
 # Which contact roles appear on which tab.
 GROUPS = {
-    "owners": {"title": "Owners", "roles": ("owner", "co-owner", "contact"), "default_role": "owner"},
-    "tenants": {"title": "Tenants", "roles": ("tenant",), "default_role": "tenant"},
+    "owners": {"title": _l("Owners"), "roles": ("owner", "co-owner", "contact"), "default_role": "owner"},
+    "tenants": {"title": _l("Tenants"), "roles": ("tenant",), "default_role": "tenant"},
 }
-TABS = [("owners", "Owners"), ("tenants", "Tenants"), ("board", "Board"), ("accounts", "Accounts")]
+TABS = [("owners", _l("Owners")), ("tenants", _l("Tenants")), ("board", _l("Board")), ("accounts", _l("Accounts"))]
 
 
 def board_members():
@@ -77,7 +78,7 @@ def visible_tabs():
     if not can_manage_accounts():
         tabs = [t for t in tabs if t[0] != "accounts"]
     elif not current_user.is_admin:
-        tabs = tabs + [("accounts", "Accounts")]
+        tabs = tabs + [("accounts", _l("Accounts"))]
     return tabs
 
 
@@ -133,28 +134,29 @@ def assign():
     raw = request.form.get("owner_id", "")
     person = db.session.get(Owner, int(raw)) if raw.isdigit() else None
     if key not in BOARD_POSITIONS or person is None:
-        flash("Choose a person for the position.", "error")
+        flash(_("Choose a person for the position."), "error")
         return redirect(url_for("directory.board"))
     if key not in allowed_positions(person.role):
-        flash(f"{person.name} can't be {BOARD_POSITIONS[key]}: only co-owners sit on the board"
-              + (" (an outside contact can do Accounting)." if person.role == "contact" else "."), "error")
+        flash(_("%(name)s can't be %(position)s: only co-owners sit on the board (an outside contact can do Accounting).",
+                name=person.name, position=BOARD_POSITIONS[key]) if person.role == "contact" else
+              _("%(name)s can't be %(position)s: only co-owners sit on the board.", name=person.name,
+                position=BOARD_POSITIONS[key]), "error")
         return redirect(url_for("directory.board"))
     if key in person.positions:
-        flash(f"{person.name} is already {BOARD_POSITIONS[key]}.", "info")
+        flash(_("%(name)s is already %(key)s.", name=person.name, key=BOARD_POSITIONS[key]), "info")
         return redirect(url_for("directory.board"))
     if key in SINGLE_HOLDER_POSITIONS:
         for other in db.session.scalars(db.select(Owner).where(Owner.board_roles.like(f"%{key}%"))):
             if key in other.positions:
                 other.positions = [p for p in other.positions if p != key]
-                flash(f"{BOARD_POSITIONS[key]} moved from {other.name} to {person.name}.", "info")
+                flash(_("%(key)s moved from %(name)s to %(name2)s.", key=BOARD_POSITIONS[key], name=other.name, name2=person.name), "info")
     person.positions = person.positions + [key]
     from ..models import link_admin_accounts
     converted = link_admin_accounts()
     db.session.commit()
-    flash(f"{person.name} is now {BOARD_POSITIONS[key]}.", "success")
+    flash(_("%(name)s is now %(key)s.", name=person.name, key=BOARD_POSITIONS[key]), "success")
     for u in converted:
-        flash(f"The temporary administrator account ({u.email}) is now {u.name}'s own account, as "
-              f"{BOARD_POSITIONS[key]}.", "info")
+        flash(_("The temporary administrator account (%(email)s) is now %(name)s's own account, as %(key)s.", email=u.email, name=u.name, key=BOARD_POSITIONS[key]), "info")
     return redirect(url_for("directory.board"))
 
 
@@ -170,7 +172,7 @@ def unassign():
         abort(400)
     person.positions = [p for p in person.positions if p != key]
     db.session.commit()
-    flash(f"{person.name} is no longer {BOARD_POSITIONS[key]}.", "success")
+    flash(_("%(name)s is no longer %(key)s.", name=person.name, key=BOARD_POSITIONS[key]), "success")
     return redirect(url_for("directory.board"))
 
 

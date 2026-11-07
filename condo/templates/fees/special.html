@@ -4,44 +4,44 @@
 {% block content %}
 {% set collected = rows|sum(attribute='paid') %}
 <div class="head"><h1>{{ sc.title }}</h1>
-  {% if not sc.billed_at %}<span class="tag">Draft: not billed</span>{% elif today > sc.deadline and collected < sc.total_cents %}<span class="badge sc-overdue">Past deadline</span>{% endif %}</div>
+  {% if not sc.billed_at %}<span class="tag">{% trans %}Draft: not billed{% endtrans %}</span>{% elif today > sc.deadline and collected < sc.total_cents %}<span class="badge sc-overdue">{% trans %}Past deadline{% endtrans %}</span>{% endif %}</div>
 {% if sc.description %}<p class="prose">{{ sc.description }}</p>{% endif %}
 <div class="stats">
-  <div class="stat"><span>{{ sc.total_cents|money }}</span>Total · {{ methods[sc.method]|lower }}</div>
-  <div class="stat"><span class="credit">{{ [collected, sc.total_cents]|min|money }}</span>Collected</div>
-  <div class="stat"><span class="{{ 'owed' if sc.total_cents - collected > 0 }}">{{ [sc.total_cents - collected, 0]|max|money }}</span>Still to collect</div>
-  <div class="stat"><span>{{ sc.deadline.strftime('%b %d, %Y') }}</span>Deadline{% if sc.billed_at and today <= sc.deadline %} · {{ (sc.deadline - today).days }} days left{% endif %}</div>
+  <div class="stat"><span>{{ sc.total_cents|money }}</span>{% trans method=methods[sc.method]|lower %}Total · {{ method }}{% endtrans %}</div>
+  <div class="stat"><span class="credit">{{ [collected, sc.total_cents]|min|money }}</span>{% trans %}Collected{% endtrans %}</div>
+  <div class="stat"><span class="{{ 'owed' if sc.total_cents - collected > 0 }}">{{ [sc.total_cents - collected, 0]|max|money }}</span>{% trans %}Still to collect{% endtrans %}</div>
+  <div class="stat"><span>{{ sc.deadline|fdate('medium') }}</span>{% trans %}Deadline{% endtrans %}{% if sc.billed_at and today <= sc.deadline %} {% trans days=(sc.deadline - today).days %}· {{ days }} days left{% endtrans %}{% endif %}</div>
 </div>
 
 <section class="card">
-  <div class="card-head"><h2>Units</h2>
+  <div class="card-head"><h2>{% trans %}Units{% endtrans %}</h2>
     {% if current_user.can('accounting_edit') and not sc.billed_at %}
-      {{ post_button(url_for('fees.bill_special', special_id=sc.id), 'Bill the units', cls='btn primary small', confirm='Add these amounts to each unit\'s statement and notify the owners?') }}
+      {{ post_button(url_for('fees.bill_special', special_id=sc.id), _('Bill the units'), cls='btn primary small', confirm=_('Add these amounts to each unit’s statement and notify the owners?')) }}
     {% endif %}</div>
   <table>
-    <thead><tr><th>Unit</th><th>Owner</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Left</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th class="num">{% trans %}Paid{% endtrans %}</th><th class="num">{% trans %}Left{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th></th></tr></thead>
     <tbody>{% for r in rows %}
       <tr><td><a href="{{ url_for('billing.index', unit=r.unit.id) }}">{{ r.unit.number }}</a></td><td class="muted">{{ r.unit.owner_display or '—' }}</td>
         <td class="num">{{ r.amount|money }}</td><td class="num">{{ r.paid|money if r.paid else '—' }}</td>
         <td class="num">{{ r.left|money if r.left else '—' }}</td>
         <td><span class="badge sc-{{ r.status }}">{{ labels[r.status] }}</span></td>
-        <td>{% if current_user.can('accounting_edit') and sc.billed_at and r.left %}<a class="btn small" href="{{ url_for('billing.new_payment', unit_id=r.unit.id, special_id=sc.id, amount='%.2f'|format(r.left / 100), back=here()) }}">Record payment</a>{% endif %}</td></tr>
+        <td>{% if current_user.can('accounting_edit') and sc.billed_at and r.left %}<a class="btn small" href="{{ url_for('billing.new_payment', unit_id=r.unit.id, special_id=sc.id, amount='%.2f'|format(r.left / 100), back=here()) }}">{% trans %}Record payment{% endtrans %}</a>{% endif %}</td></tr>
     {% endfor %}</tbody>
-    <tfoot><tr><th colspan="2">Total</th><th class="num">{{ rows|sum(attribute='amount')|money }}</th><th class="num">{{ collected|money }}</th><th class="num">{{ rows|sum(attribute='left')|money }}</th><th colspan="2"></th></tr></tfoot>
+    <tfoot><tr><th colspan="2">{% trans %}Total{% endtrans %}</th><th class="num">{{ rows|sum(attribute='amount')|money }}</th><th class="num">{{ collected|money }}</th><th class="num">{{ rows|sum(attribute='left')|money }}</th><th colspan="2"></th></tr></tfoot>
   </table>
 </section>
 
 {% if current_user.can('accounting_edit') %}
 <div class="grid two">
   <form method="post" action="{{ url_for('fees.change_deadline', special_id=sc.id) }}" class="card inline-form">
-    {{ csrf() }}<strong>Deadline</strong>
+    {{ csrf() }}<strong>{% trans %}Deadline{% endtrans %}</strong>
     <input type="date" name="deadline" value="{{ sc.deadline.isoformat() }}" required style="width:auto">
-    <button class="btn small">Change</button>
-    {% if sc.billed_at %}<span class="muted">Owners are notified of a new deadline.</span>{% endif %}
+    <button class="btn small">{% trans %}Change{% endtrans %}</button>
+    {% if sc.billed_at %}<span class="muted">{% trans %}Owners are notified of a new deadline.{% endtrans %}</span>{% endif %}
   </form>
   {% if not sc.billed_at %}
-  <div class="card inline-form"><span class="muted">Not billed yet, so it can still be deleted.</span>
-    {{ post_button(url_for('fees.delete_special', special_id=sc.id), 'Delete', cls='btn danger small', confirm='Delete this special contribution?') }}</div>
+  <div class="card inline-form"><span class="muted">{% trans %}Not billed yet, so it can still be deleted.{% endtrans %}</span>
+    {{ post_button(url_for('fees.delete_special', special_id=sc.id), _('Delete'), cls='btn danger small', confirm=_('Delete this special contribution?')) }}</div>
   {% endif %}
 </div>
 {% endif %}

@@ -1,4 +1,4 @@
-<div class="head"><h1>Directory</h1></div>
+<div class="head"><h1>{% trans %}Directory{% endtrans %}</h1></div>
 <nav class="tabs">
   {% for key, label in tabs %}
     <a href="{{ url_for('directory.' ~ key) if key in ('accounts', 'board') else url_for('directory.contacts', group=key) }}"

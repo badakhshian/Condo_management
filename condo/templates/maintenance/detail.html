@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, status_badge, priority_badge, post_button %}
-{% block title %}{{ 'Project' if req.is_project else 'Request' }} #{{ req.id }}{% endblock %}
+{% block title %}{{ _('Project') if req.is_project else _('Request') }} #{{ req.id }}{% endblock %}
 {% block content %}
 <div class="head"><h1>#{{ req.id }} · {{ req.title }}</h1>
   <div>{{ priority_badge(req.priority, priorities) }} {{ status_badge(req.status, statuses) }}</div></div>
@@ -8,84 +8,84 @@
   <section>
     <div class="card">
       {% if req.is_project and (req.budget_cents is not none or req.target_date) %}<div class="project-facts">
-        {% if req.budget_cents is not none %}<div><span>{{ req.budget_cents|money }}</span>Budget</div>{% endif %}
-        {% if req.target_date %}<div><span>{{ req.target_date.strftime('%b %d, %Y') }}</span>Target date</div>{% endif %}
+        {% if req.budget_cents is not none %}<div><span>{{ req.budget_cents|money }}</span>{% trans %}Budget{% endtrans %}</div>{% endif %}
+        {% if req.target_date %}<div><span>{{ req.target_date|fdate('medium') }}</span>{% trans %}Target date{% endtrans %}</div>{% endif %}
       </div>{% endif %}
-      <p class="muted">{% if req.is_project %}<span class="tag">Project</span> {% endif %}{{ 'Unit ' ~ req.unit.number if req.unit else 'Common area' }} · {{ req.category }} ·
-        submitted by {{ req.submitted_by.name }} on {{ req.created_at.strftime('%b %d, %Y %H:%M') }}</p>
+      <p class="muted">{% if req.is_project %}<span class="tag">{% trans %}Project{% endtrans %}</span> {% endif %}{% trans area=_('Unit %(number)s', number=req.unit.number) if req.unit else _('Common area'), category=CATEGORY_LABELS.get(req.category, req.category), name=req.submitted_by.name, created_at=req.created_at|fdatetime('medium') %}{{ area }} · {{ category }} ·
+        submitted by {{ name }} on {{ created_at }}{% endtrans %}</p>
       <div class="prose">{{ req.description }}</div>
     </div>
     <div class="card">
-      <h2>Updates</h2>
+      <h2>{% trans %}Updates{% endtrans %}</h2>
       {% for c in req.comments %}
-        <div class="comment"><strong>{{ c.author.name }}</strong> <span class="muted">{{ c.created_at.strftime('%b %d, %H:%M') }}</span>
+        <div class="comment"><strong>{{ c.author.name }}</strong> <span class="muted">{{ c.created_at|fdatetime('short') }}</span>
           <div class="prose">{{ c.body }}</div></div>
-      {% else %}<p class="muted">No updates yet.</p>{% endfor %}
+      {% else %}<p class="muted">{% trans %}No updates yet.{% endtrans %}</p>{% endfor %}
       <form method="post" action="{{ url_for('maintenance.comment', request_id=req.id) }}">
         {{ csrf() }}
-        <label>Add a comment <textarea name="body" rows="3" required></textarea></label>
-        <button class="btn">Post comment</button>
+        <label>{% trans %}Add a comment{% endtrans %} <textarea name="body" rows="3" required></textarea></label>
+        <button class="btn">{% trans %}Post comment{% endtrans %}</button>
       </form>
     </div>
   </section>
   <aside>
     {% if req.owner_approval %}
     <div class="card {{ 'building-insurance' if req.awaiting_owner }}">
-      <h2>Owner approval</h2>
+      <h2>{% trans %}Owner approval{% endtrans %}</h2>
       {% if req.awaiting_owner %}
-        <p>A tenant asked for this repair, so the unit's owner must approve it before work is scheduled.</p>
+        <p>{% trans %}A tenant asked for this repair, so the unit's owner must approve it before work is scheduled.{% endtrans %}</p>
         {% if can_decide %}
           <form method="post" action="{{ url_for('maintenance.owner_decision', request_id=req.id) }}">
             {{ csrf() }}
             {% if current_user.is_admin %}
-              <label>Owner who gave approval <input name="on_behalf" placeholder="e.g. Ying Zhou, by phone"></label>
+              <label>{% trans %}Owner who gave approval{% endtrans %} <input name="on_behalf" placeholder="{{ _('e.g. Ying Zhou, by phone') }}"></label>
             {% endif %}
-            <label>Note <span class="muted">(required to decline)</span><textarea name="note" rows="2"></textarea></label>
+            <label>{% trans %}Note{% endtrans %} <span class="muted">{% trans %}(required to decline){% endtrans %}</span><textarea name="note" rows="2"></textarea></label>
             <div class="actions">
-              <button class="btn primary" name="decision" value="approve">Approve repair</button>
-              <button class="btn danger" name="decision" value="decline">Decline</button>
+              <button class="btn primary" name="decision" value="approve">{% trans %}Approve repair{% endtrans %}</button>
+              <button class="btn danger" name="decision" value="decline">{% trans %}Decline{% endtrans %}</button>
             </div>
           </form>
           {% if current_user.is_admin %}<p class="muted" style="margin-top:.6rem">
-            {% if owner_accounts %}Owners who can approve online: {{ owner_accounts|map(attribute='name')|join(', ') }}.
-            {% else %}No owner of this unit has a website account, so record their answer here.{% endif %}</p>{% endif %}
+            {% if owner_accounts %}{% trans owner_accounts=owner_accounts|map(attribute='name')|join(', ') %}Owners who can approve online: {{ owner_accounts }}.{% endtrans %}
+            {% else %}{% trans %}No owner of this unit has a website account, so record their answer here.{% endtrans %}{% endif %}</p>{% endif %}
         {% else %}
-          <p class="muted">Waiting for the owner to approve.</p>
+          <p class="muted">{% trans %}Waiting for the owner to approve.{% endtrans %}</p>
         {% endif %}
       {% else %}
         <p><span class="badge {{ 'status-resolved' if req.owner_approval == 'approved' else 'status-closed' }}">{{ req.owner_approval|capitalize }}</span>
-          by {{ req.owner_decision_by }} on {{ req.owner_decision_at.strftime('%b %d, %Y') }}</p>
+          {% trans owner_decision_by=req.owner_decision_by, owner_decision_at=req.owner_decision_at|fdate('medium') %}by {{ owner_decision_by }} on {{ owner_decision_at }}{% endtrans %}</p>
         {% if req.owner_decision_note %}<p class="prose">{{ req.owner_decision_note }}</p>{% endif %}
       {% endif %}
     </div>
     {% endif %}
     {% if req.status in ('quote_requested', 'quote_review', 'owner_repair') or (board and req.unit_id and req.status in ('open', 'in_progress')) or req.quote_amount_cents %}
     <div class="card {{ 'building-insurance' if req.status in ('quote_requested', 'quote_review', 'owner_repair') }}">
-      <h2>Quote &amp; board approval</h2>
+      <h2>{% trans %}Quote &amp; board approval{% endtrans %}</h2>
       {% if req.status in ('open', 'in_progress') and board and not req.quote_amount_cents %}
-        <p class="muted">Want the owner to arrange this repair? Ask them for a quote first; once the board approves the cost, they do the repair, pay, and request a reimbursement.</p>
+        <p class="muted">{% trans %}Want the owner to arrange this repair? Ask them for a quote first; once the board approves the cost, they do the repair, pay, and request a reimbursement.{% endtrans %}</p>
         <form method="post" action="{{ url_for('maintenance.ask_quote', request_id=req.id) }}">
-          {{ csrf() }}<label>Note to the owner <textarea name="note" rows="2" placeholder="e.g. Please get two quotes from licensed plumbers"></textarea></label>
-          <button class="btn">Ask the owner for a quote</button>
+          {{ csrf() }}<label>{% trans %}Note to the owner{% endtrans %} <textarea name="note" rows="2" placeholder="{{ _('e.g. Please get two quotes from licensed plumbers') }}"></textarea></label>
+          <button class="btn">{% trans %}Ask the owner for a quote{% endtrans %}</button>
         </form>
       {% elif req.status == 'quote_requested' %}
-        <p>The board asked the owner to get a quote.{% if req.quote_note %}</p><p class="prose muted">“{{ req.quote_note }}”{% endif %}</p>
-        {% if req.quote_decision_note %}<p class="flash flash-info">Previous quote not approved: {{ req.quote_decision_note }}</p>{% endif %}
+        <p>{% trans %}The board asked the owner to get a quote.{% endtrans %}{% if req.quote_note %}</p><p class="prose muted">“{{ req.quote_note }}”{% endif %}</p>
+        {% if req.quote_decision_note %}<p class="flash flash-info">{% trans quote_decision_note=req.quote_decision_note %}Previous quote not approved: {{ quote_decision_note }}{% endtrans %}</p>{% endif %}
         {% if unit_owner %}
         <form method="post" action="{{ url_for('maintenance.submit_quote', request_id=req.id) }}" enctype="multipart/form-data">
           {{ csrf() }}
-          <div class="row"><label>Contractor <input name="vendor" maxlength="200"></label>
-            <label>Quoted amount ($) <input name="amount" inputmode="decimal" required></label></div>
-          <label>Quote (PDF or photo) <input type="file" name="file" accept="{{ accept }}" required></label>
-          <button class="btn primary">Send quote to the board</button>
+          <div class="row"><label>{% trans %}Contractor{% endtrans %} <input name="vendor" maxlength="200"></label>
+            <label>{% trans %}Quoted amount ($){% endtrans %} <input name="amount" inputmode="decimal" required></label></div>
+          <label>{% trans %}Quote (PDF or photo){% endtrans %} <input type="file" name="file" accept="{{ accept }}" required></label>
+          <button class="btn primary">{% trans %}Send quote to the board{% endtrans %}</button>
         </form>
-        {% else %}<p class="muted">Waiting for the owner's quote.</p>{% endif %}
+        {% else %}<p class="muted">{% trans %}Waiting for the owner's quote.{% endtrans %}</p>{% endif %}
       {% endif %}
       {% if req.quote_amount_cents and req.status != 'quote_requested' %}
         <dl class="props">
-          <dt>Quote</dt><dd><strong>{{ req.quote_amount_cents|money }}</strong>{% if req.quote_vendor %} · {{ req.quote_vendor }}{% endif %}
-            {% if req.quote_file %}· <a href="{{ url_for('maintenance.quote_file', request_id=req.id) }}" target="_blank" rel="noopener">view</a>{% endif %}</dd>
-          {% if req.quote_approved_cents %}<dt>Approved</dt><dd><span class="credit">{{ req.quote_approved_cents|money }}</span> by {{ req.quote_decided_by }}, {{ req.quote_decided_at.strftime('%b %d, %Y') }}</dd>{% endif %}
+          <dt>{% trans %}Quote{% endtrans %}</dt><dd><strong>{{ req.quote_amount_cents|money }}</strong>{% if req.quote_vendor %} · {{ req.quote_vendor }}{% endif %}
+            {% if req.quote_file %}· <a href="{{ url_for('maintenance.quote_file', request_id=req.id) }}" target="_blank" rel="noopener">{% trans %}view{% endtrans %}</a>{% endif %}</dd>
+          {% if req.quote_approved_cents %}<dt>{% trans %}Approved{% endtrans %}</dt><dd><span class="credit">{{ req.quote_approved_cents|money }}</span> {% trans quote_decided_by=req.quote_decided_by, quote_decided_at=req.quote_decided_at|fdate('medium') %}by {{ quote_decided_by }}, {{ quote_decided_at }}{% endtrans %}</dd>{% endif %}
         </dl>
         {% if req.quote_decision_note and req.quote_approved_cents %}<p class="prose muted">{{ req.quote_decision_note }}</p>{% endif %}
       {% endif %}
@@ -93,55 +93,55 @@
         {% if board %}
         <form method="post" action="{{ url_for('maintenance.quote_decision', request_id=req.id) }}">
           {{ csrf() }}
-          <label>Approved amount ($) <input name="approved_amount" inputmode="decimal" value="{{ '%.2f'|format(req.quote_amount_cents / 100) }}"></label>
-          <label>Note <span class="muted">(required to decline)</span><textarea name="note" rows="2"></textarea></label>
-          <div class="actions"><button class="btn primary" name="decision" value="approve">Approve cost</button>
-            <button class="btn danger" name="decision" value="decline">Ask for another quote</button></div>
+          <label>{% trans %}Approved amount ($){% endtrans %} <input name="approved_amount" inputmode="decimal" value="{{ '%.2f'|format(req.quote_amount_cents / 100) }}"></label>
+          <label>{% trans %}Note{% endtrans %} <span class="muted">{% trans %}(required to decline){% endtrans %}</span><textarea name="note" rows="2"></textarea></label>
+          <div class="actions"><button class="btn primary" name="decision" value="approve">{% trans %}Approve cost{% endtrans %}</button>
+            <button class="btn danger" name="decision" value="decline">{% trans %}Ask for another quote{% endtrans %}</button></div>
         </form>
-        {% else %}<p class="muted">Waiting for the board to approve the cost.</p>{% endif %}
+        {% else %}<p class="muted">{% trans %}Waiting for the board to approve the cost.{% endtrans %}</p>{% endif %}
       {% elif req.status == 'owner_repair' %}
-        <p>Approved: the owner can now do the repair and pay for it.</p>
-        {% if unit_owner %}<a class="btn primary" href="{{ url_for('reimbursements.new', request_id=req.id) }}">Request reimbursement</a>{% endif %}
+        <p>{% trans %}Approved: the owner can now do the repair and pay for it.{% endtrans %}</p>
+        {% if unit_owner %}<a class="btn primary" href="{{ url_for('reimbursements.new', request_id=req.id) }}">{% trans %}Request reimbursement{% endtrans %}</a>{% endif %}
       {% endif %}
     </div>
     {% endif %}
     <div class="card">
     {% if current_user.can('maintenance') %}
-      <h2>Manage</h2>
+      <h2>{% trans %}Manage{% endtrans %}</h2>
       <form method="post" action="{{ url_for('maintenance.update_status', request_id=req.id) }}">
         {{ csrf() }}
-        <label>Status <select name="status">{% for k, label in statuses.items() if (k not in ('awaiting_owner', 'quote_requested', 'quote_review', 'owner_repair')) or k == req.status %}<option value="{{ k }}" {{ 'selected' if req.status == k }}>{{ label }}</option>{% endfor %}</select></label>
-        <label>Priority <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if req.priority == k }}>{{ label }}</option>{% endfor %}</select></label>
-        <button class="btn primary">Update</button>
+        <label>{% trans %}Status{% endtrans %} <select name="status">{% for k, label in statuses.items() if (k not in ('awaiting_owner', 'quote_requested', 'quote_review', 'owner_repair')) or k == req.status %}<option value="{{ k }}" {{ 'selected' if req.status == k }}>{{ label }}</option>{% endfor %}</select></label>
+        <label>{% trans %}Priority{% endtrans %} <select name="priority">{% for k, label in priorities.items() %}<option value="{{ k }}" {{ 'selected' if req.priority == k }}>{{ label }}</option>{% endfor %}</select></label>
+        <button class="btn primary">{% trans %}Update{% endtrans %}</button>
       </form>
     {% elif req.submitted_by_id == current_user.id %}
-      <h2>Actions</h2>
+      <h2>{% trans %}Actions{% endtrans %}</h2>
       {% if req.is_active %}
-        {{ post_button(url_for('maintenance.update_status', request_id=req.id), 'Close request', cls='btn', confirm='Close this request?', extra={'status': 'closed'}) }}
+        {{ post_button(url_for('maintenance.update_status', request_id=req.id), _('Close request'), cls='btn', confirm=_('Close this request?'), extra={'status': 'closed'}) }}
       {% elif req.status == 'resolved' %}
-        <p class="muted">Not fixed after all?</p>
-        {{ post_button(url_for('maintenance.update_status', request_id=req.id), 'Reopen', cls='btn', extra={'status': 'open'}) }}
-      {% else %}<p class="muted">This request is closed.</p>{% endif %}
+        <p class="muted">{% trans %}Not fixed after all?{% endtrans %}</p>
+        {{ post_button(url_for('maintenance.update_status', request_id=req.id), _('Reopen'), cls='btn', extra={'status': 'open'}) }}
+      {% else %}<p class="muted">{% trans %}This request is closed.{% endtrans %}</p>{% endif %}
     {% else %}
-      <p class="muted">Last updated {{ req.updated_at.strftime('%b %d, %Y') }}.</p>
+      <p class="muted">{% trans updated_at=req.updated_at|fdate('medium') %}Last updated {{ updated_at }}.{% endtrans %}</p>
     {% endif %}
     </div>
     {% if can_projects %}
     <div class="card">
       {% if req.is_project %}
-      <h2>Project</h2>
+      <h2>{% trans %}Project{% endtrans %}</h2>
       <form method="post" action="{{ url_for('maintenance.project_details', request_id=req.id) }}">
         {{ csrf() }}<input type="hidden" name="kind" value="project">
-        <label>Budget <span class="money-input"><input name="budget" inputmode="decimal" placeholder="optional"
+        <label>{% trans %}Budget{% endtrans %} <span class="money-input"><input name="budget" inputmode="decimal" placeholder="{{ _('optional') }}"
           value="{{ '%.2f'|format(req.budget_cents / 100) if req.budget_cents is not none }}"></span></label>
-        <label>Target date <input type="date" name="target_date" value="{{ req.target_date.isoformat() if req.target_date }}"></label>
-        <button class="btn">Save</button>
+        <label>{% trans %}Target date{% endtrans %} <input type="date" name="target_date" value="{{ req.target_date.isoformat() if req.target_date }}"></label>
+        <button class="btn">{% trans %}Save{% endtrans %}</button>
       </form>
-      {{ post_button(url_for('maintenance.project_details', request_id=req.id), 'Move to Maintenance', cls='link-btn', extra={'kind': 'maintenance'}) }}
+      {{ post_button(url_for('maintenance.project_details', request_id=req.id), _('Move to Maintenance'), cls='link-btn', extra={'kind': 'maintenance'}) }}
       {% else %}
-      <h2>Filed under Maintenance</h2>
-      <p class="muted">Is this bigger planned work for the building?</p>
-      {{ post_button(url_for('maintenance.project_details', request_id=req.id), 'Move to Projects', cls='btn', extra={'kind': 'project'}) }}
+      <h2>{% trans %}Filed under Maintenance{% endtrans %}</h2>
+      <p class="muted">{% trans %}Is this bigger planned work for the building?{% endtrans %}</p>
+      {{ post_button(url_for('maintenance.project_details', request_id=req.id), _('Move to Projects'), cls='btn', extra={'kind': 'project'}) }}
       {% endif %}
     </div>
     {% endif %}

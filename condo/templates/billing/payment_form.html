@@ -1,47 +1,47 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Record payment{% endblock %}
+{% block title %}{% trans %}Record payment{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Record a payment</h1>
+<h1>{% trans %}Record a payment{% endtrans %}</h1>
 <form method="post" class="card narrow" id="payment-form">
   {{ csrf() }}
   {% if special %}<input type="hidden" name="special_id" value="{{ special.id }}">
-  <div class="flash flash-info">For the special contribution <strong>{{ special.title }}</strong> (due {{ special.deadline.strftime('%b %d, %Y') }})</div>{% endif %}
-  <label>Unit
-    <select name="unit_id" id="pay-unit" required><option value="">Choose a unit…</option>
+  <div class="flash flash-info">{% trans %}For the special contribution{% endtrans %} <strong>{{ special.title }}</strong> {% trans deadline=special.deadline|fdate('medium') %}(due {{ deadline }}){% endtrans %}</div>{% endif %}
+  <label>{% trans %}Unit{% endtrans %}
+    <select name="unit_id" id="pay-unit" required><option value="">{% trans %}Choose a unit…{% endtrans %}</option>
       {% for u in units %}<option value="{{ u.id }}" data-balance="{{ u.balance }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}{% if u.owner_display %} · {{ u.owner_display }}{% endif %}</option>{% endfor %}
     </select>
     <span class="field-hint" id="pay-balance" hidden></span>
   </label>
   <div class="row">
-    <label>Amount
+    <label>{% trans %}Amount{% endtrans %}
       <span class="money-input"><input name="amount" id="pay-amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
-    <label>Date received <input type="date" name="paid_on" required value="{{ form.get('paid_on', '') }}"></label>
+    <label>{% trans %}Date received{% endtrans %} <input type="date" name="paid_on" required value="{{ form.get('paid_on', '') }}"></label>
   </div>
   <div class="row">
-    <label>Method <select name="method">{% for k, label in methods.items() %}<option value="{{ k }}" {{ 'selected' if form.get('method') == k }}>{{ label }}</option>{% endfor %}</select></label>
-    <label>Reference <input name="reference" maxlength="80" placeholder="Cheque no. or transfer ID" value="{{ form.get('reference', '') }}"></label>
+    <label>{% trans %}Method{% endtrans %} <select name="method">{% for k, label in methods.items() %}<option value="{{ k }}" {{ 'selected' if form.get('method') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Reference{% endtrans %} <input name="reference" maxlength="80" placeholder="{{ _('Cheque no. or transfer ID') }}" value="{{ form.get('reference', '') }}"></label>
   </div>
-  <label>Note <span class="muted">(optional)</span> <input name="notes" maxlength="255" placeholder="e.g. November condo fee" value="{{ form.get('notes', '') }}"></label>
+  <label>{% trans %}Note{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span> <input name="notes" maxlength="255" placeholder="{{ _('e.g. November condo fee') }}" value="{{ form.get('notes', '') }}"></label>
   <div class="form-actions">
-    <button class="btn primary">Record payment</button>
-    <a href="{{ url_for('billing.index') }}">Cancel</a>
+    <button class="btn primary">{% trans %}Record payment{% endtrans %}</button>
+    <a href="{{ url_for('billing.index') }}">{% trans %}Cancel{% endtrans %}</a>
   </div>
 </form>
 <script>
   (function () {
     var unit = document.getElementById('pay-unit'), hint = document.getElementById('pay-balance'),
         amount = document.getElementById('pay-amount');
-    function money(c) { var n = Math.abs(c) / 100; return (c < 0 ? '-' : '') + '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    var money = window.fmtMoney;
     function show() {
       var opt = unit.options[unit.selectedIndex], c = opt ? parseInt(opt.dataset.balance || '', 10) : NaN;
       if (isNaN(c)) { hint.hidden = true; return; }
       hint.hidden = false;
       if (c > 0) {
-        hint.innerHTML = 'Owes <strong>' + money(c) + '</strong> <button type="button" class="link-btn" id="use-balance">Use this amount</button>';
+        hint.innerHTML = {{ _('Owes')|tojson }} + ' <strong>' + money(c) + '</strong> <button type="button" class="link-btn" id="use-balance">' + {{ _('Use this amount')|tojson }} + '</button>';
         document.getElementById('use-balance').onclick = function () { amount.value = (c / 100).toFixed(2); amount.focus(); };
       } else {
-        hint.textContent = c < 0 ? 'In credit by ' + money(-c) : 'Nothing owed';
+        hint.textContent = c < 0 ? {{ _('In credit by')|tojson }} + ' ' + money(-c) : {{ _('Nothing owed')|tojson }};
       }
     }
     unit.addEventListener('change', show); show();

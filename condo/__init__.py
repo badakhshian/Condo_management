@@ -48,6 +48,8 @@ def create_app(test_config=None):
     db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
+    from . import i18n
+    i18n.init_app(app)
 
     from . import models  # noqa: F401  (register models)
     from .views import amenities, announcements, auth, billing, dashboard, directory, documents, fees, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units
@@ -89,19 +91,20 @@ def create_app(test_config=None):
         return {"condo_name": app.config["CONDO_NAME"], "ephemeral_db": app.config["EPHEMERAL_DB"],
                 "back": back_link(), "unread": _unread(),
                 "today": date.today(), "nav_board": _nav_board(),
-                "STATUS_LABELS": models.REQUEST_STATUSES, "PRIORITY_LABELS": models.REQUEST_PRIORITIES}
+                "STATUS_LABELS": models.REQUEST_STATUSES, "CATEGORY_LABELS": models.CATEGORY_LABELS, "PRIORITY_LABELS": models.REQUEST_PRIORITIES}
 
     from flask import render_template
 
-    messages = {400: "That request could not be processed.",
-                413: "That file is too large (the limit is 4 MB).",
-                403: "You don't have permission to view this page.",
-                404: "We couldn't find that page."}
+    from .i18n import lazy_gettext as _l
+    messages = {400: _l("That request could not be processed."),
+                413: _l("That file is too large (the limit is 4 MB)."),
+                403: _l("You don't have permission to view this page."),
+                404: _l("We couldn't find that page.")}
 
     def handle_error(err):
         code = getattr(err, "code", 500)
         return render_template("error.html", code=code,
-                               message=messages.get(code, "Something went wrong.")), code
+                               message=messages.get(code) or _l("Something went wrong.")), code
 
     for code in messages:
         app.register_error_handler(code, handle_error)

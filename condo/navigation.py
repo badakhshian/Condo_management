@@ -14,10 +14,12 @@ TOP_LEVEL = {
     "amenities.index", "auth.login", "billing.my_account", "notifications.index", "reimbursements.index",
 }
 
+from .i18n import lazy_gettext as _l
+
 
 def _unit_parent(unit_id):
-    return ("Unit", url_for("units.detail", unit_id=unit_id)) if current_user.is_admin else \
-        ("Dashboard", url_for("dashboard.index"))
+    return (_l("Unit"), url_for("units.detail", unit_id=unit_id)) if current_user.is_admin else \
+        (_l("Dashboard"), url_for("dashboard.index"))
 
 
 def parent_for(endpoint, args):
@@ -29,51 +31,51 @@ def parent_for(endpoint, args):
         return None
     admin = current_user.is_authenticated and current_user.is_admin
     if endpoint in ("units.detail", "units.new"):
-        return "Units", url_for("units.index")
+        return _l("Units"), url_for("units.index")
     if endpoint == "units.edit":
-        return "Unit", url_for("units.detail", unit_id=args["unit_id"])
+        return _l("Unit"), url_for("units.detail", unit_id=args["unit_id"])
     if endpoint in ("owners.new", "insurance.new"):
         return _unit_parent(args["unit_id"])
     if endpoint == "owners.edit":
         owner = db.session.get(Owner, args["owner_id"])
         if request.args.get("next") == "directory" or owner is None:
-            return "Directory", url_for("directory.index")
-        return "Unit", url_for("units.detail", unit_id=owner.unit_id)
+            return _l("Directory"), url_for("directory.index")
+        return _l("Unit"), url_for("units.detail", unit_id=owner.unit_id)
     if endpoint == "owners.new_from_directory":
-        return "Directory", url_for("directory.contacts", group=args["group"])
+        return _l("Directory"), url_for("directory.contacts", group=args["group"])
     if endpoint.startswith("residents."):
-        return "Accounts", url_for("directory.accounts")
+        return _l("Accounts"), url_for("directory.accounts")
     if endpoint.startswith("billing."):
         if admin or current_user.role == "owner":
-            return "Accounting", url_for("billing.index")
-        return "Dashboard", url_for("dashboard.index")
+            return _l("Accounting"), url_for("billing.index")
+        return _l("Dashboard"), url_for("dashboard.index")
     if endpoint == "fees.index":
-        return "Accounting", url_for("billing.index")
+        return _l("Accounting"), url_for("billing.index")
     if endpoint.startswith("fees."):
-        return "Fees & contributions", url_for("fees.index")
+        return _l("Fees & contributions"), url_for("fees.index")
     if endpoint.startswith("reimbursements."):
-        return "Reimbursements", url_for("reimbursements.index")
+        return _l("Reimbursements"), url_for("reimbursements.index")
     if endpoint.startswith("maintenance."):
         from .models import MaintenanceRequest
         req = db.session.get(MaintenanceRequest, args["request_id"]) if "request_id" in args else None
         project = req.is_project if req else request.values.get("kind") == "project"
-        return ("Projects", url_for("maintenance.index", tab="projects")) if project else \
-            ("Maintenance", url_for("maintenance.index", tab="maintenance"))
+        return (_l("Projects"), url_for("maintenance.index", tab="projects")) if project else \
+            (_l("Maintenance"), url_for("maintenance.index", tab="maintenance"))
     if endpoint.startswith("announcements."):
-        return "Notices", url_for("announcements.index")
+        return _l("Notices"), url_for("announcements.index")
     if endpoint.startswith("documents."):
-        return "Documents", url_for("documents.index")
+        return _l("Documents"), url_for("documents.index")
     if endpoint.startswith("amenities."):
-        return "Amenities", url_for("amenities.index")
+        return _l("Amenities"), url_for("amenities.index")
     if endpoint == "sheet.index":
-        return "Accounting", url_for("billing.index")
+        return _l("Accounting"), url_for("billing.index")
     if endpoint.startswith("sheet."):
-        return "Google Sheet", url_for("sheet.index")
+        return _l("Google Sheet"), url_for("sheet.index")
     if endpoint == "importer.upload":
-        return "Units", url_for("units.index")
+        return _l("Units"), url_for("units.index")
     if endpoint.startswith("importer."):
-        return "Import", url_for("importer.upload")
-    return "Dashboard", url_for("dashboard.index")
+        return _l("Import"), url_for("importer.upload")
+    return _l("Dashboard"), url_for("dashboard.index")
 
 
 def here():
@@ -98,20 +100,20 @@ def label_for(path):
     m = re.match(r"^/units/(\d+)$", bare)
     if m:
         unit = db.session.get(Unit, int(m.group(1)))
-        return f"unit {unit.number}" if unit else "the unit"
+        return _l("unit %(number)s", number=unit.number) if unit else _l("the unit")
     m = re.match(r"^/maintenance/(\d+)$", bare)
     if m:
         from .models import MaintenanceRequest
         req = db.session.get(MaintenanceRequest, int(m.group(1)))
-        return ("the project" if req.is_project else "the request") if req else "Projects & Maintenance"
+        return (_l("the project") if req.is_project else _l("the request")) if req else _l("Projects & Maintenance")
     if bare.startswith("/maintenance"):
-        return "Maintenance" if "tab=maintenance" in path else "Projects"
-    for prefix, label in (("/directory", "Directory"), ("/accounting", "Accounting"), ("/maintenance", "Maintenance"),
-                          ("/documents", "Documents"), ("/reimbursements", "Reimbursements"), ("/units", "Units"),
-                          ("/notifications", "Notifications"), ("/sheet", "Google Sheet")):
+        return _l("Maintenance") if "tab=maintenance" in path else _l("Projects")
+    for prefix, label in (("/directory", _l("Directory")), ("/accounting", _l("Accounting")), ("/maintenance", _l("Maintenance")),
+                          ("/documents", _l("Documents")), ("/reimbursements", _l("Reimbursements")), ("/units", _l("Units")),
+                          ("/notifications", _l("Notifications")), ("/sheet", _l("Google Sheet"))):
         if bare.startswith(prefix):
             return label
-    return "the previous page"
+    return _l("the previous page")
 
 
 def back_link():

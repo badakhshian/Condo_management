@@ -6,6 +6,7 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import Amenity, Booking
 from ..utils import admin_required, parse_datetime
+from ..i18n import gettext as _
 
 bp = Blueprint("amenities", __name__, url_prefix="/amenities")
 
@@ -15,21 +16,21 @@ def validate_booking(amenity, start, end, now=None):
     now = now or datetime.now()
     errors = []
     if not amenity.active:
-        errors.append(f"{amenity.name} is not currently available for booking.")
+        errors.append(_("%(name)s is not currently available for booking.", name=amenity.name))
     if end <= start:
-        errors.append("End time must be after start time.")
+        errors.append(_("End time must be after start time."))
         return errors
     if start < now:
-        errors.append("Bookings must be in the future.")
+        errors.append(_("Bookings must be in the future."))
     if start.date() != end.date():
-        errors.append("Bookings must start and end on the same day.")
+        errors.append(_("Bookings must start and end on the same day."))
     if (end - start) > timedelta(hours=amenity.max_hours):
-        errors.append(f"{amenity.name} can be booked for at most {amenity.max_hours} hour(s).")
+        errors.append(_("%(name)s can be booked for at most %(max_hours)s hour(s).", name=amenity.name, max_hours=amenity.max_hours))
     day_start = datetime.combine(start.date(), time())
     if start < day_start + timedelta(hours=amenity.open_hour) or end > day_start + timedelta(hours=amenity.close_hour):
-        errors.append(f"{amenity.name} is open {amenity.open_hour:02d}:00–{amenity.close_hour:02d}:00.")
+        errors.append(_("%(name)s is open %(open_hour)s:00–%(close_hour)s:00.", name=amenity.name, open_hour=format(amenity.open_hour, "02d"), close_hour=format(amenity.close_hour, "02d")))
     if Booking.conflicts(amenity.id, start, end):
-        errors.append("That time overlaps an existing booking.")
+        errors.append(_("That time overlaps an existing booking."))
     return errors
 
 
@@ -68,7 +69,7 @@ def detail(amenity_id):
             db.session.add(Booking(amenity=amenity, user_id=current_user.id, start=start, end=end,
                                    notes=request.form.get("notes", "").strip() or None))
             db.session.commit()
-            flash(f"{amenity.name} booked for {start:%a %b %d, %H:%M}–{end:%H:%M}.", "success")
+            flash(_("%(name)s booked for %(start)s–%(end)s.", name=amenity.name, start=format(start, "%a %b %d, %H:%M"), end=format(end, "%H:%M")), "success")
             return redirect(url_for("amenities.detail", amenity_id=amenity.id))
         for e in errors:
             flash(e, "error")
@@ -89,7 +90,7 @@ def cancel(booking_id):
     amenity_id = booking.amenity_id
     db.session.delete(booking)
     db.session.commit()
-    flash("Booking cancelled.", "success")
+    flash(_("Booking cancelled."), "success")
     if request.form.get("back") == "list":
         return redirect(url_for("amenities.index"))
     return redirect(url_for("amenities.detail", amenity_id=amenity_id))
@@ -99,21 +100,21 @@ def _apply_amenity_form(amenity):
     errors = []
     name = request.form.get("name", "").strip()
     if not name:
-        errors.append("Name is required.")
+        errors.append(_("Name is required."))
     else:
         existing = db.session.scalar(db.select(Amenity).where(Amenity.name == name))
         if existing and existing.id != amenity.id:
-            errors.append("An amenity with that name already exists.")
+            errors.append(_("An amenity with that name already exists."))
     try:
         open_hour = int(request.form.get("open_hour", 8))
         close_hour = int(request.form.get("close_hour", 22))
         max_hours = int(request.form.get("max_hours", 4))
         if not (0 <= open_hour < close_hour <= 24):
-            errors.append("Opening hours must satisfy 0 ≤ open < close ≤ 24.")
+            errors.append(_("Opening hours must satisfy 0 ≤ open < close ≤ 24."))
         if max_hours < 1:
-            errors.append("Maximum booking length must be at least 1 hour.")
+            errors.append(_("Maximum booking length must be at least 1 hour."))
     except ValueError:
-        errors.append("Hours must be whole numbers.")
+        errors.append(_("Hours must be whole numbers."))
     if errors:
         return errors
     amenity.name = name
@@ -132,7 +133,7 @@ def new():
         if not errors:
             db.session.add(amenity)
             db.session.commit()
-            flash(f"{amenity.name} added.", "success")
+            flash(_("%(name)s added.", name=amenity.name), "success")
             return redirect(url_for("amenities.index"))
         for e in errors:
             flash(e, "error")
@@ -149,7 +150,7 @@ def edit(amenity_id):
         errors = _apply_amenity_form(amenity)
         if not errors:
             db.session.commit()
-            flash(f"{amenity.name} updated.", "success")
+            flash(_("%(name)s updated.", name=amenity.name), "success")
             return redirect(url_for("amenities.detail", amenity_id=amenity.id))
         db.session.rollback()
         for e in errors:

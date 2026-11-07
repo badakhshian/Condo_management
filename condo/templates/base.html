@@ -1,57 +1,71 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ lang() }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %}{% if self.title() %} · {% endif %}{{ condo_name }}</title>
+  <script>
+    window.LANG = {{ lang()|tojson }};
+    window.fmtMoney = function (c) {
+      var n = Math.abs(c) / 100, sign = c < 0 ? '-' : '';
+      if (window.LANG === 'fr') return sign + n.toLocaleString('fr-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '\u00a0$';
+      return sign + '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+    window.parseAmount = function (v) {  // "1,234.50" or "1 234,50"
+      v = String(v || '').replace(/[$\s\u00a0\u202f]/g, '');
+      if (/,\d{1,2}$/.test(v) && v.indexOf('.') < 0) v = v.replace(/\./g, '').replace(',', '.');
+      return parseFloat(v.replace(/,/g, '')) || 0;
+    };
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+{% macro lang_switch() %}<span class="lang-switch" role="group" aria-label="{{ _('Language / Langue') }}">{% for code, name in LANGUAGES.items() %}<a href="{{ url_for('auth.set_language', code=code, back=here()) }}" lang="{{ code }}" class="{{ 'active' if lang() == code }}" {% if lang() == code %}aria-current="true"{% endif %} title="{{ name }}">{{ code|upper }}</a>{% endfor %}</span>{% endmacro %}
 <body class="{{ 'with-rail' if current_user.is_authenticated }}">
 {% if current_user.is_authenticated %}
 {% from "_icons.html" import icon %}
 {% set ep = request.endpoint or '' %}
 {# Menu nav_items: (icon, url, label, short label, active). Order = priority for the phone bar. #}
 {% set nav_items = [] %}
-{% set _ = nav_items.append(('home', url_for('dashboard.index'), 'Dashboard', 'Home', ep.startswith('dashboard'))) %}
+{% set _ignored = nav_items.append(('home', url_for('dashboard.index'), _('Dashboard'), _('Home'), ep.startswith('dashboard'))) %}
 {% if current_user.is_admin %}
-  {% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees', 'reimbursements', 'sheet')))) %}
-  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
-  {% set _ = nav_items.append(('directory', url_for('directory.index'), 'Directory', 'Directory', ep.startswith(('directory', 'owners', 'residents')))) %}
-  {% set _ = nav_items.append(('units', url_for('units.index'), 'Units', 'Units', ep.startswith(('units', 'insurance', 'importer')))) %}
+  {% set _ignored = nav_items.append(('accounting', url_for('billing.index'), _('Accounting'), _('Accounting'), ep.startswith(('billing', 'fees', 'reimbursements', 'sheet')))) %}
+  {% set _ignored = nav_items.append(('projects', url_for('maintenance.index'), _('Projects &amp; Maintenance'), _('Projects'), ep.startswith('maintenance'))) %}
+  {% set _ignored = nav_items.append(('directory', url_for('directory.index'), _('Directory'), _('Directory'), ep.startswith(('directory', 'owners', 'residents')))) %}
+  {% set _ignored = nav_items.append(('units', url_for('units.index'), _('Units'), _('Units'), ep.startswith(('units', 'insurance', 'importer')))) %}
 {% elif current_user.is_staff %}
-  {% if current_user.can('accounting') %}{% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees')))) %}{% endif %}
-  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
-  {% if current_user.can('directory') %}{% set _ = nav_items.append(('directory', url_for('directory.index'), 'Directory', 'Directory', ep.startswith('directory'))) %}{% endif %}
+  {% if current_user.can('accounting') %}{% set _ignored = nav_items.append(('accounting', url_for('billing.index'), _('Accounting'), _('Accounting'), ep.startswith(('billing', 'fees')))) %}{% endif %}
+  {% set _ignored = nav_items.append(('projects', url_for('maintenance.index'), _('Projects &amp; Maintenance'), _('Projects'), ep.startswith('maintenance'))) %}
+  {% if current_user.can('directory') %}{% set _ignored = nav_items.append(('directory', url_for('directory.index'), _('Directory'), _('Directory'), ep.startswith('directory'))) %}{% endif %}
 {% else %}
   {% if current_user.unit_id and (current_user.role == 'owner' or nav_board) %}
-    {% set _ = nav_items.append(('accounting', url_for('billing.index'), 'Accounting', 'Accounting', ep.startswith(('billing', 'fees')))) %}
+    {% set _ignored = nav_items.append(('accounting', url_for('billing.index'), _('Accounting'), _('Accounting'), ep.startswith(('billing', 'fees')))) %}
   {% elif current_user.unit_id %}
-    {% set _ = nav_items.append(('accounting', url_for('billing.my_account'), 'Statement', 'Statement', ep.startswith('billing'))) %}
+    {% set _ignored = nav_items.append(('accounting', url_for('billing.my_account'), _('Statement'), _('Statement'), ep.startswith('billing'))) %}
   {% endif %}
-  {% set _ = nav_items.append(('projects', url_for('maintenance.index'), 'Projects & Maintenance', 'Projects', ep.startswith('maintenance'))) %}
-  {% if current_user.unit_id and nav_board %}{% set _ = nav_items.append(('directory', url_for('directory.board'), 'Directory', 'Directory', ep.startswith(('directory', 'residents')))) %}{% endif %}
-  {% if current_user.role == 'owner' or nav_board %}{% set _ = nav_items.append(('reimburse', url_for('reimbursements.index'), 'Reimbursements', 'Refunds', ep.startswith('reimbursements'))) %}{% endif %}
+  {% set _ignored = nav_items.append(('projects', url_for('maintenance.index'), _('Projects &amp; Maintenance'), _('Projects'), ep.startswith('maintenance'))) %}
+  {% if current_user.unit_id and nav_board %}{% set _ignored = nav_items.append(('directory', url_for('directory.board'), _('Directory'), _('Directory'), ep.startswith(('directory', 'residents')))) %}{% endif %}
+  {% if current_user.role == 'owner' or nav_board %}{% set _ignored = nav_items.append(('reimburse', url_for('reimbursements.index'), _('Reimbursements'), _('Refunds'), ep.startswith('reimbursements'))) %}{% endif %}
 {% endif %}
-{% set _ = nav_items.append(('notices', url_for('announcements.index'), 'Notices', 'Notices', ep.startswith('announcements'))) %}
-{% set _ = nav_items.append(('documents', url_for('documents.index'), 'Documents', 'Documents', ep.startswith('documents'))) %}
-{% if not current_user.is_staff %}{% set _ = nav_items.append(('amenities', url_for('amenities.index'), 'Amenities', 'Amenities', ep.startswith('amenities'))) %}{% endif %}
+{% set _ignored = nav_items.append(('notices', url_for('announcements.index'), _('Notices'), _('Notices'), ep.startswith('announcements'))) %}
+{% set _ignored = nav_items.append(('documents', url_for('documents.index'), _('Documents'), _('Documents'), ep.startswith('documents'))) %}
+{% if not current_user.is_staff %}{% set _ignored = nav_items.append(('amenities', url_for('amenities.index'), _('Amenities'), _('Amenities'), ep.startswith('amenities'))) %}{% endif %}
 {% set desktop_order = ['home', 'units', 'directory', 'accounting', 'reimburse', 'projects', 'notices', 'documents', 'amenities'] %}
-<nav class="rail" aria-label="Main menu">
+<nav class="rail" aria-label="{{ _('Main menu') }}">
   <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}">{{ condo_name|initials }}</a>
   {% for key in desktop_order %}{% for it in nav_items if it[0] == key %}
   <a href="{{ it[1] }}" class="rail-item{{ ' active' if it[4] }}{{ ' pin' if nav_items.index(it) < 4 }}" title="{{ it[2] }}" aria-label="{{ it[2] }}"{% if it[4] %} aria-current="page"{% endif %}>{{ icon(it[0]) }}<span class="label">{{ it[2] }}</span><span class="short">{{ it[3] }}</span></a>
   {% endfor %}{% endfor %}
   <div class="rail-spacer"></div>
-  <a href="{{ url_for('notifications.index') }}" title="Notifications" class="rail-item pin bell{{ ' active' if ep.startswith('notifications') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">{{ icon('bell') }}{% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}<span class="label">Alerts</span><span class="short">Alerts</span></a>
+  <a href="{{ url_for('notifications.index') }}" title="{{ _('Notifications') }}" class="rail-item pin bell{{ ' active' if ep.startswith('notifications') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">{{ icon('bell') }}{% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}<span class="label">{% trans %}Alerts{% endtrans %}</span><span class="short">{% trans %}Alerts{% endtrans %}</span></a>
   <details class="rail-menu">
-    <summary class="rail-item pin" aria-label="Account and more" title="My account"><span class="rail-avatar">{{ current_user.name|initials }}</span>{{ icon('more') }}<span class="short">More</span></summary>
+    <summary class="rail-item pin" aria-label="{{ _('Account and more') }}" title="{{ _('My account') }}"><span class="rail-avatar">{{ current_user.name|initials }}</span>{{ icon('more') }}<span class="short">{% trans %}More{% endtrans %}</span></summary>
     <div class="rail-pop">
       <div class="rail-pop-who"><strong>{{ current_user.name }}</strong><span class="tag">{{ current_user.role_label }}</span></div>
       {% for it in nav_items if nav_items.index(it) >= 4 %}<a href="{{ it[1] }}" class="pop-only{{ ' active' if it[4] }}">{{ icon(it[0]) }}{{ it[2] }}</a>{% endfor %}
-      <a href="{{ url_for('auth.account') }}">{{ icon('user') }}My profile</a>
+      <a href="{{ url_for('auth.account') }}">{% trans user=icon('user') %}{{ user }}My profile{% endtrans %}</a>
       <form method="post" action="{{ url_for('auth.logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button>{{ icon('logout') }}Sign out</button>
+        <button>{% trans logout=icon('logout') %}{{ logout }}Sign out{% endtrans %}</button>
       </form>
     </div>
   </details>
@@ -68,20 +82,22 @@ document.addEventListener('keydown', function (e) {
 </script>
 <div class="page-top">
   <a class="page-top-name" href="{{ url_for('dashboard.index') }}">{{ condo_name }}</a>
-  <a class="page-top-user" href="{{ url_for('auth.account') }}"><strong>{{ current_user.name }}</strong> <span class="tag">{{ current_user.role_label }}</span></a>
+  <span class="page-top-right">{{ lang_switch() }}
+  <a class="page-top-user" href="{{ url_for('auth.account') }}"><strong>{{ current_user.name }}</strong> <span class="tag">{{ current_user.role_label }}</span></a></span>
 </div>
 {% endif %}
-{% if ephemeral_db %}<div class="banner">No database is connected, so changes are temporary and will be lost. Connect a Postgres database (DATABASE_URL) to keep data.</div>{% endif %}
+{% if ephemeral_db %}<div class="banner">{% trans %}No database is connected, so changes are temporary and will be lost. Connect a Postgres database (DATABASE_URL) to keep data.{% endtrans %}</div>{% endif %}
 {% if current_user.is_authenticated and current_user.is_temp_admin and not current_user.is_board %}
-<div class="banner">You're using the temporary administrator account. To make it your own: add yourself in
-  <a href="{{ url_for('directory.contacts', group='owners') }}">Directory → Owners</a> with the email {{ current_user.email }},
-  then give yourself your position in <a href="{{ url_for('directory.board') }}">Directory → Board</a>.</div>
+<div class="banner">{% trans %}You're using the temporary administrator account. To make it your own: add yourself in{% endtrans %}
+  <a href="{{ url_for('directory.contacts', group='owners') }}">{% trans %}Directory → Owners{% endtrans %}</a> {% trans email=current_user.email %}with the email {{ email }},
+  then give yourself your position in{% endtrans %} <a href="{{ url_for('directory.board') }}">{% trans %}Directory → Board{% endtrans %}</a>.</div>
 {% endif %}
+{% if not current_user.is_authenticated %}<div class="public-top">{{ lang_switch() }}</div>{% endif %}
 <main class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for cat, msg in messages %}<div class="flash flash-{{ cat }}">{{ msg }}</div>{% endfor %}
   {% endwith %}
-  {% if back and not hide_back %}<a class="back-link" href="{{ back.url }}">← Back to {{ back.label }}</a>{% endif %}
+  {% if back and not hide_back %}<a class="back-link" href="{{ back.url }}">{% trans label=back.label %}← Back to {{ label }}{% endtrans %}</a>{% endif %}
   {% block content %}{% endblock %}
 </main>
 

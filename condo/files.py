@@ -6,6 +6,7 @@ from flask import Response
 from flask_login import current_user
 
 from .models import StoredFile
+from .i18n import gettext as _
 
 ALLOWED = {
     ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
@@ -23,19 +24,19 @@ def take_upload(file, errors, required=True):
     """Validate an uploaded werkzeug FileStorage and return an unsaved StoredFile (or None)."""
     if not file or not file.filename:
         if required:
-            errors.append("Attach a file.")
+            errors.append(_("Attach a file."))
         return None
     name = os.path.basename(file.filename.replace("\\", "/")).strip() or "file"
     ext = os.path.splitext(name)[1].lower()
     if ext not in ALLOWED:
-        errors.append("Files must be PDF, an image (JPG, PNG, HEIC, WebP), Word, Excel or text.")
+        errors.append(_("Files must be PDF, an image (JPG, PNG, HEIC, WebP), Word, Excel or text."))
         return None
     data = file.read()
     if not data:
-        errors.append("That file is empty.")
+        errors.append(_("That file is empty."))
         return None
     if len(data) > MAX_BYTES:
-        errors.append("Files can be at most 4 MB.")
+        errors.append(_("Files can be at most 4 MB."))
         return None
     return StoredFile(filename=name[:255], content_type=ALLOWED[ext], size=len(data), data=data,
                       uploaded_by_id=current_user.id if current_user.is_authenticated else None)

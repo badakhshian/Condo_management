@@ -4,13 +4,17 @@ from functools import wraps
 
 from flask import abort
 from flask_login import current_user, login_required
+from .i18n import gettext as _
 
 
 def money(cents):
-    """Format integer cents as a dollar string, e.g. -1250 -> '-$12.50'."""
-    cents = int(cents or 0)
-    sign = "-" if cents < 0 else ""
-    return f"{sign}${abs(cents) / 100:,.2f}"
+    """Format integer cents as money in the current language, e.g. -1250 -> '-$12.50' (or '-12,50 $')."""
+    try:
+        from .i18n import money as localized
+        return localized(cents)
+    except RuntimeError:  # outside a request/app context
+        cents = int(cents or 0)
+        return f"{'-' if cents < 0 else ''}${abs(cents) / 100:,.2f}"
 
 
 def parse_money(value):
@@ -18,15 +22,18 @@ def parse_money(value):
 
     Raises ValueError for empty, malformed or non-positive input.
     """
-    cleaned = (value or "").strip().replace(",", "").replace("$", "")
+    cleaned = (value or "").strip().replace("$", "").replace("\u00a0", " ").replace("\u202f", " ").strip()
+    if "," in cleaned and "." not in cleaned and len(cleaned.rsplit(",", 1)[1]) <= 2:
+        cleaned = cleaned.replace(" ", "").replace(",", ".")  # French: 1 234,50
+    cleaned = cleaned.replace(",", "").replace(" ", "")
     try:
         amount = Decimal(cleaned)
     except InvalidOperation:
-        raise ValueError("Enter a valid amount.")
+        raise ValueError(_("Enter a valid amount."))
     if amount <= 0:
-        raise ValueError("Amount must be greater than zero.")
+        raise ValueError(_("Amount must be greater than zero."))
     if amount != amount.quantize(Decimal("0.01")):
-        raise ValueError("Amount can have at most two decimal places.")
+        raise ValueError(_("Amount can have at most two decimal places."))
     return int(amount * 100)
 
 
@@ -34,14 +41,14 @@ def parse_date(value, field="Date"):
     try:
         return date.fromisoformat((value or "").strip())
     except ValueError:
-        raise ValueError(f"{field} must be a valid date (YYYY-MM-DD).")
+        raise ValueError(_("%(field)s must be a valid date (YYYY-MM-DD).", field=field))
 
 
 def parse_datetime(value, field="Time"):
     try:
         return datetime.fromisoformat((value or "").strip())
     except ValueError:
-        raise ValueError(f"{field} must be a valid date and time.")
+        raise ValueError(_("%(field)s must be a valid date and time.", field=field))
 
 
 def admin_required(view):

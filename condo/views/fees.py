@@ -9,7 +9,8 @@ from .. import notify
 from ..extensions import db
 from ..models import (FEE_BASES, SPECIAL_STATUS_LABELS, add_months, SPLIT_METHODS, Charge, FeeOverride, FeeSchedule, SpecialContribution,
                       SpecialShare, Unit, split_by_weight, utcnow)
-from ..utils import parse_date, parse_money, permission_required
+from ..utils import money, parse_date, parse_money, permission_required
+from ..i18n import fdate, gettext as _, lazy_gettext as _l, lazy_date, lazy_money
 
 bp = Blueprint("fees", __name__, url_prefix="/accounting")
 
@@ -39,9 +40,9 @@ def check_renewals(today=None):
         if any(o.start > s.end - timedelta(days=1) for o in schedules if o.id != s.id):
             continue  # the next period is already set
         nxt = s.end + timedelta(days=1)
-        notify.send(notify.board(), f"Condo fees: the current rates end on {s.end:%b %d, %Y}",
+        notify.send(notify.board(), _l("Condo fees: the current rates end on %(end)s", end=lazy_date(s.end, "medium")),
                     url=url_for("fees.index", year=nxt.year),
-                    body=f"Set the condo fees for the period starting {nxt:%b %d, %Y} and apply them to the units.",
+                    body=_l("Set the condo fees for the period starting %(nxt)s and apply them to the units.", nxt=lazy_date(nxt, "medium")),
                     kind="fees", include_actor=True)
         s.renewal_notified_at = utcnow()
         sent += 1
@@ -80,7 +81,7 @@ def index():
     return render_template("fees/index.html", year=year, schedule=schedule, previous=previous, rows=rows,
                            prev_rows=prev_rows, years=years, units=units, missing_shares=missing_shares,
                            specials=specials, labels=SPECIAL_STATUS_LABELS, today=today, form=form,
-                           bases=FEE_BASES, renewal_due=renewal_due,
+                           bases={k: str(v) for k, v in FEE_BASES.items()}, renewal_due=renewal_due,
                            next_year=(schedule.end + timedelta(days=1)).year if schedule else year + 1)
 
 
@@ -90,11 +91,11 @@ def save_schedule(year):
     errors, dates = [], {}
     basis = request.form.get("basis", "annual")
     if basis not in FEE_BASES:
-        errors.append("Choose annual total or monthly total.")
+        errors.append(_("Choose annual total or monthly total."))
     try:
         total = parse_money(request.form.get("amount"))
     except ValueError as e:
-        errors.append(f"{FEE_BASES.get(basis, 'Total')}: {e}")
+        errors.append(_("%(get)s: %(e)s", get=FEE_BASES.get(basis, 'Total'), e=e))
         total = 0
     for field, label in (("starts_on", "Start date"), ("ends_on", "End date")):
         try:
@@ -104,15 +105,15 @@ def save_schedule(year):
     schedule = db.session.scalar(db.select(FeeSchedule).where(FeeSchedule.year == year))
     if len(dates) == 2:
         if dates["ends_on"] <= dates["starts_on"]:
-            errors.append("The end date must be after the start date.")
+            errors.append(_("The end date must be after the start date."))
         else:
             for other in db.session.scalars(db.select(FeeSchedule)):
                 if other is schedule:
                     continue
                 if other.year == dates["starts_on"].year:
-                    errors.append(f"There are already fees for a period starting in {other.year}.")
+                    errors.append(_("There are already fees for a period starting in %(year)s.", year=other.year))
                 elif other.start <= dates["ends_on"] and other.end >= dates["starts_on"]:
-                    errors.append(f"These dates overlap the period {other.start:%b %d, %Y} – {other.end:%b %d, %Y}.")
+                    errors.append(_("These dates overlap the period %(start)s – %(end)s.", start=fdate(other.start, "medium"), end=fdate(other.end, "medium")))
     if errors:
         for e in errors:
             flash(e, "error")
@@ -136,7 +137,7 @@ def save_schedule(year):
             try:
                 cents = parse_money(raw)
             except ValueError as e:
-                flash(f"Unit {unit.number}: {e}", "error")
+                flash(_("Unit %(number)s: %(e)s", number=unit.number, e=e), "error")
                 db.session.rollback()
                 return redirect(url_for("fees.index", year=year))
             if unit.id in existing:
@@ -148,13 +149,14 @@ def save_schedule(year):
     db.session.flush()
     if sum(o.amount_cents for o in schedule.overrides) > total:
         db.session.rollback()
-        flash("The fixed unit amounts add up to more than the total.", "error")
+        flash(_("The fixed unit amounts add up to more than the total."), "error")
         return redirect(url_for("fees.index", year=year))
     db.session.commit()
-    flash(f"Condo fees saved for {schedule.start:%b %d, %Y} – {schedule.end:%b %d, %Y}: "
-          f"{_money(schedule.annual_total_cents)} in total, {_money(schedule.monthly_total_cents)} a month."
-          + (" Fixed unit amounts were cleared because you switched between annual and monthly." if basis_changed
-             and existing else ""), "success")
+    flash(_("Condo fees saved for %(start)s – %(end)s: %(total)s in total, %(monthly)s a month.",
+            start=fdate(schedule.start), end=fdate(schedule.end), total=money(schedule.annual_total_cents),
+            monthly=money(schedule.monthly_total_cents)), "success")
+    if basis_changed and existing:
+        flash(_("Fixed unit amounts were cleared because you switched between annual and monthly."), "info")
     return redirect(url_for("fees.index", year=schedule.year))
 
 
@@ -169,7 +171,7 @@ def apply_schedule(year):
             changed += 1
     schedule.applied_at = utcnow()
     db.session.commit()
-    flash(f"Monthly fees updated on {changed} unit(s). Monthly dues billed from now on use the {year} rates.", "success")
+    flash(_("Monthly fees updated on %(changed)s unit(s). Monthly dues billed from now on use the %(year)s rates.", changed=changed, year=year), "success")
     return redirect(url_for("fees.index", year=year))
 
 
@@ -192,9 +194,9 @@ def new_special():
         title = request.form.get("title", "").strip()
         method = request.form.get("method", "share")
         if not title:
-            errors.append("Give the contribution a title, e.g. “Window replacement 2027”.")
+            errors.append(_("Give the contribution a title, e.g. “Window replacement 2027”."))
         if method not in SPLIT_METHODS:
-            errors.append("Choose how to split it.")
+            errors.append(_("Choose how to split it."))
         try:
             deadline = parse_date(request.form.get("deadline"), "Deadline")
         except ValueError as e:
@@ -206,18 +208,18 @@ def new_special():
                     try:
                         custom[u.id] = parse_money(raw)
                     except ValueError as e:
-                        errors.append(f"Unit {u.number}: {e}")
+                        errors.append(_("Unit %(number)s: %(e)s", number=u.number, e=e))
             total = sum(custom.values())
             if not total:
-                errors.append("Enter the amount for at least one unit.")
+                errors.append(_("Enter the amount for at least one unit."))
         else:
             try:
                 total = parse_money(request.form.get("total"))
             except ValueError as e:
-                errors.append(f"Total: {e}")
+                errors.append(_("Total: %(e)s", e=e))
                 total = 0
             if method == "share" and any(not u.ownership_share for u in units):
-                errors.append("Some units have no ownership share; split equally or enter amounts per unit instead.")
+                errors.append(_("Some units have no ownership share; split equally or enter amounts per unit instead."))
         if not errors:
             sc = SpecialContribution(title=title[:200], description=request.form.get("description", "").strip() or None,
                                      total_cents=total, deadline=deadline, method=method, created_by_id=current_user.id)
@@ -226,7 +228,7 @@ def new_special():
                     sc.shares.append(SpecialShare(unit_id=unit_id, amount_cents=cents))
             db.session.add(sc)
             db.session.commit()
-            flash("Special contribution created. Check the amounts, then bill the units.", "success")
+            flash(_("Special contribution created. Check the amounts, then bill the units."), "success")
             return redirect(url_for("fees.special", special_id=sc.id))
         for e in errors:
             flash(e, "error")
@@ -252,7 +254,7 @@ def special(special_id):
 def bill_special(special_id):
     sc = _get(special_id)
     if sc.billed_at:
-        flash("Already billed.", "info")
+        flash(_("Already billed."), "info")
         return redirect(url_for("fees.special", special_id=sc.id))
     for sh in sc.shares:
         charge = Charge(unit_id=sh.unit_id, kind="special", due_date=sc.deadline, amount_cents=sh.amount_cents,
@@ -261,11 +263,11 @@ def bill_special(special_id):
         db.session.flush()
         sh.charge_id = charge.id
         notify.send(notify.unit_owner_accounts(sh.unit_id),
-                    f"Special contribution: {_money(sh.amount_cents)} due by {sc.deadline:%b %d, %Y}",
+                    _l("Special contribution: %(amount)s due by %(deadline)s", amount=lazy_money(sh.amount_cents), deadline=lazy_date(sc.deadline, "medium")),
                     url=url_for("billing.index"), body=sc.title, kind="special")
     sc.billed_at = utcnow()
     db.session.commit()
-    flash(f"Billed {len(sc.shares)} unit(s). Owners have been notified of their amount and the deadline.", "success")
+    flash(_("Billed %(shares)s unit(s). Owners have been notified of their amount and the deadline.", shares=len(sc.shares)), "success")
     return redirect(url_for("fees.special", special_id=sc.id))
 
 
@@ -287,9 +289,9 @@ def change_deadline(special_id):
                 charge.description = f"Special contribution — {sc.title} (due {new:%b %d, %Y})"[:255]
     if sc.billed_at and new != old:
         notify.send([u for sh in sc.shares for u in notify.unit_owner_accounts(sh.unit_id)],
-                    f"New deadline for “{sc.title}”: {new:%b %d, %Y}", url=url_for("billing.index"), kind="special")
+                    _l("New deadline for “%(sc)s”: %(new)s", sc=sc.title, new=lazy_date(new, "medium")), url=url_for("billing.index"), kind="special")
     db.session.commit()
-    flash(f"Deadline moved to {new:%B %d, %Y}.", "success")
+    flash(_("Deadline moved to %(new)s.", new=fdate(new, "long")), "success")
     return redirect(url_for("fees.special", special_id=sc.id))
 
 
@@ -298,11 +300,11 @@ def change_deadline(special_id):
 def delete_special(special_id):
     sc = _get(special_id)
     if sc.billed_at:
-        flash("This contribution has been billed; it can't be deleted.", "error")
+        flash(_("This contribution has been billed; it can't be deleted."), "error")
         return redirect(url_for("fees.special", special_id=sc.id))
     db.session.delete(sc)
     db.session.commit()
-    flash("Special contribution deleted.", "success")
+    flash(_("Special contribution deleted."), "success")
     return redirect(url_for("fees.index"))
 
 

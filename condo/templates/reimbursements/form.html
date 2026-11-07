@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Request reimbursement{% endblock %}
+{% block title %}{% trans %}Request reimbursement{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Request a reimbursement</h1>
+<h1>{% trans %}Request a reimbursement{% endtrans %}</h1>
 <form method="post" enctype="multipart/form-data" class="card narrow">
   {{ csrf() }}
   {% if repair %}<input type="hidden" name="request_id" value="{{ repair.id }}">
-    <div class="flash flash-info">For repair request #{{ repair.id }} · {{ repair.title }}{% if repair.quote_approved_cents %} · board approved {{ repair.quote_approved_cents|money }}{% endif %}</div>{% endif %}
-  {% if units %}<label>Unit that paid <select name="unit_id" required><option value="">Choose…</option>
+    <div class="flash flash-info">{% trans id=repair.id, title=repair.title %}For repair request #{{ id }} · {{ title }}{% endtrans %}{% if repair.quote_approved_cents %} {% trans quote_approved_cents=repair.quote_approved_cents|money %}· board approved {{ quote_approved_cents }}{% endtrans %}{% endif %}</div>{% endif %}
+  {% if units %}<label>{% trans %}Unit that paid{% endtrans %} <select name="unit_id" required><option value="">{% trans %}Choose…{% endtrans %}</option>
     {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string or (repair and repair.unit_id == u.id) }}>{{ u.number }}{% if u.owner_display %} — {{ u.owner_display }}{% endif %}</option>{% endfor %}</select></label>{% endif %}
-  <label>What did you pay for? <input name="description" required maxlength="255" value="{{ form.get('description', '') }}" placeholder="e.g. Plumber — garage drain"></label>
+  <label>{% trans %}What did you pay for?{% endtrans %} <input name="description" required maxlength="255" value="{{ form.get('description', '') }}" placeholder="{{ _('e.g. Plumber — garage drain') }}"></label>
   <div class="row">
-    <label>Paid to <input name="vendor" maxlength="200" value="{{ form.get('vendor', '') }}" placeholder="Company or store"></label>
-    <label>Category <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Paid to{% endtrans %} <input name="vendor" maxlength="200" value="{{ form.get('vendor', '') }}" placeholder="{{ _('Company or store') }}"></label>
+    <label>{% trans %}Category{% endtrans %} <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
   <div class="row">
-    <label>Amount <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
-    <label>Date paid <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
+    <label>{% trans %}Amount{% endtrans %} <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
+    <label>{% trans %}Date paid{% endtrans %} <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
   </div>
-  <fieldset><legend>How would you like to be reimbursed?</legend>
+  <fieldset><legend>{% trans %}How would you like to be reimbursed?{% endtrans %}</legend>
     {% for k, label in methods.items() %}<label class="check"><input type="radio" name="settle_method" value="{{ k }}" {{ 'checked' if form.get('settle_method') == k }}> {{ label }}</label>{% endfor %}
   </fieldset>
-  <label>Receipts / invoice (PDF or photos, up to 4 MB each) <input type="file" name="files" accept="{{ accept }}" multiple required></label>
-  <div class="form-actions"><button class="btn primary">Send to the president</button>
-  <a href="{{ url_for('reimbursements.index') }}">Cancel</a></div>
+  <label>{% trans %}Receipts / invoice (PDF or photos, up to 4 MB each){% endtrans %} <input type="file" name="files" accept="{{ accept }}" multiple required></label>
+  <div class="form-actions"><button class="btn primary">{% trans %}Send to the president{% endtrans %}</button>
+  <a href="{{ url_for('reimbursements.index') }}">{% trans %}Cancel{% endtrans %}</a></div>
 </form>
 {% endblock %}

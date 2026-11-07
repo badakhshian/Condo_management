@@ -1,72 +1,72 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Google Sheet{% endblock %}
+{% block title %}{% trans %}Google Sheet{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Google Sheet sync</h1>
-<p class="muted">The app can mirror the condo's transaction log in Google Sheets. Opening balances, monthly fees, payments,
-  purchase credits and building expenses come from the sheet's <strong>Transactions</strong> tab, and owner contacts from an optional <strong>Owners</strong> tab; the <strong>Balances</strong> tab is used as a cross-check.
-  Each sync replaces only what came from the sheet. Entries typed into the app by hand are kept.</p>
+<h1>{% trans %}Google Sheet sync{% endtrans %}</h1>
+<p class="muted">{% trans %}The app can mirror the condo's transaction log in Google Sheets. Opening balances, monthly fees, payments,
+  purchase credits and building expenses come from the sheet's{% endtrans %} <strong>{% trans %}Transactions{% endtrans %}</strong> {% trans %}tab, and owner contacts from an optional{% endtrans %} <strong>{% trans %}Owners{% endtrans %}</strong> {% trans %}tab; the{% endtrans %} <strong>{% trans %}Balances{% endtrans %}</strong> {% trans %}tab is used as a cross-check.
+  Each sync replaces only what came from the sheet. Entries typed into the app by hand are kept.{% endtrans %}</p>
 
 {% if clashes %}
 <form method="post" action="{{ url_for('sheet.resolve_clashes') }}" class="card building-insurance"
-      onsubmit="return confirm('Remove these {{ clashes|length }} old entries and load the sheet\'s own figures instead?')">
+      onsubmit="return confirm({{ _('Remove these %(n)s old entries and load the sheet’s own figures instead?', n=clashes|length)|tojson|forceescape }})">
   {{ csrf() }}
-  <h2>{{ clashes|length }} old entr{{ 'y' if clashes|length == 1 else 'ies' }} block the sheet</h2>
-  <p>These were entered in the app before the sheet was linked (for example by the Excel import). The sheet has its own figures for the same unit and month, so its lines were skipped and <strong>balances don't match the sheet</strong>.</p>
-  <table><thead><tr><th>Unit</th><th>Type</th><th>Month</th><th>Description</th><th class="num">Amount</th></tr></thead>
-    <tbody>{% for c in clashes %}<tr><td>{{ c.unit.number }}</td><td>{{ 'Opening balance' if c.kind == 'opening' else 'Monthly fee' }}</td>
+  <h2>{% trans count=clashes|length %}{{ count }} old entry blocks the sheet{% pluralize %}{{ count }} old entries block the sheet{% endtrans %}</h2>
+  <p>{% trans %}These were entered in the app before the sheet was linked (for example by the Excel import). The sheet has its own figures for the same unit and month, so its lines were skipped and{% endtrans %} <strong>{% trans %}balances don't match the sheet{% endtrans %}</strong>.</p>
+  <table><thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Type{% endtrans %}</th><th>{% trans %}Month{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
+    <tbody>{% for c in clashes %}<tr><td>{{ c.unit.number }}</td><td>{{ _('Opening balance') if c.kind == 'opening' else _('Monthly fee') }}</td>
       <td>{{ c.period }}</td><td class="muted">{{ c.description|truncate(70) }}</td><td class="num">{{ c.amount_cents|money }}</td></tr>{% endfor %}</tbody></table>
-  <button class="btn primary">Replace with the sheet's entries</button>
+  <button class="btn primary">{% trans %}Replace with the sheet's entries{% endtrans %}</button>
 </form>
 {% endif %}
 <div class="grid two">
   <form method="post" class="card">
     {{ csrf() }}
-    <h2>1. Link the sheet</h2>
-    <label>Google Sheets link
-      <input name="url" type="url" required placeholder="https://docs.google.com/spreadsheets/d/…" value="{{ cfg.get('url', '') }}"></label>
-    <p class="muted">The sheet must be shared as <em>Anyone with the link → Viewer</em> so the website can read it.</p>
-    <button class="btn">Save link</button>
+    <h2>{% trans %}1. Link the sheet{% endtrans %}</h2>
+    <label>{% trans %}Google Sheets link{% endtrans %}
+      <input name="url" type="url" required placeholder="{{ _('https://docs.google.com/spreadsheets/d/…') }}" value="{{ cfg.get('url', '') }}"></label>
+    <p class="muted">{% trans %}The sheet must be shared as{% endtrans %} <em>{% trans %}Anyone with the link → Viewer{% endtrans %}</em> {% trans %}so the website can read it.{% endtrans %}</p>
+    <button class="btn">{% trans %}Save link{% endtrans %}</button>
   </form>
 
   <section class="card">
-    <h2>2. Preview and confirm</h2>
-    <p>Nothing changes until you confirm the preview.</p>
+    <h2>{% trans %}2. Preview and confirm{% endtrans %}</h2>
+    <p>{% trans %}Nothing changes until you confirm the preview.{% endtrans %}</p>
     <form method="post" action="{{ url_for('sheet.preview') }}" class="actions">
-      {{ csrf() }}<button class="btn primary" {{ 'disabled' if not cfg.get('url') }}>Preview from Google Sheet</button>
+      {{ csrf() }}<button class="btn primary" {{ 'disabled' if not cfg.get('url') }}>{% trans %}Preview from Google Sheet{% endtrans %}</button>
     </form>
     <form method="post" action="{{ url_for('sheet.preview') }}" enctype="multipart/form-data" style="margin-top:1rem">
       {{ csrf() }}
-      <label>…or preview from a downloaded copy (.xlsx) <input type="file" name="workbook" accept=".xlsx" required></label>
-      <button class="btn">Preview from file</button>
+      <label>{% trans %}…or preview from a downloaded copy (.xlsx){% endtrans %} <input type="file" name="workbook" accept=".xlsx" required></label>
+      <button class="btn">{% trans %}Preview from file{% endtrans %}</button>
     </form>
   </section>
 
   <section class="card">
-    <h2>3. Automatic sync</h2>
+    <h2>{% trans %}3. Automatic sync{% endtrans %}</h2>
     {% if cfg.get('auto') %}
-      <p><span class="badge status-resolved">On</span> The website checks the sheet every 10 minutes and updates when it has changed.</p>
+      <p><span class="badge status-resolved">{% trans %}On{% endtrans %}</span> {% trans %}The website checks the sheet every 10 minutes and updates when it has changed.{% endtrans %}</p>
     {% else %}
-      <p><span class="badge status-closed">Off</span> {% if not cfg.get('confirmed') %}Confirm one sync first.{% endif %}</p>
+      <p><span class="badge status-closed">{% trans %}Off{% endtrans %}</span> {% if not cfg.get('confirmed') %}{% trans %}Confirm one sync first.{% endtrans %}{% endif %}</p>
     {% endif %}
-    {% if not cron_ready %}<p class="flash flash-error">CRON_SECRET isn't set on the server, so scheduled checks can't run yet.</p>{% endif %}
-    {% if last_check %}<p class="muted">Last check: {{ last_check.replace('T', ' ') }} UTC</p>{% endif %}
-    {% if last_error %}<p class="flash flash-error">Last automatic check failed ({{ last_error.at.replace('T', ' ') }} UTC): {{ last_error.message }}</p>{% endif %}
+    {% if not cron_ready %}<p class="flash flash-error">{% trans %}CRON_SECRET isn't set on the server, so scheduled checks can't run yet.{% endtrans %}</p>{% endif %}
+    {% if last_check %}<p class="muted">{% trans t=last_check.replace('T', ' ') %}Last check: {{ t }} UTC{% endtrans %}</p>{% endif %}
+    {% if last_error %}<p class="flash flash-error">{% trans t=last_error.at.replace('T', ' '), message=last_error.message %}Last automatic check failed ({{ t }} UTC): {{ message }}{% endtrans %}</p>{% endif %}
     <form method="post" action="{{ url_for('sheet.auto') }}">
       {{ csrf() }}<input type="hidden" name="auto" value="{{ 'off' if cfg.get('auto') else 'on' }}">
-      <button class="btn" {{ 'disabled' if not cfg.get('confirmed') and not cfg.get('auto') }}>{{ 'Turn off' if cfg.get('auto') else 'Turn on' }} automatic sync</button>
+      <button class="btn" {{ 'disabled' if not cfg.get('confirmed') and not cfg.get('auto') }}>{% if cfg.get('auto') %}{% trans %}Turn off automatic sync{% endtrans %}{% else %}{% trans %}Turn on automatic sync{% endtrans %}{% endif %}</button>
     </form>
   </section>
 
   <section class="card">
-    <h2>Last sync</h2>
+    <h2>{% trans %}Last sync{% endtrans %}</h2>
     {% if last %}
-      <p>{{ last.at.replace('T', ' ') }} UTC · {{ last.counts.opening }} opening balances, {{ last.counts.dues }} monthly fees,
-        {{ last.counts.payment }} payments, {{ last.counts.credit }} purchase credits, {{ last.counts.expense }} building expenses{% if last.counts.owners is not none %}, {{ last.counts.owners }} owner contacts{% endif %}.</p>
-      {% if last.units_created %}<p>New units created: {{ last.units_created|join(', ') }}</p>{% endif %}
+      <p>{% trans t=last.at.replace('T', ' '), opening=last.counts.opening, dues=last.counts.dues, payment=last.counts.payment, credit=last.counts.credit, expense=last.counts.expense %}{{ t }} UTC · {{ opening }} opening balances, {{ dues }} monthly fees,
+        {{ payment }} payments, {{ credit }} purchase credits, {{ expense }} building expenses{% endtrans %}{% if last.counts.owners is not none %}{% trans owners=last.counts.owners %}, {{ owners }} owner contacts{% endtrans %}{% endif %}.</p>
+      {% if last.units_created %}<p>{% trans units_created=last.units_created|join(', ') %}New units created: {{ units_created }}{% endtrans %}</p>{% endif %}
       {% for m in last.mismatches + last.skipped + last.warnings %}<div class="flash flash-error">{{ m }}</div>{% endfor %}
-      {% if not (last.mismatches or last.skipped or last.warnings) %}<p class="credit">Every unit's balance matches the sheet.</p>{% endif %}
-    {% else %}<p class="muted">Never synced.</p>{% endif %}
+      {% if not (last.mismatches or last.skipped or last.warnings) %}<p class="credit">{% trans %}Every unit's balance matches the sheet.{% endtrans %}</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}Never synced.{% endtrans %}</p>{% endif %}
   </section>
 </div>
 {% endblock %}

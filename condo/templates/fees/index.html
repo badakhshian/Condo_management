@@ -1,78 +1,78 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Fees & contributions · {{ year }}{% endblock %}
+{% block title %}{% trans year=year %}Fees & contributions · {{ year }}{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Fees &amp; contributions</h1>
-  {% if current_user.can('accounting_edit') %}<a class="btn primary" href="{{ url_for('fees.new_special') }}">+ Special contribution</a>{% endif %}</div>
+<div class="head"><h1>{% trans %}Fees &amp; contributions{% endtrans %}</h1>
+  {% if current_user.can('accounting_edit') %}<a class="btn primary" href="{{ url_for('fees.new_special') }}">{% trans %}+ Special contribution{% endtrans %}</a>{% endif %}</div>
 
 <section class="card">
   <div class="card-head">
-    <h2>Condo fees</h2>
+    <h2>{% trans %}Condo fees{% endtrans %}</h2>
     <div class="period-nav" style="flex:none">
-      <a class="btn small" href="{{ url_for('fees.index', year=year - 1) }}" aria-label="Previous year">‹</a>
+      <a class="btn small" href="{{ url_for('fees.index', year=year - 1) }}" aria-label="{{ _('Previous year') }}">‹</a>
       <strong>{{ year }}</strong>
-      <a class="btn small" href="{{ url_for('fees.index', year=year + 1) }}" aria-label="Next year">›</a>
+      <a class="btn small" href="{{ url_for('fees.index', year=year + 1) }}" aria-label="{{ _('Next year') }}">›</a>
     </div>
   </div>
-  {% if renewal_due %}<div class="flash flash-info"><strong>Time to renew.</strong> These rates end on {{ schedule.end.strftime('%B %d, %Y') }}.
-    {% if current_user.can('accounting_edit') %}<a href="{{ url_for('fees.index', year=next_year) }}">Set the next period’s fees</a>.{% endif %}</div>{% endif %}
-  {% if missing_shares %}<div class="flash flash-info">Units without an ownership share: {{ missing_shares|join(', ') }}. Set their share on the unit page, or give them a fixed amount below.</div>{% endif %}
+  {% if renewal_due %}<div class="flash flash-info"><strong>{% trans %}Time to renew.{% endtrans %}</strong> {% trans end=schedule.end|fdate('long') %}These rates end on {{ end }}.{% endtrans %}
+    {% if current_user.can('accounting_edit') %}<a href="{{ url_for('fees.index', year=next_year) }}">{% trans %}Set the next period’s fees{% endtrans %}</a>.{% endif %}</div>{% endif %}
+  {% if missing_shares %}<div class="flash flash-info">{% trans missing_shares=missing_shares|join(', ') %}Units without an ownership share: {{ missing_shares }}. Set their share on the unit page, or give them a fixed amount below.{% endtrans %}</div>{% endif %}
 
   <form method="post" action="{{ url_for('fees.save_schedule', year=year) }}" id="fee-form">
     {{ csrf() }}
     <fieldset {{ 'disabled' if not current_user.can('accounting_edit') }} class="fee-setup">
       <div class="row">
-        <label>Start date <input type="date" name="starts_on" required value="{{ form.starts_on }}"></label>
-        <label>End date <input type="date" name="ends_on" required value="{{ form.ends_on }}"></label>
+        <label>{% trans %}Start date{% endtrans %} <input type="date" name="starts_on" required value="{{ form.starts_on }}"></label>
+        <label>{% trans %}End date{% endtrans %} <input type="date" name="ends_on" required value="{{ form.ends_on }}"></label>
       </div>
-      <div class="segmented" role="radiogroup" aria-label="Enter the fees as">
+      <div class="segmented" role="radiogroup" aria-label="{{ _('Enter the fees as') }}">
         {% for key, label in bases.items() %}<label><input type="radio" name="basis" value="{{ key }}" {{ 'checked' if form.basis == key }}><span>{{ label }}</span></label>{% endfor %}
       </div>
-      <label><span id="amount-label">{{ bases[form.basis] }}</span> for the building
+      <label><span id="amount-label">{{ bases[form.basis] }}</span> {% trans %}for the building{% endtrans %}
         <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.amount }}"></span></label>
     </fieldset>
     {% if schedule %}
     <div class="fee-total">
-      <div class="stat-inline"><span>{{ schedule.annual_total_cents|money }}</span> {{ 'a year' if schedule.months == 12 else 'for ' ~ schedule.months ~ ' months' }}</div>
-      <div class="stat-inline"><span>{{ schedule.monthly_total_cents|money }}</span> a month</div>
+      <div class="stat-inline"><span>{{ schedule.annual_total_cents|money }}</span> {% if schedule.months == 12 %}{% trans %}a year{% endtrans %}{% else %}{% trans n=schedule.months %}for {{ n }} months{% endtrans %}{% endif %}</div>
+      <div class="stat-inline"><span>{{ schedule.monthly_total_cents|money }}</span> {% trans %}a month{% endtrans %}</div>
       {% if previous %}{% set change = (schedule.monthly_total_cents - previous.monthly_total_cents) / previous.monthly_total_cents * 100 if previous.monthly_total_cents else 0 %}
-      <div class="stat-inline muted">{{ previous.year }}: {{ previous.monthly_total_cents|money }} a month
-        <span class="{{ 'owed' if change > 0 else 'credit' }}">({{ '%+.1f'|format(change) }}%)</span></div>{% endif %}
+      <div class="stat-inline muted">{% trans year=previous.year, monthly_total_cents=previous.monthly_total_cents|money %}{{ year }}: {{ monthly_total_cents }} a month{% endtrans %}
+        <span class="{{ 'owed' if change > 0 else 'credit' }}">({{ change|pct(1, true) }})</span></div>{% endif %}
     </div>
-    <p class="muted renewal-note">{% if schedule.renewal_notified_at %}The board was reminded to renew on {{ schedule.renewal_notified_at.strftime('%b %d, %Y') }}.
-      {% else %}The board gets a renewal reminder on {{ schedule.renewal_date.strftime('%b %d, %Y') }}, two months before these rates end.{% endif %}</p>
+    <p class="muted renewal-note">{% if schedule.renewal_notified_at %}{% trans renewal_notified_at=schedule.renewal_notified_at|fdate('medium') %}The board was reminded to renew on {{ renewal_notified_at }}.{% endtrans %}
+      {% else %}{% trans renewal_date=schedule.renewal_date|fdate('medium') %}The board gets a renewal reminder on {{ renewal_date }}, two months before these rates end.{% endtrans %}{% endif %}</p>
 
     <table class="fee-table">
-      <thead><tr><th>Unit</th><th>Owner</th><th class="num">Share</th><th class="num">{{ 'Annual' if schedule.months == 12 else 'Period' }}</th><th class="num">Monthly</th>
-        {% if prev_rows %}<th class="num">Monthly vs {{ previous.year }}</th>{% endif %}
-        {% if current_user.can('accounting_edit') %}<th class="num">Fixed {{ 'annual' if schedule.basis == 'annual' else 'monthly' }} amount <span class="muted">(optional)</span></th>{% endif %}</tr></thead>
+      <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans %}Share{% endtrans %}</th><th class="num">{{ _('Annual') if schedule.months == 12 else _('Period') }}</th><th class="num">{% trans %}Monthly{% endtrans %}</th>
+        {% if prev_rows %}<th class="num">{% trans year=previous.year %}Monthly vs {{ year }}{% endtrans %}</th>{% endif %}
+        {% if current_user.can('accounting_edit') %}<th class="num">{% if schedule.basis == 'annual' %}{% trans %}Fixed annual amount{% endtrans %}{% else %}{% trans %}Fixed monthly amount{% endtrans %}{% endif %} <span class="muted">{% trans %}(optional){% endtrans %}</span></th>{% endif %}</tr></thead>
       <tbody>{% for r in rows %}{% set p = prev_rows.get(r.unit.id) %}
         <tr><td><strong>{{ r.unit.number }}</strong></td><td class="muted">{{ r.unit.owner_display or '—' }}</td>
-          <td class="num">{{ '%.2f%%'|format(r.share * 100) if r.share else '—' }}</td>
-          <td class="num">{% if schedule.basis == 'annual' %}<strong>{{ r.annual|money }}</strong>{% else %}{{ r.annual|money }}{% endif %}{% if r.override and schedule.basis == 'annual' %} <span class="tag">fixed</span>{% endif %}</td>
-          <td class="num">{% if schedule.basis == 'monthly' %}<strong>{{ r.monthly|money }}</strong>{% if r.override %} <span class="tag">fixed</span>{% endif %}{% else %}{{ r.monthly|money }}{% endif %}</td>
+          <td class="num">{{ (r.share * 100)|pct if r.share else '—' }}</td>
+          <td class="num">{% if schedule.basis == 'annual' %}<strong>{{ r.annual|money }}</strong>{% else %}{{ r.annual|money }}{% endif %}{% if r.override and schedule.basis == 'annual' %} <span class="tag">{% trans %}fixed{% endtrans %}</span>{% endif %}</td>
+          <td class="num">{% if schedule.basis == 'monthly' %}<strong>{{ r.monthly|money }}</strong>{% if r.override %} <span class="tag">{% trans %}fixed{% endtrans %}</span>{% endif %}{% else %}{{ r.monthly|money }}{% endif %}</td>
           {% if prev_rows %}<td class="num {{ 'owed' if p and r.monthly > p.monthly else 'credit' if p and r.monthly < p.monthly }}">{{ ((r.monthly - p.monthly)|money) if p else '—' }}</td>{% endif %}
           {% if current_user.can('accounting_edit') %}<td class="num"><span class="money-input fixed-input"><input name="override_{{ r.unit.id }}" inputmode="decimal"
-            value="{{ '%.2f'|format(r.amount / 100) if r.override else '' }}" placeholder="by share"></span></td>{% endif %}</tr>
+            value="{{ '%.2f'|format(r.amount / 100) if r.override else '' }}" placeholder="{{ _('auto') }}" title="{{ _('by share') }}"></span></td>{% endif %}</tr>
       {% endfor %}</tbody>
-      <tfoot><tr><th colspan="3">Total</th><th class="num">{{ rows|sum(attribute='annual')|money }}</th><th class="num">{{ rows|sum(attribute='monthly')|money }}</th>
+      <tfoot><tr><th colspan="3">{% trans %}Total{% endtrans %}</th><th class="num">{{ rows|sum(attribute='annual')|money }}</th><th class="num">{{ rows|sum(attribute='monthly')|money }}</th>
         {% if prev_rows %}<th></th>{% endif %}{% if current_user.can('accounting_edit') %}<th></th>{% endif %}</tr></tfoot>
     </table>
-    {% else %}<p class="muted">No condo fees set for {{ year }} yet.{% if current_user.can('accounting_edit') %} Enter the period and the total, then save: each unit’s part is calculated from its ownership share.{% endif %}</p>{% endif %}
+    {% else %}<p class="muted">{% trans year=year %}No condo fees set for {{ year }} yet.{% endtrans %}{% if current_user.can('accounting_edit') %} {% trans %}Enter the period and the total, then save: each unit’s part is calculated from its ownership share.{% endtrans %}{% endif %}</p>{% endif %}
     {% if current_user.can('accounting_edit') %}
-    <label>Notes <input name="notes" maxlength="500" value="{{ schedule.notes if schedule and schedule.notes else '' }}" placeholder="e.g. Approved at the AGM of April 20"></label>
-    <div class="form-actions"><button class="btn primary">Save condo fees</button></div>
+    <label>{% trans %}Notes{% endtrans %} <input name="notes" maxlength="500" value="{{ schedule.notes if schedule and schedule.notes else '' }}" placeholder="{{ _('e.g. Approved at the AGM of April 20') }}"></label>
+    <div class="form-actions"><button class="btn primary">{% trans %}Save condo fees{% endtrans %}</button></div>
     {% endif %}
   </form>
   {% if schedule and current_user.can('accounting_edit') %}
   <form method="post" action="{{ url_for('fees.apply_schedule', year=year) }}" class="apply-row"
-        onsubmit="return confirm('Set every unit\'s monthly fee to these rates?')">
+        onsubmit="return confirm({{ _('Set every unit’s monthly fee to these rates?')|tojson|forceescape }})">
     {{ csrf() }}
-    <span class="muted">{% if schedule.applied_at %}Applied to units on {{ schedule.applied_at.strftime('%b %d, %Y') }}.{% else %}Not applied yet: units still use their current monthly fee.{% endif %}</span>
-    <button class="btn">Apply monthly fees to units</button>
+    <span class="muted">{% if schedule.applied_at %}{% trans applied_at=schedule.applied_at|fdate('medium') %}Applied to units on {{ applied_at }}.{% endtrans %}{% else %}{% trans %}Not applied yet: units still use their current monthly fee.{% endtrans %}{% endif %}</span>
+    <button class="btn">{% trans %}Apply monthly fees to units{% endtrans %}</button>
   </form>
   {% endif %}
-  {% if years %}<p class="muted" style="margin-top:.8rem">Periods on file: {% for y in years %}<a href="{{ url_for('fees.index', year=y.year) }}">{{ y.start.strftime('%b %Y') }} – {{ y.end.strftime('%b %Y') }}</a>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+  {% if years %}<p class="muted" style="margin-top:.8rem">{% trans %}Periods on file:{% endtrans %} {% for y in years %}<a href="{{ url_for('fees.index', year=y.year) }}">{{ y.start|fdate('month') }} – {{ y.end|fdate('month') }}</a>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
 </section>
 <script>
 (function () {
@@ -85,17 +85,17 @@
 </script>
 
 <section class="card">
-  <h2>Special contributions</h2>
+  <h2>{% trans %}Special contributions{% endtrans %}</h2>
   {% if specials %}<table>
-    <thead><tr><th>Contribution</th><th>Deadline</th><th class="num">Total</th><th class="num">Collected</th><th>Status</th></tr></thead>
+    <thead><tr><th>{% trans %}Contribution{% endtrans %}</th><th>{% trans %}Deadline{% endtrans %}</th><th class="num">{% trans %}Total{% endtrans %}</th><th class="num">{% trans %}Collected{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th></tr></thead>
     <tbody>{% for sc in specials %}{% set collected = sc.collected_cents %}
       <tr><td><a href="{{ url_for('fees.special', special_id=sc.id) }}"><strong>{{ sc.title }}</strong></a>
           {% if sc.description %}<div class="excerpt">{{ sc.description|truncate(80) }}</div>{% endif %}</td>
-        <td class="nowrap">{{ sc.deadline.strftime('%b %d, %Y') }}{% if sc.billed_at and today > sc.deadline and collected < sc.total_cents %} <span class="badge sc-overdue">Past deadline</span>{% endif %}</td>
+        <td class="nowrap">{{ sc.deadline|fdate('medium') }}{% if sc.billed_at and today > sc.deadline and collected < sc.total_cents %} <span class="badge sc-overdue">{% trans %}Past deadline{% endtrans %}</span>{% endif %}</td>
         <td class="num">{{ sc.total_cents|money }}</td>
         <td class="num"><div class="progress" title="{{ (collected * 100 / sc.total_cents)|round|int if sc.total_cents else 0 }}%"><span style="width: {{ (collected * 100 / sc.total_cents) if sc.total_cents else 0 }}%"></span></div>{{ collected|money }}</td>
-        <td>{% if not sc.billed_at %}<span class="tag">Draft: not billed</span>{% elif collected >= sc.total_cents %}<span class="badge sc-paid">Fully paid</span>{% else %}<span class="badge sc-unpaid">Collecting</span>{% endif %}</td></tr>
+        <td>{% if not sc.billed_at %}<span class="tag">{% trans %}Draft: not billed{% endtrans %}</span>{% elif collected >= sc.total_cents %}<span class="badge sc-paid">{% trans %}Fully paid{% endtrans %}</span>{% else %}<span class="badge sc-unpaid">{% trans %}Collecting{% endtrans %}</span>{% endif %}</td></tr>
     {% endfor %}</tbody>
-  </table>{% else %}<p class="muted">No special contributions.{% if current_user.can('accounting_edit') %} Use “+ Special contribution” for a one-off amount owners must pay by a deadline.{% endif %}</p>{% endif %}
+  </table>{% else %}<p class="muted">{% trans %}No special contributions.{% endtrans %}{% if current_user.can('accounting_edit') %} {% trans %}Use “+ Special contribution” for a one-off amount owners must pay by a deadline.{% endtrans %}{% endif %}</p>{% endif %}
 </section>
 {% endblock %}

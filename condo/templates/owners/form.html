@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'Edit ' ~ owner.name if owner else ('Add a tenant' if form.get('role') == 'tenant' else 'Add an owner') }}{% if unit %} · Unit {{ unit.number }}{% endif %}{% endblock %}
+{% block title %}{{ _('Edit %(name)s', name=owner.name) if owner else (_('Add a tenant') if form.get('role') == 'tenant' else _('Add an owner')) }}{% if unit %} {% trans number=unit.number %}· Unit {{ number }}{% endtrans %}{% endif %}{% endblock %}
 {% block content %}
-<h1>{{ 'Edit ' ~ owner.name if owner else ('Add a tenant' if form.get('role') == 'tenant' else 'Add an owner') }}{% if unit %} <span class="muted">· Unit {{ unit.number }}</span>{% endif %}</h1>
+<h1>{{ _('Edit %(name)s', name=owner.name) if owner else (_('Add a tenant') if form.get('role') == 'tenant' else _('Add an owner')) }}{% if unit %} <span class="muted">{% trans number=unit.number %}· Unit {{ number }}{% endtrans %}</span>{% endif %}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   {% if units %}
-  <label>Unit <select name="unit_id" required><option value="">Choose…</option>
+  <label>{% trans %}Unit{% endtrans %} <select name="unit_id" required><option value="">{% trans %}Choose…{% endtrans %}</option>
     {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}{% if u.owner_display %} — {{ u.owner_display }}{% endif %}</option>{% endfor %}</select></label>
   {% endif %}
   <div class="row">
-    <label>Full name <input name="name" required maxlength="200" value="{{ form.get('name', '') }}"></label>
-    <label>Role <select name="role">{% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if form.get('role') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Full name{% endtrans %} <input name="name" required maxlength="200" value="{{ form.get('name', '') }}"></label>
+    <label>{% trans %}Role{% endtrans %} <select name="role">{% for k, label in roles.items() %}<option value="{{ k }}" {{ 'selected' if form.get('role') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
   <div class="row">
-    <label>Email <input type="email" name="email" value="{{ form.get('email', '') }}"></label>
-    <label>Phone <input type="tel" name="phone" maxlength="60" value="{{ form.get('phone', '') }}"></label>
+    <label>{% trans %}Email{% endtrans %} <input type="email" name="email" value="{{ form.get('email', '') }}"></label>
+    <label>{% trans %}Phone{% endtrans %} <input type="tel" name="phone" maxlength="60" value="{{ form.get('phone', '') }}"></label>
   </div>
   {% set same, other = sources %}
   {% if same or other %}
-  <label>Copy address from
+  <label>{% trans %}Copy address from{% endtrans %}
     <select name="copy_address_from" id="copy-address">
-      <option value="">— Type a new address —</option>
+      <option value="">{% trans %}— Type a new address —{% endtrans %}</option>
       {% if same and unit %}<optgroup label="Unit {{ unit.number }}">{% for o in same %}
         <option value="{{ o.id }}" data-address="{{ o.mailing_address }}">{{ o.name }} — {{ o.mailing_address.splitlines()[0] }}</option>{% endfor %}</optgroup>{% endif %}
 
     </select></label>
   {% endif %}
-  <label>Mailing address <textarea name="mailing_address" id="mailing-address" rows="3" placeholder="Leave empty if they live in the unit">{{ form.get('mailing_address', '') }}</textarea></label>
-  <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> Primary contact for this unit</label>
-  <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
-  <button class="btn primary">Save</button>
-  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index')) }}">Cancel</a>
+  <label>{% trans %}Mailing address{% endtrans %} <textarea name="mailing_address" id="mailing-address" rows="3" placeholder="{{ _('Leave empty if they live in the unit') }}">{{ form.get('mailing_address', '') }}</textarea></label>
+  <label class="check"><input type="checkbox" name="is_primary" {{ 'checked' if form.get('is_primary') }}> {% trans %}Primary contact for this unit{% endtrans %}</label>
+  <label>{% trans %}Notes{% endtrans %} <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
+  <button class="btn primary">{% trans %}Save{% endtrans %}</button>
+  <a href="{{ safe_back() or (url_for('units.detail', unit_id=unit.id) if unit and not units else url_for('directory.index')) }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
 {% if owner and owner.origin != 'sheet' %}
 <form method="post" action="{{ url_for('owners.delete', owner_id=owner.id, back=safe_back()) }}" class="card narrow danger-zone"
-      onsubmit="return confirm('Remove {{ owner.name|e }} from unit {{ unit.number }}? Their insurance records are removed too.')">
+      onsubmit="return confirm({{ _('Remove %(name)s from unit %(number)s? Their insurance records are removed too.', name=owner.name, number=unit.number)|tojson|forceescape }})">
   {{ csrf() }}
-  <div class="inline-form"><span>Remove <strong>{{ owner.name }}</strong> from unit {{ unit.number }}.</span>
-    <button class="btn danger small">Remove {{ 'tenant' if owner.role == 'tenant' else 'person' }}</button></div>
+  <div class="inline-form"><span>{% trans %}Remove{% endtrans %} <strong>{{ owner.name }}</strong> {% trans number=unit.number %}from unit {{ number }}.{% endtrans %}</span>
+    <button class="btn danger small">{{ _('Remove tenant') if owner.role == 'tenant' else _('Remove person') }}</button></div>
 </form>
 {% endif %}
 <script>

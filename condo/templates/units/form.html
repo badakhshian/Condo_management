@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'Edit unit ' ~ unit.number if unit.id else 'New unit' }}{% endblock %}
+{% block title %}{{ _('Edit unit %(number)s', number=unit.number) if unit.id else _('New unit') }}{% endblock %}
 {% block content %}
-<h1>{{ 'Edit unit ' ~ unit.number if unit.id else 'New unit' }}</h1>
+<h1>{{ _('Edit unit %(number)s', number=unit.number) if unit.id else _('New unit') }}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   <div class="row">
-    <label>Unit number <input name="number" required value="{{ form.get('number', '') }}"></label>
-    <label>Floor <input name="floor" type="number" min="0" value="{{ form.get('floor', '') }}"></label>
+    <label>{% trans %}Unit number{% endtrans %} <input name="number" required value="{{ form.get('number', '') }}"></label>
+    <label>{% trans %}Floor{% endtrans %} <input name="floor" type="number" min="0" value="{{ form.get('floor', '') }}"></label>
   </div>
-  <label>Owner name <input name="owner_name" maxlength="200" value="{{ form.get('owner_name', '') }}"></label>
+  <label>{% trans %}Owner name{% endtrans %} <input name="owner_name" maxlength="200" value="{{ form.get('owner_name', '') }}"></label>
   <div class="row">
-    <label>Bedrooms <input name="bedrooms" type="number" min="0" value="{{ form.get('bedrooms', '') }}"></label>
-    <label>Area (sq ft) <input name="area_sqft" type="number" min="0" value="{{ form.get('area_sqft', '') }}"></label>
+    <label>{% trans %}Bedrooms{% endtrans %} <input name="bedrooms" type="number" min="0" value="{{ form.get('bedrooms', '') }}"></label>
+    <label>{% trans %}Area (sq ft){% endtrans %} <input name="area_sqft" type="number" min="0" value="{{ form.get('area_sqft', '') }}"></label>
   </div>
   <div class="row">
-    <label>Parking spot <input name="parking_spot" value="{{ form.get('parking_spot', '') }}"></label>
-    <label>Monthly dues ($) <input name="monthly_fee" inputmode="decimal" value="{{ form.get('monthly_fee', '') }}"></label>
+    <label>{% trans %}Parking spot{% endtrans %} <input name="parking_spot" value="{{ form.get('parking_spot', '') }}"></label>
+    <label>{% trans %}Monthly dues ($){% endtrans %} <input name="monthly_fee" inputmode="decimal" value="{{ form.get('monthly_fee', '') }}"></label>
   </div>
-  <label>Notes <textarea name="notes" rows="3">{{ form.get('notes', '') }}</textarea></label>
-  <button class="btn primary">Save</button>
-  <a href="{{ url_for('units.detail', unit_id=unit.id) if unit.id else url_for('units.index') }}">Cancel</a>
+  <label>{% trans %}Notes{% endtrans %} <textarea name="notes" rows="3">{{ form.get('notes', '') }}</textarea></label>
+  <button class="btn primary">{% trans %}Save{% endtrans %}</button>
+  <a href="{{ url_for('units.detail', unit_id=unit.id) if unit.id else url_for('units.index') }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
 {% endblock %}

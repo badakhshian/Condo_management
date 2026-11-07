@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% from "_macros.html" import balance %}
-{% block title %}Units{% endblock %}
+{% block title %}{% trans %}Units{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Units</h1><div class="actions"><a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a><a class="btn primary" href="{{ url_for('units.new') }}">Add unit</a></div></div>
+<div class="head"><h1>{% trans %}Units{% endtrans %}</h1><div class="actions"><a class="btn" href="{{ url_for('importer.upload') }}">{% trans %}Import from Excel{% endtrans %}</a><a class="btn primary" href="{{ url_for('units.new') }}">{% trans %}Add unit{% endtrans %}</a></div></div>
 <div class="card">
 <table>
-  <thead><tr><th>Unit</th><th>Owner</th><th class="num">Share</th><th>Floor</th><th>Beds</th><th>Accounts</th><th class="num">Monthly dues</th><th class="num">Balance</th></tr></thead>
+  <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans %}Share{% endtrans %}</th><th>{% trans %}Floor{% endtrans %}</th><th>{% trans %}Beds{% endtrans %}</th><th>{% trans %}Accounts{% endtrans %}</th><th class="num">{% trans %}Monthly dues{% endtrans %}</th><th class="num">{% trans %}Balance{% endtrans %}</th></tr></thead>
   <tbody>
   {% for u in units %}
     <tr><td><a href="{{ url_for('units.detail', unit_id=u.id) }}"><strong>{{ u.number }}</strong></a></td>
-      <td>{{ u.owner_display or '—' }}{% if u.owners|length > 1 %} <span class="tag">{{ u.owners|length }}</span>{% endif %}</td><td class="num">{{ '%.2f%%'|format(u.ownership_share * 100) if u.ownership_share else '—' }}</td>
+      <td>{{ u.owner_display or '—' }}{% if u.owners|length > 1 %} <span class="tag">{{ u.owners|length }}</span>{% endif %}</td><td class="num">{{ (u.ownership_share * 100)|pct if u.ownership_share else '—' }}</td>
       <td>{{ u.floor if u.floor is not none else '—' }}</td><td>{{ u.bedrooms or '—' }}</td>
-      <td>{{ u.residents|map(attribute='name')|join(', ') or ('<span class="muted">No accounts</span>' if u.owner_display else '<span class="muted">Vacant</span>')|safe }}</td>
+      <td>{{ u.residents|map(attribute='name')|join(', ') or (_('<span class="muted">No accounts</span>') if u.owner_display else _('<span class="muted">Vacant</span>'))|safe }}</td>
       <td class="num">{{ u.monthly_fee_cents|money }}</td><td class="num">{{ balance(u.balance) }}</td></tr>
-  {% else %}<tr><td colspan="7" class="muted">No units yet.</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="7" class="muted">{% trans %}No units yet.{% endtrans %}</td></tr>{% endfor %}
   </tbody>
 </table>
 </div>

@@ -12,6 +12,7 @@ from ..extensions import db
 from ..importer import ImportError_, month_end, month_label, parse_workbook
 from ..models import Charge, ImportBatch, Unit, utcnow
 from ..utils import admin_required, money
+from ..i18n import gettext as _
 
 bp = Blueprint("importer", __name__, url_prefix="/import")
 
@@ -24,7 +25,7 @@ def upload():
     if request.method == "POST":
         file = request.files.get("workbook")
         if not file or not file.filename:
-            flash("Choose the Excel file to upload.", "error")
+            flash(_("Choose the Excel file to upload."), "error")
             return render_template("import/upload.html"), 400
         month = None
         raw_month = request.form.get("month", "").strip()
@@ -33,7 +34,7 @@ def upload():
                 year, m = (int(x) for x in raw_month.split("-"))
                 month = (year, m)
             except ValueError:
-                flash("Choose a valid month.", "error")
+                flash(_("Choose a valid month."), "error")
                 return render_template("import/upload.html"), 400
         try:
             payload = parse_workbook(file.stream, month=month)
@@ -93,7 +94,7 @@ def load(batch_id, step):
     batch = _batch(batch_id)
     payload = batch.payload
     if payload["loaded"].get(step):
-        flash("That dataset was already loaded from this upload.", "info")
+        flash(_("That dataset was already loaded from this upload."), "info")
         return redirect(url_for("importer.preview", batch_id=batch.id))
     existing = _existing_units(payload)
 
@@ -114,7 +115,7 @@ def load(batch_id, step):
     else:
         missing = [u["number"] for u in payload["units"] if u["number"] not in existing]
         if missing:
-            flash(f"Load the units first — missing: {', '.join(missing)}.", "error")
+            flash(_("Load the units first — missing: %(missing)s.", missing=', '.join(missing)), "error")
             return redirect(url_for("importer.preview", batch_id=batch.id))
 
         if step == "owners":

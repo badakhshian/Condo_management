@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}{{ 'Edit' if item.id else 'New' }} notice{% endblock %}
+{% block title %}{{ _('Edit notice') if item.id else _('New notice') }}{% endblock %}
 {% block content %}
-<h1>{{ 'Edit' if item.id else 'Post a' }} notice</h1>
+<h1>{{ _('Edit notice') if item.id else _('Post a notice') }}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
-  <label>Title <input name="title" required value="{{ form.get('title', '') }}"></label>
-  <label>Message <textarea name="body" rows="8" required>{{ form.get('body', '') }}</textarea></label>
-  <label class="check"><input type="checkbox" name="pinned" {{ 'checked' if form.get('pinned') }}> Pin to top</label>
-  <button class="btn primary">{{ 'Save' if item.id else 'Post' }}</button>
-  <a href="{{ url_for('announcements.index') }}">Cancel</a>
+  <label>{% trans %}Title{% endtrans %} <input name="title" required value="{{ form.get('title', '') }}"></label>
+  <label>{% trans %}Message{% endtrans %} <textarea name="body" rows="8" required>{{ form.get('body', '') }}</textarea></label>
+  <label class="check"><input type="checkbox" name="pinned" {{ 'checked' if form.get('pinned') }}> {% trans %}Pin to top{% endtrans %}</label>
+  <button class="btn primary">{{ _('Save') if item.id else _('Post') }}</button>
+  <a href="{{ url_for('announcements.index') }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
 {% endblock %}

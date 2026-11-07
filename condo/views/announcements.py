@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from ..extensions import db
 from ..models import Announcement
 from ..utils import permission_required
+from ..i18n import gettext as _, lazy_gettext as _l
 
 bp = Blueprint("announcements", __name__, url_prefix="/announcements")
 
@@ -21,7 +22,7 @@ def _save(item):
     title = request.form.get("title", "").strip()
     body = request.form.get("body", "").strip()
     if not title or not body:
-        flash("Title and message are both required.", "error")
+        flash(_("Title and message are both required."), "error")
         return False
     item.title, item.body = title, body
     item.pinned = bool(request.form.get("pinned"))
@@ -37,10 +38,10 @@ def new():
             item.author_id = current_user.id
             db.session.add(item)
             from .. import notify
-            notify.send(notify.everyone(), f"New notice: {item.title}", url=url_for("announcements.index"),
+            notify.send(notify.everyone(), _l("New notice: %(item)s", item=item.title), url=url_for("announcements.index"),
                         body=item.body[:300], kind="notice")
             db.session.commit()
-            flash("Announcement posted.", "success")
+            flash(_("Announcement posted."), "success")
             return redirect(url_for("announcements.index"))
         return render_template("announcements/form.html", item=item, form=request.form), 400
     return render_template("announcements/form.html", item=item, form={})
@@ -53,7 +54,7 @@ def edit(item_id):
     if request.method == "POST":
         if _save(item):
             db.session.commit()
-            flash("Announcement updated.", "success")
+            flash(_("Announcement updated."), "success")
             return redirect(url_for("announcements.index"))
         return render_template("announcements/form.html", item=item, form=request.form), 400
     form = {"title": item.title, "body": item.body, "pinned": item.pinned}
@@ -66,5 +67,5 @@ def delete(item_id):
     item = db.session.get(Announcement, item_id) or abort(404)
     db.session.delete(item)
     db.session.commit()
-    flash("Announcement deleted.", "success")
+    flash(_("Announcement deleted."), "success")
     return redirect(url_for("announcements.index"))

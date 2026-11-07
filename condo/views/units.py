@@ -3,6 +3,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, u
 from ..extensions import db
 from ..models import Unit
 from ..utils import admin_required, money, parse_money
+from ..i18n import gettext as _
 
 bp = Blueprint("units", __name__, url_prefix="/units")
 
@@ -14,10 +15,10 @@ def _int_or_none(value, field, errors):
     try:
         n = int(value)
     except ValueError:
-        errors.append(f"{field} must be a whole number.")
+        errors.append(_("%(field)s must be a whole number.", field=field))
         return None
     if n < 0:
-        errors.append(f"{field} cannot be negative.")
+        errors.append(_("%(field)s cannot be negative.", field=field))
     return n
 
 
@@ -25,18 +26,18 @@ def _apply_form(unit, form):
     errors = []
     number = form.get("number", "").strip()
     if not number:
-        errors.append("Unit number is required.")
+        errors.append(_("Unit number is required."))
     else:
         existing = db.session.scalar(db.select(Unit).where(Unit.number == number))
         if existing and existing.id != unit.id:
-            errors.append(f"Unit {number} already exists.")
+            errors.append(_("Unit %(number)s already exists.", number=number))
     fee_raw = form.get("monthly_fee", "").strip()
     fee = 0
     if fee_raw and fee_raw not in ("0", "0.00"):
         try:
             fee = parse_money(fee_raw)
         except ValueError as e:
-            errors.append(f"Monthly fee: {e}")
+            errors.append(_("Monthly fee: %(e)s", e=e))
     floor = _int_or_none(form.get("floor"), "Floor", errors)
     bedrooms = _int_or_none(form.get("bedrooms"), "Bedrooms", errors)
     area = _int_or_none(form.get("area_sqft"), "Area", errors)
@@ -69,7 +70,7 @@ def new():
         if not errors:
             db.session.add(unit)
             db.session.commit()
-            flash(f"Unit {unit.number} created.", "success")
+            flash(_("Unit %(number)s created.", number=unit.number), "success")
             return redirect(url_for("units.detail", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
@@ -99,7 +100,7 @@ def edit(unit_id):
         errors = _apply_form(unit, request.form)
         if not errors:
             db.session.commit()
-            flash(f"Unit {unit.number} updated.", "success")
+            flash(_("Unit %(number)s updated.", number=unit.number), "success")
             return redirect(url_for("units.detail", unit_id=unit.id))
         db.session.rollback()
         for e in errors:
@@ -119,12 +120,12 @@ def edit(unit_id):
 def delete(unit_id):
     unit = _get_unit(unit_id)
     if unit.residents:
-        flash("Reassign or remove the unit's residents before deleting it.", "error")
+        flash(_("Reassign or remove the unit's residents before deleting it."), "error")
         return redirect(url_for("units.detail", unit_id=unit.id))
     if unit.charges or unit.payments:
-        flash("This unit has billing history and cannot be deleted.", "error")
+        flash(_("This unit has billing history and cannot be deleted."), "error")
         return redirect(url_for("units.detail", unit_id=unit.id))
     db.session.delete(unit)
     db.session.commit()
-    flash(f"Unit {unit.number} deleted.", "success")
+    flash(_("Unit %(number)s deleted.", number=unit.number), "success")
     return redirect(url_for("units.index"))

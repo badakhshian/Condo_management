@@ -1,85 +1,85 @@
 {% extends "base.html" %}
 {% from "_macros.html" import balance, status_badge, priority_badge, insurance_badge %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}{% trans %}Dashboard{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Management dashboard</h1>
+<h1>{% trans %}Management dashboard{% endtrans %}</h1>
 {% if building %}{% set d = building.doc %}
 <div class="card inline-form building-insurance">
-  <strong>Building insurance</strong> {{ insurance_badge(building.state) }}
-  <span>{{ d.provider or d.title }} · until {{ d.valid_until.strftime('%b %d, %Y') }}</span>
-  <a class="btn small" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">View policy</a>
+  <strong>{% trans %}Building insurance{% endtrans %}</strong> {{ insurance_badge(building.state) }}
+  <span>{% trans title=d.provider or d.title, valid_until=d.valid_until|fdate('medium') %}{{ title }} · until {{ valid_until }}{% endtrans %}</span>
+  <a class="btn small" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">{% trans %}View policy{% endtrans %}</a>
 </div>
 {% elif current_user.is_admin %}
-<div class="flash flash-error">No building insurance policy is on file. <a href="{{ url_for('documents.new', category='insurance') }}">Upload it in Documents</a> so owners and tenants can see it.</div>
+<div class="flash flash-error">{% trans %}No building insurance policy is on file.{% endtrans %} <a href="{{ url_for('documents.new', category='insurance') }}">{% trans %}Upload it in Documents{% endtrans %}</a> {% trans %}so owners and tenants can see it.{% endtrans %}</div>
 {% endif %}
 <div class="stats">
-  <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>Units ({{ stats.occupied }} occupied)</a>
-  <a class="stat" href="{{ url_for('directory.index') }}"><span>{{ stats.people }}</span>Owners &amp; tenants</a>
-  <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>Outstanding dues</a>
-  <a class="stat" href="{{ url_for('maintenance.index', tab='maintenance') }}"><span>{{ stats.open_requests }}</span>Open requests</a>
+  <a class="stat" href="{{ url_for('units.index') }}"><span>{{ stats.units }}</span>{% trans occupied=stats.occupied %}Units ({{ occupied }} occupied){% endtrans %}</a>
+  <a class="stat" href="{{ url_for('directory.index') }}"><span>{{ stats.people }}</span>{% trans %}Owners &amp; tenants{% endtrans %}</a>
+  <a class="stat" href="{{ url_for('billing.index') }}"><span class="{{ 'owed' if stats.outstanding }}">{{ stats.outstanding|money }}</span>{% trans %}Outstanding dues{% endtrans %}</a>
+  <a class="stat" href="{{ url_for('maintenance.index', tab='maintenance') }}"><span>{{ stats.open_requests }}</span>{% trans %}Open requests{% endtrans %}</a>
 </div>
 {% if reimb_waiting %}
 <section class="card building-insurance">
-  <h2>Reimbursements waiting for you <span class="muted">{{ reimb_waiting|length }}</span></h2>
+  <h2>{% trans %}Reimbursements waiting for you{% endtrans %} <span class="muted">{{ reimb_waiting|length }}</span></h2>
   <ul class="list">{% for r in reimb_waiting %}
-    <li><a href="{{ url_for('reimbursements.detail', reimb_id=r.id) }}"><strong>{{ r.amount_cents|money }}</strong> · unit {{ r.unit.number }} · {{ r.description|truncate(60) }}</a>
-      <span class="muted">· {{ 'to approve' if r.status == 'submitted' else 'to record' }}</span></li>{% endfor %}</ul>
+    <li><a href="{{ url_for('reimbursements.detail', reimb_id=r.id) }}"><strong>{{ r.amount_cents|money }}</strong> {% trans number=r.unit.number, description=r.description|truncate(60) %}· unit {{ number }} · {{ description }}{% endtrans %}</a>
+      <span class="muted">· {{ _('to approve') if r.status == 'submitted' else _('to record') }}</span></li>{% endfor %}</ul>
 </section>
 {% endif %}
 <div class="grid two">
   <section class="card">
-    <h2>Units with a balance due</h2>
+    <h2>{% trans %}Units with a balance due{% endtrans %}</h2>
     {% if delinquent %}
-    <table><thead><tr><th>Unit</th><th>Residents</th><th class="num">Balance</th></tr></thead><tbody>
+    <table><thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Residents{% endtrans %}</th><th class="num">{% trans %}Balance{% endtrans %}</th></tr></thead><tbody>
     {% for u, b in delinquent %}
       <tr><td><a href="{{ url_for('billing.ledger', unit_id=u.id) }}">{{ u.number }}</a></td>
           <td>{{ u.residents|map(attribute='name')|join(', ') or '—' }}</td>
           <td class="num">{{ balance(b) }}</td></tr>
     {% endfor %}</tbody></table>
-    {% else %}<p class="muted">All units are paid up.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}All units are paid up.{% endtrans %}</p>{% endif %}
   </section>
   <section class="card">
-    <h2>Active maintenance</h2>
+    <h2>{% trans %}Active maintenance{% endtrans %}</h2>
     {% if open_requests %}
     <ul class="list">
     {% for r in open_requests %}
       <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
-        <span class="muted">· {{ 'Unit ' ~ r.unit.number if r.unit else 'Common area' }}</span>
+        <span class="muted">· {{ _('Unit %(number)s', number=r.unit.number) if r.unit else _('Common area') }}</span>
         {{ priority_badge(r.priority, PRIORITY_LABELS) }}</li>
     {% endfor %}
     </ul>
-    {% else %}<p class="muted">No active requests.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}No active requests.{% endtrans %}</p>{% endif %}
   </section>
   {% if awaiting %}
   <section class="card">
-    <h2>Waiting for owner approval <span class="muted">{{ awaiting|length }}</span></h2>
+    <h2>{% trans %}Waiting for owner approval{% endtrans %} <span class="muted">{{ awaiting|length }}</span></h2>
     <ul class="list">{% for r in awaiting %}
       <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
-        <span class="muted">· Unit {{ r.unit.number }} · asked by {{ r.submitted_by.name }} on {{ r.created_at.strftime('%b %d') }}</span></li>
+        <span class="muted">{% trans number=r.unit.number, name=r.submitted_by.name, created_at=r.created_at|fdate('short') %}· Unit {{ number }} · asked by {{ name }} on {{ created_at }}{% endtrans %}</span></li>
     {% endfor %}</ul>
   </section>
   {% endif %}
   <section class="card">
-    <h2>Insurance to follow up <span class="muted">{{ insurance_alerts|length }}</span></h2>
+    <h2>{% trans %}Insurance to follow up{% endtrans %} <span class="muted">{{ insurance_alerts|length }}</span></h2>
     {% if insurance_alerts %}<table><tbody>{% for u, label, state in insurance_alerts %}
-      <tr><td><a href="{{ url_for('units.detail', unit_id=u.id) }}">Unit {{ u.number }}</a></td><td>{{ label }}</td><td>{{ insurance_badge(state) }}</td></tr>
+      <tr><td><a href="{{ url_for('units.detail', unit_id=u.id) }}">{% trans number=u.number %}Unit {{ number }}{% endtrans %}</a></td><td>{{ label }}</td><td>{{ insurance_badge(state) }}</td></tr>
     {% endfor %}</tbody></table>
-    {% else %}<p class="muted">Every owner and tenant on file has valid insurance.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}Every owner and tenant on file has valid insurance.{% endtrans %}</p>{% endif %}
   </section>
   <section class="card">
-    <h2>Upcoming bookings</h2>
+    <h2>{% trans %}Upcoming bookings{% endtrans %}</h2>
     {% if upcoming %}<ul class="list">
-    {% for b in upcoming %}<li>{{ b.amenity.name }} — {{ b.start.strftime('%a %b %d, %H:%M') }}–{{ b.end.strftime('%H:%M') }} <span class="muted">· {{ b.user.name }}</span></li>{% endfor %}
-    </ul>{% else %}<p class="muted">Nothing booked.</p>{% endif %}
+    {% for b in upcoming %}<li>{{ b.amenity.name }} — {{ b.start|fdate('weekday') }}, {{ b.start.strftime('%H:%M') }}–{{ b.end.strftime('%H:%M') }} <span class="muted">· {{ b.user.name }}</span></li>{% endfor %}
+    </ul>{% else %}<p class="muted">{% trans %}Nothing booked.{% endtrans %}</p>{% endif %}
   </section>
   <section class="card">
-    <h2>Notices <a class="btn small" href="{{ url_for('announcements.new') }}">Post</a></h2>
+    <h2>{% trans %}Notices{% endtrans %} <a class="btn small" href="{{ url_for('announcements.new') }}">{% trans %}Post{% endtrans %}</a></h2>
     {% include "announcements/_list.html" %}
   </section>
   {% set seated = board|selectattr(2)|list %}
   {% if seated %}
   <section class="card">
-    <h2>Board of directors{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('directory.board') }}">Manage</a>{% endif %}</h2>
+    <h2>{% trans %}Board of directors{% endtrans %}{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('directory.board') }}">{% trans %}Manage{% endtrans %}</a>{% endif %}</h2>
     <ul class="list">{% for key, label, people in seated %}{% for o in people %}
       <li><strong>{{ label }}</strong> · {{ o.name }}
         {% if o.email %}<div class="excerpt"><a href="mailto:{{ o.email }}">{{ o.email }}</a>{% if o.phone %} · <a href="{{ o.phone|tel }}">{{ o.phone|phone }}</a>{% endif %}</div>{% endif %}</li>

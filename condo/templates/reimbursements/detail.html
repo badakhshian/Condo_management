@@ -1,62 +1,62 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Reimbursement #{{ r.id }}{% endblock %}
+{% block title %}{% trans id=r.id %}Reimbursement #{{ id }}{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Reimbursement #{{ r.id }} · {{ r.amount_cents|money }}</h1>
+<div class="head"><h1>{% trans id=r.id, amount_cents=r.amount_cents|money %}Reimbursement #{{ id }} · {{ amount_cents }}{% endtrans %}</h1>
   <span class="badge reimb-{{ r.status }}">{{ r.status_label }}</span></div>
 <div class="grid two wide-left">
   <section class="card">
     <dl class="props">
-      <dt>For</dt><dd>{{ r.description }}</dd>
-      {% if r.vendor %}<dt>Paid to</dt><dd>{{ r.vendor }}</dd>{% endif %}
-      <dt>Amount</dt><dd><strong>{{ r.amount_cents|money }}</strong></dd>
-      <dt>Date paid</dt><dd>{{ r.spent_on.strftime('%B %d, %Y') }}</dd>
-      <dt>Unit</dt><dd>{{ r.unit.number }}{% if r.unit.owner_display %} · {{ r.unit.owner_display }}{% endif %}</dd>
-      <dt>Requested by</dt><dd>{{ r.requested_by.name }} on {{ r.created_at.strftime('%b %d, %Y') }}</dd>
-      <dt>Reimburse by</dt><dd>{{ methods[r.settle_method] }}</dd>
-      <dt>Category</dt><dd>{{ categories.get(r.category, 'Other') }}</dd>
-      {% if r.request %}<dt>Repair</dt><dd><a href="{{ url_for('maintenance.detail', request_id=r.request_id) }}">#{{ r.request_id }} · {{ r.request.title }}</a></dd>{% endif %}
+      <dt>{% trans %}For{% endtrans %}</dt><dd>{{ r.description }}</dd>
+      {% if r.vendor %}<dt>{% trans %}Paid to{% endtrans %}</dt><dd>{{ r.vendor }}</dd>{% endif %}
+      <dt>{% trans %}Amount{% endtrans %}</dt><dd><strong>{{ r.amount_cents|money }}</strong></dd>
+      <dt>{% trans %}Date paid{% endtrans %}</dt><dd>{{ r.spent_on|fdate('long') }}</dd>
+      <dt>{% trans %}Unit{% endtrans %}</dt><dd>{{ r.unit.number }}{% if r.unit.owner_display %} · {{ r.unit.owner_display }}{% endif %}</dd>
+      <dt>{% trans %}Requested by{% endtrans %}</dt><dd>{% trans name=r.requested_by.name, created_at=r.created_at|fdate('medium') %}{{ name }} on {{ created_at }}{% endtrans %}</dd>
+      <dt>{% trans %}Reimburse by{% endtrans %}</dt><dd>{{ methods[r.settle_method] }}</dd>
+      <dt>{% trans %}Category{% endtrans %}</dt><dd>{{ categories.get(r.category, _('Other')) }}</dd>
+      {% if r.request %}<dt>{% trans %}Repair{% endtrans %}</dt><dd><a href="{{ url_for('maintenance.detail', request_id=r.request_id) }}">#{{ r.request_id }} · {{ r.request.title }}</a></dd>{% endif %}
     </dl>
-    <h2>Receipts</h2>
+    <h2>{% trans %}Receipts{% endtrans %}</h2>
     <ul class="list">{% for f in r.files %}
       <li><a href="{{ url_for('reimbursements.download', file_row_id=f.id) }}" target="_blank" rel="noopener">{{ f.file.filename }}</a>
         <span class="muted">· {{ human_size(f.file.size) }}</span></li>{% endfor %}</ul>
   </section>
   <aside>
     <div class="card">
-      <h2>Progress</h2>
+      <h2>{% trans %}Progress{% endtrans %}</h2>
       <ol class="steps">
-        <li class="done">Requested by {{ r.requested_by.name }}</li>
+        <li class="done">{% trans name=r.requested_by.name %}Requested by {{ name }}{% endtrans %}</li>
         <li class="{{ 'done' if r.decided_at else 'current' if r.status == 'submitted' }}">
-          {% if r.status == 'declined' %}Declined by {{ r.decided_by }}{% elif r.decided_at %}Approved by {{ r.decided_by }}{% else %}President's approval{% endif %}
+          {% if r.status == 'declined' %}{% trans decided_by=r.decided_by %}Declined by {{ decided_by }}{% endtrans %}{% elif r.decided_at %}{% trans decided_by=r.decided_by %}Approved by {{ decided_by }}{% endtrans %}{% else %}{% trans %}President's approval{% endtrans %}{% endif %}
           {% if r.decision_note %}<div class="excerpt prose">{{ r.decision_note }}</div>{% endif %}</li>
         {% if r.status != 'declined' %}
         <li class="{{ 'done' if r.settled_at else 'current' if r.status == 'approved' }}">
-          {% if r.settled_at %}{{ 'Credited' if r.settle_method == 'credit' else 'Paid back' }} by {{ r.settled_by }} on {{ r.settled_at.strftime('%b %d, %Y') }}{% if r.settle_reference %} · {{ r.settle_reference }}{% endif %}
-          {% else %}Recorded by accounting{% endif %}</li>
+          {% if r.settled_at %}{% trans back=_('Credited') if r.settle_method == 'credit' else _('Paid back'), settled_by=r.settled_by, settled_at=r.settled_at|fdate('medium') %}{{ back }} by {{ settled_by }} on {{ settled_at }}{% endtrans %}{% if r.settle_reference %} · {{ r.settle_reference }}{% endif %}
+          {% else %}{% trans %}Recorded by accounting{% endtrans %}{% endif %}</li>
         {% endif %}
       </ol>
     </div>
     {% if can_decide %}
     <form method="post" action="{{ url_for('reimbursements.decide', reimb_id=r.id) }}" class="card building-insurance">
       {{ csrf() }}
-      <h2>Your decision</h2>
-      <label>Note <span class="muted">(required to decline)</span><textarea name="note" rows="2"></textarea></label>
-      <div class="actions"><button class="btn primary" name="decision" value="approve">Approve</button>
-        <button class="btn danger" name="decision" value="decline">Decline</button></div>
+      <h2>{% trans %}Your decision{% endtrans %}</h2>
+      <label>{% trans %}Note{% endtrans %} <span class="muted">{% trans %}(required to decline){% endtrans %}</span><textarea name="note" rows="2"></textarea></label>
+      <div class="actions"><button class="btn primary" name="decision" value="approve">{% trans %}Approve{% endtrans %}</button>
+        <button class="btn danger" name="decision" value="decline">{% trans %}Decline{% endtrans %}</button></div>
     </form>
     {% endif %}
     {% if can_settle %}
     <form method="post" action="{{ url_for('reimbursements.settle', reimb_id=r.id) }}" class="card building-insurance">
       {{ csrf() }}
-      <h2>Record it</h2>
-      <p class="muted">{% if r.settle_method == 'credit' %}Adds a {{ r.amount_cents|money }} credit to unit {{ r.unit.number }}'s account (shown in Accounting as an owner-paid cost).
-        {% else %}Records a {{ r.amount_cents|money }} building cost paid back to unit {{ r.unit.number }}.{% endif %}</p>
+      <h2>{% trans %}Record it{% endtrans %}</h2>
+      <p class="muted">{% if r.settle_method == 'credit' %}{% trans amount_cents=r.amount_cents|money, number=r.unit.number %}Adds a {{ amount_cents }} credit to unit {{ number }}'s account (shown in Accounting as an owner-paid cost).{% endtrans %}
+        {% else %}{% trans amount_cents=r.amount_cents|money, number=r.unit.number %}Records a {{ amount_cents }} building cost paid back to unit {{ number }}.{% endtrans %}{% endif %}</p>
       <div class="row">
-        <label>Date <input type="date" name="settled_on" value="{{ today.isoformat() }}"></label>
-        <label>Reference <input name="reference" maxlength="120" placeholder="{{ 'e.g. e-transfer #' if r.settle_method == 'transfer' else 'optional' }}"></label>
+        <label>{% trans %}Date{% endtrans %} <input type="date" name="settled_on" value="{{ today.isoformat() }}"></label>
+        <label>{% trans %}Reference{% endtrans %} <input name="reference" maxlength="120" placeholder="{{ 'e.g. e-transfer #' if r.settle_method == 'transfer' else 'optional' }}"></label>
       </div>
-      <button class="btn primary">{{ 'Credit the account' if r.settle_method == 'credit' else 'Record payback' }}</button>
+      <button class="btn primary">{{ _('Credit the account') if r.settle_method == 'credit' else _('Record payback') }}</button>
     </form>
     {% endif %}
   </aside>

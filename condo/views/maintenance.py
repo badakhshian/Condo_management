@@ -6,6 +6,7 @@ from ..extensions import db
 from ..utils import board_positions_of, parse_date, parse_money
 from ..models import (ACTIVE_STATUSES, QUOTE_STATUSES, REQUEST_CATEGORIES, REQUEST_PRIORITIES, REQUEST_STATUSES,
                       MaintenanceComment, MaintenanceRequest, Unit, User, utcnow)
+from ..i18n import gettext as _, lazy_gettext as _l, lazy_lower, lazy_money
 
 bp = Blueprint("maintenance", __name__, url_prefix="/maintenance")
 
@@ -15,7 +16,7 @@ def is_board(user=None):
     return user.is_admin or bool(board_positions_of(user))
 
 
-TABS = {"projects": "Projects", "maintenance": "Maintenance"}
+TABS = {"projects": _l("Projects"), "maintenance": _l("Maintenance")}
 KIND_OF_TAB = {"projects": "project", "maintenance": "maintenance"}
 
 
@@ -90,20 +91,20 @@ def new():
         priority = request.form.get("priority", "normal")
         location = request.form.get("location", "unit")
         if not title:
-            errors.append("A short title is required.")
+            errors.append(_("A short title is required."))
         if not description:
-            errors.append("Please describe the problem.")
+            errors.append(_("Please describe the problem."))
         if category not in REQUEST_CATEGORIES:
-            errors.append("Choose a category.")
+            errors.append(_("Choose a category."))
         if priority not in REQUEST_PRIORITIES:
-            errors.append("Choose a priority.")
+            errors.append(_("Choose a priority."))
         budget = target = None
         if kind == "project":
             if request.form.get("budget", "").strip():
                 try:
                     budget = parse_money(request.form.get("budget"))
                 except ValueError as e:
-                    errors.append(f"Budget: {e}")
+                    errors.append(_("Budget: %(e)s", e=e))
             if request.form.get("target_date", "").strip():
                 try:
                     target = parse_date(request.form.get("target_date"), "Target date")
@@ -116,11 +117,11 @@ def new():
                 raw = request.form.get("unit_id", "")
                 unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
                 if unit is None:
-                    errors.append("Select a unit, or mark this as a common-area issue.")
+                    errors.append(_("Select a unit, or mark this as a common-area issue."))
                 else:
                     unit_id = unit.id
             elif current_user.unit_id is None:
-                errors.append("Your account is not linked to a unit; report it as a common-area issue.")
+                errors.append(_("Your account is not linked to a unit; report it as a common-area issue."))
             else:
                 unit_id = current_user.unit_id
 
@@ -135,18 +136,17 @@ def new():
             db.session.flush()
             where = f"unit {req.unit.number}" if req.unit_id else "common area"
             if needs_owner:
-                notify.send(notify.unit_owner_accounts(unit_id), f"Your tenant asked for a repair: {title}",
-                            url=_url(req), body=f"{current_user.name}: {description}", kind="maintenance")
+                notify.send(notify.unit_owner_accounts(unit_id), _l("Your tenant asked for a repair: %(title)s", title=title),
+                            url=_url(req), body=_l("%(name)s: %(description)s", name=current_user.name, description=description), kind="maintenance")
             elif kind == "project":
                 notify.send([u for u in notify.admins() if u.id != current_user.id],
-                            f"New project ({where}): {title}", url=_url(req),
-                            body=f"{current_user.name}: {description}", kind="maintenance")
+                            _l("New project (%(where)s): %(title)s", where=where, title=title), url=_url(req),
+                            body=_l("%(name)s: %(description)s", name=current_user.name, description=description), kind="maintenance")
             else:
-                notify.send(notify.admins(), f"New repair request ({where}): {title}", url=_url(req),
-                            body=f"{current_user.name}: {description}", kind="maintenance")
+                notify.send(notify.admins(), _l("New repair request (%(where)s): %(title)s", where=where, title=title), url=_url(req),
+                            body=_l("%(name)s: %(description)s", name=current_user.name, description=description), kind="maintenance")
             db.session.commit()
-            flash("Request sent to the unit's owner for approval." if needs_owner
-                  else "Project added." if kind == "project" else "Maintenance request submitted.", "success")
+            flash(_("Request sent to the unit's owner for approval.") if needs_owner else _("Project added.") if kind == "project" else _("Maintenance request submitted."), "success")
             return redirect(url_for("maintenance.detail", request_id=req.id))
         for e in errors:
             flash(e, "error")
@@ -215,7 +215,7 @@ def ask_quote(request_id):
                     "Upload the quote on the request; once the board approves the cost, go ahead with the repair "
                     "and request a reimbursement." + (f" Board's note: {note}" if note else ""))
     db.session.commit()
-    flash("The owner has been asked for a quote.", "success")
+    flash(_("The owner has been asked for a quote."), "success")
     return redirect(_url(req))
 
 
@@ -241,10 +241,10 @@ def submit_quote(request_id):
     db.session.add(MaintenanceComment(request=req, author_id=current_user.id,
                                       body=f"Quote submitted: ${amount / 100:,.2f}"
                                       + (f" from {req.quote_vendor}" if req.quote_vendor else "") + "."))
-    notify.send(notify.board(), f"Quote to approve: unit {req.unit.number}, ${amount / 100:,.2f} — {req.title}",
+    notify.send(notify.board(), _l("Quote to approve: unit %(number)s, %(amount)s — %(req)s", number=req.unit.number, amount=lazy_money(amount), req=req.title),
                 url=_url(req), kind="maintenance")
     db.session.commit()
-    flash("Quote sent to the board for approval.", "success")
+    flash(_("Quote sent to the board for approval."), "success")
     return redirect(_url(req))
 
 
@@ -259,7 +259,7 @@ def quote_decision(request_id):
     if decision not in ("approve", "decline"):
         abort(400)
     if decision == "decline" and not note:
-        flash("Tell the owner why, e.g. ask for another quote.", "error")
+        flash(_("Tell the owner why, e.g. ask for another quote."), "error")
         return redirect(_url(req))
     req.quote_decided_by, req.quote_decided_at, req.quote_decision_note = current_user.name, utcnow(), note or None
     if decision == "approve":
@@ -280,7 +280,7 @@ def quote_decision(request_id):
         _tell_unit_side(req, f"Quote not approved: {req.title}", note)
     db.session.add(MaintenanceComment(request=req, author_id=current_user.id, body=f"{msg} ({current_user.name})"))
     db.session.commit()
-    flash("Decision recorded and the owner notified.", "success")
+    flash(_("Decision recorded and the owner notified."), "success")
     return redirect(_url(req))
 
 
@@ -304,7 +304,7 @@ def owner_decision(request_id):
         abort(400)
     note = request.form.get("note", "").strip()
     if decision == "decline" and not note:
-        flash("Please say why the repair is declined, so the tenant knows.", "error")
+        flash(_("Please say why the repair is declined, so the tenant knows."), "error")
         return redirect(url_for("maintenance.detail", request_id=req.id))
     who = current_user.name
     if current_user.is_admin:
@@ -316,13 +316,14 @@ def owner_decision(request_id):
     verb = "approved" if decision == "approve" else "declined"
     db.session.add(MaintenanceComment(request=req, author_id=current_user.id,
                                       body=f"Owner {verb} this repair ({who})." + (f" Note: {note}" if note else "")))
-    notify.send([req.submitted_by], f"The owner {verb} your repair request: {req.title}", url=_url(req),
+    notify.send([req.submitted_by], (_l("The owner approved your repair request: %(req)s", req=req.title) if decision == "approve"
+                                  else _l("The owner declined your repair request: %(req)s", req=req.title)), url=_url(req),
                 body=note or None, kind="maintenance")
     if decision == "approve":
-        notify.send(notify.admins(), f"Repair approved by the owner, ready to schedule: {req.title}", url=_url(req),
+        notify.send(notify.admins(), _l("Repair approved by the owner, ready to schedule: %(req)s", req=req.title), url=_url(req),
                     kind="maintenance")
     db.session.commit()
-    flash(f"Repair {verb}." + (" The manager can now schedule it." if decision == "approve" else ""), "success")
+    flash(_("Repair approved. The board can now schedule it.") if decision == "approve" else _("Repair declined."), "success")
     return redirect(url_for("maintenance.detail", request_id=req.id))
 
 
@@ -342,7 +343,7 @@ def project_details(request_id):
             try:
                 budget = parse_money(request.form.get("budget"))
             except ValueError as e:
-                errors.append(f"Budget: {e}")
+                errors.append(_("Budget: %(e)s", e=e))
         if request.form.get("target_date", "").strip():
             try:
                 target = parse_date(request.form.get("target_date"), "Target date")
@@ -360,8 +361,7 @@ def project_details(request_id):
         db.session.add(MaintenanceComment(request=req, author_id=current_user.id,
                                           body=f"Moved to {'Projects' if kind == 'project' else 'Maintenance'}."))
     db.session.commit()
-    flash("Moved to Projects." if moved and kind == "project" else "Moved to Maintenance." if moved
-          else "Project details saved.", "success")
+    flash(_("Moved to Projects.") if moved and kind == "project" else _("Moved to Maintenance.") if moved else _("Project details saved."), "success")
     return redirect(_url(req))
 
 
@@ -371,15 +371,15 @@ def comment(request_id):
     req = _get_visible(request_id)
     body = request.form.get("body", "").strip()
     if not body:
-        flash("Comment cannot be empty.", "error")
+        flash(_("Comment cannot be empty."), "error")
     else:
         db.session.add(MaintenanceComment(request=req, author_id=current_user.id, body=body))
         req.updated_at = utcnow()
         others = [req.submitted_by] + ([] if current_user.is_admin else notify.admins())
-        notify.send(others, f"New comment on “{req.title}” from {current_user.name}", url=_url(req), body=body,
+        notify.send(others, _l("New comment on “%(req)s” from %(name)s", req=req.title, name=current_user.name), url=_url(req), body=body,
                     kind="maintenance")
         db.session.commit()
-        flash("Comment added.", "success")
+        flash(_("Comment added."), "success")
     return redirect(url_for("maintenance.detail", request_id=req.id))
 
 
@@ -393,12 +393,12 @@ def update_status(request_id):
         if new_status not in REQUEST_STATUSES or new_priority not in REQUEST_PRIORITIES:
             abort(400)
         if req.awaiting_owner and new_status not in ("awaiting_owner", "closed"):
-            flash("This repair is waiting for the owner. Record the owner's approval first.", "error")
+            flash(_("This repair is waiting for the owner. Record the owner's approval first."), "error")
             return redirect(url_for("maintenance.detail", request_id=req.id))
         if new_status == "awaiting_owner" and not req.awaiting_owner:
             abort(400)
         if new_status in QUOTE_STATUSES and new_status != req.status:
-            flash("Use the quote buttons to move a request through the quote step.", "error")
+            flash(_("Use the quote buttons to move a request through the quote step."), "error")
             return redirect(url_for("maintenance.detail", request_id=req.id))
     else:
         # Residents may only close their own request (e.g. "fixed itself") or reopen a resolved one.
@@ -413,8 +413,8 @@ def update_status(request_id):
         db.session.add(MaintenanceComment(
             request=req, author_id=current_user.id,
             body=f"Status changed from {REQUEST_STATUSES[old]} to {REQUEST_STATUSES[new_status]}."))
-        notify.send([req.submitted_by], f"Your repair request is now {REQUEST_STATUSES[new_status].lower()}: {req.title}",
+        notify.send([req.submitted_by], _l("Your repair request is now %(new_status)s: %(req)s", new_status=lazy_lower(REQUEST_STATUSES[new_status]), req=req.title),
                     url=_url(req), kind="maintenance")
     db.session.commit()
-    flash("Request updated.", "success")
+    flash(_("Request updated."), "success")
     return redirect(url_for("maintenance.detail", request_id=req.id))

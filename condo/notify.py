@@ -7,6 +7,7 @@ nothing waits unseen.
 from flask_login import current_user
 
 from .extensions import db
+from .i18n import in_language
 from .models import BOARD_POSITIONS, Notification, Owner, User
 
 BOARD_KEYS = tuple(BOARD_POSITIONS)
@@ -51,6 +52,11 @@ def everyone():
     return _active(db.select(User))
 
 
+def _site_language():
+    from .i18n import current_language
+    return current_language()
+
+
 def send(users, title, url=None, body=None, kind=None, include_actor=False):
     """Queue a notification for each user (deduplicated). The caller commits."""
     actor_id = current_user.id if getattr(current_user, "is_authenticated", False) else None
@@ -59,7 +65,10 @@ def send(users, title, url=None, body=None, kind=None, include_actor=False):
         if user is None or user.id in seen or (user.id == actor_id and not include_actor):
             continue
         seen.add(user.id)
-        db.session.add(Notification(user_id=user.id, title=title[:255], url=url, body=body, kind=kind))
+        # Write it in the recipient's language (titles and bodies may be lazy translations).
+        with in_language(getattr(user, "language", None) or _site_language()):
+            t, b = str(title), (str(body) if body is not None else None)
+        db.session.add(Notification(user_id=user.id, title=t[:255], url=url, body=b, kind=kind))
 
 
 def unread_count(user):

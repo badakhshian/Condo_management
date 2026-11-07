@@ -1,42 +1,42 @@
 {% extends "base.html" %}
 {% from "_macros.html" import post_button, insurance_badge %}
-{% block title %}Documents{% endblock %}
+{% block title %}{% trans %}Documents{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Documents</h1>
-  {% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('documents.new') }}">Upload document</a>{% endif %}</div>
+<div class="head"><h1>{% trans %}Documents{% endtrans %}</h1>
+  {% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('documents.new') }}">{% trans %}Upload document{% endtrans %}</a>{% endif %}</div>
 
 <section class="card building-insurance">
-  <h2>Building insurance</h2>
+  <h2>{% trans %}Building insurance{% endtrans %}</h2>
   {% if building %}{% set d = building.doc %}
-    <p>{{ insurance_badge(building.state) }} <strong>{{ d.provider or d.title }}</strong>{% if d.policy_number %} · policy {{ d.policy_number }}{% endif %}
-      · {{ d.valid_from.strftime('%b %d, %Y') }} – {{ d.valid_until.strftime('%b %d, %Y') }}</p>
-    <a class="btn" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">View policy</a>
+    <p>{{ insurance_badge(building.state) }} <strong>{{ d.provider or d.title }}</strong>{% if d.policy_number %} {% trans policy_number=d.policy_number %}· policy {{ policy_number }}{% endtrans %}{% endif %}
+      · {{ d.valid_from|fdate('medium') }} – {{ d.valid_until|fdate('medium') }}</p>
+    <a class="btn" href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener">{% trans %}View policy{% endtrans %}</a>
   {% else %}
-    <p class="muted">No building insurance policy has been uploaded yet.{% if current_user.is_admin %} <a href="{{ url_for('documents.new', category='insurance') }}">Upload it</a>.{% endif %}</p>
+    <p class="muted">{% trans %}No building insurance policy has been uploaded yet.{% endtrans %}{% if current_user.is_admin %} <a href="{{ url_for('documents.new', category='insurance') }}">{% trans %}Upload it{% endtrans %}</a>.{% endif %}</p>
   {% endif %}
 </section>
 
 {% for key, label in categories.items() %}{% set docs = grouped[key] %}
   {% if docs or (current_user.is_admin and key != 'other') %}
   <section class="card">
-    <h2>{{ label }}{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('documents.new', category=key) }}">Add</a>{% endif %}</h2>
+    <h2>{{ label }}{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('documents.new', category=key) }}">{% trans %}Add{% endtrans %}</a>{% endif %}</h2>
     {% if docs %}
     <table>
-      <thead><tr><th>Document</th><th>{{ 'Policy period' if key == 'insurance' else 'Date' }}</th><th>File</th>{% if current_user.is_admin %}<th>Visible to</th><th></th>{% endif %}</tr></thead>
+      <thead><tr><th>{% trans %}Document{% endtrans %}</th><th>{{ _('Policy period') if key == 'insurance' else _('Date') }}</th><th>{% trans %}File{% endtrans %}</th>{% if current_user.is_admin %}<th>{% trans %}Visible to{% endtrans %}</th><th></th>{% endif %}</tr></thead>
       <tbody>{% for d in docs %}
         <tr><td><a href="{{ url_for('documents.download', doc_id=d.id) }}" target="_blank" rel="noopener"><strong>{{ d.title }}</strong></a>
             {% if d.provider %}<div class="excerpt">{{ d.provider }}{% if d.policy_number %} · {{ d.policy_number }}{% endif %}</div>{% endif %}
             {% if d.description %}<div class="excerpt">{{ d.description }}</div>{% endif %}</td>
-          <td>{% if key == 'insurance' and d.valid_until %}{{ d.valid_from.strftime('%Y-%m-%d') }} – {{ d.valid_until.strftime('%Y-%m-%d') }}
-              {% if d.valid_until < today %}<span class="badge ins-expired">Ended</span>{% endif %}
-            {% elif d.document_date %}{{ d.document_date.strftime('%Y-%m-%d') }}{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>{% if key == 'insurance' and d.valid_until %}{{ d.valid_from|fdate('iso') }} – {{ d.valid_until|fdate('iso') }}
+              {% if d.valid_until < today %}<span class="badge ins-expired">{% trans %}Ended{% endtrans %}</span>{% endif %}
+            {% elif d.document_date %}{{ d.document_date|fdate('iso') }}{% else %}<span class="muted">—</span>{% endif %}</td>
           <td class="muted">{{ d.file.filename }} · {{ human_size(d.file.size) }}</td>
           {% if current_user.is_admin %}<td><span class="tag">{{ visibility[d.visibility] }}</span></td>
-          <td class="actions"><a class="btn small" href="{{ url_for('documents.edit', doc_id=d.id) }}">Edit</a>
-            {{ post_button(url_for('documents.delete', doc_id=d.id), 'Delete', cls='btn small ghost', confirm='Delete this document?') }}</td>{% endif %}</tr>
+          <td class="actions"><a class="btn small" href="{{ url_for('documents.edit', doc_id=d.id) }}">{% trans %}Edit{% endtrans %}</a>
+            {{ post_button(url_for('documents.delete', doc_id=d.id), _('Delete'), cls='btn small ghost', confirm=_('Delete this document?')) }}</td>{% endif %}</tr>
       {% endfor %}</tbody>
     </table>
-    {% else %}<p class="muted">Nothing uploaded yet.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}Nothing uploaded yet.{% endtrans %}</p>{% endif %}
   </section>
   {% endif %}
 {% endfor %}

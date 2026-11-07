@@ -1,68 +1,68 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, balance %}
-{% block title %}Sync preview{% endblock %}
+{% block title %}{% trans %}Sync preview{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Sync preview</h1><a class="btn" href="{{ url_for('sheet.index') }}">Back</a></div>
-<p class="muted">From {{ batch.filename }}, read {{ batch.created_at.strftime('%Y-%m-%d %H:%M') }} UTC.
-  Confirming replaces every entry that previously came from the sheet with the ones below.</p>
+<div class="head"><h1>{% trans %}Sync preview{% endtrans %}</h1><a class="btn" href="{{ url_for('sheet.index') }}">{% trans %}Back{% endtrans %}</a></div>
+<p class="muted">{% trans filename=batch.filename, created_at=batch.created_at|fdatetime('iso') %}From {{ filename }}, read {{ created_at }} UTC.
+  Confirming replaces every entry that previously came from the sheet with the ones below.{% endtrans %}</p>
 
 <div class="stats">
-  <div class="stat"><span>{{ plan.counts.opening }}</span>Opening balances</div>
-  <div class="stat"><span>{{ plan.counts.dues }}</span>Monthly fees</div>
-  <div class="stat"><span>{{ plan.counts.payment }}</span>Payments</div>
-  <div class="stat"><span>{{ plan.counts.credit }}</span>Purchase credits</div>
-  <div class="stat"><span>{{ plan.counts.expense }}</span>Building expenses</div>
-  <div class="stat"><span>{{ plan.counts.owners if plan.counts.owners is not none else '—' }}</span>Owner contacts</div>
+  <div class="stat"><span>{{ plan.counts.opening }}</span>{% trans %}Opening balances{% endtrans %}</div>
+  <div class="stat"><span>{{ plan.counts.dues }}</span>{% trans %}Monthly fees{% endtrans %}</div>
+  <div class="stat"><span>{{ plan.counts.payment }}</span>{% trans %}Payments{% endtrans %}</div>
+  <div class="stat"><span>{{ plan.counts.credit }}</span>{% trans %}Purchase credits{% endtrans %}</div>
+  <div class="stat"><span>{{ plan.counts.expense }}</span>{% trans %}Building expenses{% endtrans %}</div>
+  <div class="stat"><span>{{ plan.counts.owners if plan.counts.owners is not none else '—' }}</span>{% trans %}Owner contacts{% endtrans %}</div>
 </div>
 
 {% for w in plan.warnings %}<div class="flash flash-error">{{ w }}</div>{% endfor %}
 
 <section class="card">
-  <h2>Units after the sync</h2>
+  <h2>{% trans %}Units after the sync{% endtrans %}</h2>
   <table>
-    <thead><tr><th>Unit</th><th>Owner</th><th class="num">Monthly fee</th><th class="num">Balance from transactions</th><th class="num">Balances tab</th></tr></thead>
+    <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans %}Monthly fee{% endtrans %}</th><th class="num">{% trans %}Balance from transactions{% endtrans %}</th><th class="num">{% trans %}Balances tab{% endtrans %}</th></tr></thead>
     <tbody>{% for u in plan.units %}
       <tr><td><strong>{{ u.number }}</strong></td><td>{{ u.owner or '—' }}</td>
         <td class="num">{{ u.fee_cents|money if u.fee_cents else '—' }}</td>
         <td class="num">{{ balance(u.balance_cents) }}</td>
-        <td class="num">{% if u.sheet_balance_cents is none %}—{% elif u.sheet_balance_cents == u.balance_cents %}<span class="credit">✓ matches</span>{% else %}<span class="owed">{{ u.sheet_balance_cents|money }}</span>{% endif %}</td></tr>
+        <td class="num">{% if u.sheet_balance_cents is none %}—{% elif u.sheet_balance_cents == u.balance_cents %}<span class="credit">{% trans %}✓ matches{% endtrans %}</span>{% else %}<span class="owed">{{ u.sheet_balance_cents|money }}</span>{% endif %}</td></tr>
     {% endfor %}</tbody>
   </table>
 </section>
 
 {% if plan.owners is not none %}
 <section class="card">
-  <h2>Owner contacts <span class="muted">from the Owners tab · replaces contacts from earlier syncs</span></h2>
+  <h2>{% trans %}Owner contacts{% endtrans %} <span class="muted">{% trans %}from the Owners tab · replaces contacts from earlier syncs{% endtrans %}</span></h2>
   <table>
-    <thead><tr><th>Unit</th><th>Name</th><th>Email</th><th>Phone</th><th>Mailing address</th></tr></thead>
+    <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th>{% trans %}Mailing address{% endtrans %}</th></tr></thead>
     <tbody>{% for c in plan.owners %}
-      <tr><td>{{ c.unit }}</td><td><strong>{{ c.name }}</strong> <span class="tag">{{ c.role }}</span>{% if c.primary %} <span class="badge status-open">Primary</span>{% endif %}</td>
+      <tr><td>{{ c.unit }}</td><td><strong>{{ c.name }}</strong> <span class="tag">{{ c.role }}</span>{% if c.primary %} <span class="badge status-open">{% trans %}Primary{% endtrans %}</span>{% endif %}</td>
         <td>{{ c.email or '—' }}</td><td>{{ c.phone or '—' }}</td><td class="prose">{{ c.address or '' }}</td></tr>
-    {% else %}<tr><td colspan="5" class="muted">The Owners tab has no rows.</td></tr>{% endfor %}</tbody>
+    {% else %}<tr><td colspan="5" class="muted">{% trans %}The Owners tab has no rows.{% endtrans %}</td></tr>{% endfor %}</tbody>
   </table>
 </section>
 {% else %}
-<div class="flash flash-info">The sheet has no Owners tab, so owner contacts in the app are left as they are. Add a tab named “Owners” with columns Unit, Name, Email, Phone, Mailing address, Role, Primary to sync them too.</div>
+<div class="flash flash-info">{% trans %}The sheet has no Owners tab, so owner contacts in the app are left as they are. Add a tab named “Owners” with columns Unit, Name, Email, Phone, Mailing address, Role, Primary to sync them too.{% endtrans %}</div>
 {% endif %}
 
 <section class="card">
-  <h2>Transactions <span class="muted">{{ plan.entries|length }} rows</span></h2>
+  <h2>{% trans %}Transactions{% endtrans %} <span class="muted">{% trans entries=plan.entries|length %}{{ entries }} rows{% endtrans %}</span></h2>
   <table>
-    <thead><tr><th>Date</th><th>Unit</th><th>Type</th><th>Loads as</th><th class="num">Amount</th><th>Notes</th></tr></thead>
+    <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Type{% endtrans %}</th><th>{% trans %}Loads as{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th>{% trans %}Notes{% endtrans %}</th></tr></thead>
     <tbody>{% for e in plan.entries %}
-      <tr><td>{{ e.date }}</td><td>{{ e.unit or 'Building' }}</td><td>{{ e.kind }}</td>
-        <td><span class="tag">{{ {'opening': 'Opening balance', 'dues': 'Monthly fee', 'payment': 'Payment', 'credit': 'Purchase credit', 'expense': 'Building expense'}[e.category] }}</span></td>
+      <tr><td>{{ e.date }}</td><td>{{ e.unit or _('Building') }}</td><td>{{ e.kind }}</td>
+        <td><span class="tag">{{ {'opening': _('Opening balance'), 'dues': _('Monthly fee'), 'payment': _('Payment'), 'credit': _('Purchase credit'), 'expense': _('Building expense')}[e.category] }}</span></td>
         <td class="num">{{ e.amount_cents|money }}</td><td class="muted">{{ e.notes|truncate(90) }}</td></tr>
     {% endfor %}</tbody>
   </table>
 </section>
 
 {% if plan.loaded %}
-  <div class="flash flash-success">Loaded {{ plan.loaded.at.replace('T', ' ') }} UTC by {{ plan.loaded.by }}.</div>
+  <div class="flash flash-success">{% trans t=plan.loaded.at.replace('T', ' '), by=plan.loaded.by %}Loaded {{ t }} UTC by {{ by }}.{% endtrans %}</div>
 {% else %}
-  <form method="post" action="{{ url_for('sheet.apply', batch_id=batch.id) }}" onsubmit="return confirm('Load these transactions into the app? Entries from earlier syncs will be replaced.')">
-    {{ csrf() }}<button class="btn primary">Confirm and load</button>
-    <a href="{{ url_for('sheet.index') }}">Cancel</a>
+  <form method="post" action="{{ url_for('sheet.apply', batch_id=batch.id) }}" onsubmit="return confirm({{ _('Load these transactions into the app? Entries from earlier syncs will be replaced.')|tojson|forceescape }})">
+    {{ csrf() }}<button class="btn primary">{% trans %}Confirm and load{% endtrans %}</button>
+    <a href="{{ url_for('sheet.index') }}">{% trans %}Cancel{% endtrans %}</a>
   </form>
 {% endif %}
 {% endblock %}

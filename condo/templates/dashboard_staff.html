@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% from "_macros.html" import status_badge, priority_badge %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}{% trans %}Dashboard{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Welcome, {{ current_user.name.split(' ')[0] }}</h1>
-<p class="muted">{{ current_user.job_title or 'Staff' }} · your access is set by the board.</p>
+<h1>{% trans split=current_user.name.split(' ')[0] %}Welcome, {{ split }}{% endtrans %}</h1>
+<p class="muted">{% trans staff=current_user.job_title or _('Staff') %}{{ staff }} · your access is set by the board.{% endtrans %}</p>
 <div class="grid two">
   <section class="card">
-    <h2>Your access</h2>
+    <h2>{% trans %}Your access{% endtrans %}</h2>
     {% if current_user.permission_keys %}<ul class="list">
       {% for k in current_user.permission_keys %}<li>{{ perms[k] }}</li>{% endfor %}</ul>
-    {% else %}<p class="muted">No areas yet. Ask the board to give you access.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}No areas yet. Ask the board to give you access.{% endtrans %}</p>{% endif %}
   </section>
   {% if current_user.can('maintenance') %}
   <section class="card">
-    <h2>Active repairs <a class="btn small" href="{{ url_for('maintenance.index', tab='maintenance') }}">All</a></h2>
+    <h2>{% trans %}Active repairs{% endtrans %} <a class="btn small" href="{{ url_for('maintenance.index', tab='maintenance') }}">{% trans %}All{% endtrans %}</a></h2>
     {% if active_requests %}<ul class="list">{% for r in active_requests %}
       <li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
-        <span class="muted">· {{ 'Unit ' ~ r.unit.number if r.unit else 'Common area' }}</span>
+        <span class="muted">· {{ _('Unit %(number)s', number=r.unit.number) if r.unit else _('Common area') }}</span>
         {{ priority_badge(r.priority, PRIORITY_LABELS) }} {{ status_badge(r.status, STATUS_LABELS) }}</li>{% endfor %}</ul>
-    {% else %}<p class="muted">No active repairs.</p>{% endif %}
+    {% else %}<p class="muted">{% trans %}No active repairs.{% endtrans %}</p>{% endif %}
   </section>
   {% endif %}
   <section class="card">
-    <h2>Notices</h2>
+    <h2>{% trans %}Notices{% endtrans %}</h2>
     {% include "announcements/_list.html" %}
   </section>
 </div>

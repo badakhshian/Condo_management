@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 {% from "_macros.html" import post_button %}
-{% block title %}Amenities{% endblock %}
+{% block title %}{% trans %}Amenities{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Amenities</h1>{% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('amenities.new') }}">Add amenity</a>{% endif %}</div>
+<div class="head"><h1>{% trans %}Amenities{% endtrans %}</h1>{% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('amenities.new') }}">{% trans %}Add amenity{% endtrans %}</a>{% endif %}</div>
 <div class="grid three">
 {% for a in amenities %}
   <a class="card tile{{ ' inactive' if not a.active }}" href="{{ url_for('amenities.detail', amenity_id=a.id) }}">
-    <h2>{{ a.name }}{% if not a.active %} <span class="badge status-closed">Unavailable</span>{% endif %}</h2>
+    <h2>{{ a.name }}{% if not a.active %} <span class="badge status-closed">{% trans %}Unavailable{% endtrans %}</span>{% endif %}</h2>
     <p>{{ a.description or '' }}</p>
-    <p class="muted">Open {{ '%02d:00'|format(a.open_hour) }}–{{ '%02d:00'|format(a.close_hour) }} · max {{ a.max_hours }}h</p>
+    <p class="muted">{% trans open='%02d:00'|format(a.open_hour), close='%02d:00'|format(a.close_hour), max_hours=a.max_hours %}Open {{ open }}–{{ close }} · max {{ max_hours }}h{% endtrans %}</p>
   </a>
-{% else %}<p class="muted">No amenities configured.</p>{% endfor %}
+{% else %}<p class="muted">{% trans %}No amenities configured.{% endtrans %}</p>{% endfor %}
 </div>
 <section class="card">
-  <h2>My upcoming bookings</h2>
+  <h2>{% trans %}My upcoming bookings{% endtrans %}</h2>
   {% if mine %}<table><tbody>
-    {% for b in mine %}<tr><td>{{ b.amenity.name }}</td><td>{{ b.start.strftime('%a %b %d') }}</td><td>{{ b.start.strftime('%H:%M') }}–{{ b.end.strftime('%H:%M') }}</td>
-      <td>{{ post_button(url_for('amenities.cancel', booking_id=b.id), 'Cancel', confirm='Cancel this booking?', extra={'back': 'list'}) }}</td></tr>{% endfor %}
-  </tbody></table>{% else %}<p class="muted">You have no upcoming bookings.</p>{% endif %}
+    {% for b in mine %}<tr><td>{{ b.amenity.name }}</td><td>{{ b.start|fdate('weekday') }}</td><td>{{ b.start.strftime('%H:%M') }}–{{ b.end.strftime('%H:%M') }}</td>
+      <td>{{ post_button(url_for('amenities.cancel', booking_id=b.id), _('Cancel'), confirm=_('Cancel this booking?'), extra={'back': 'list'}) }}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<p class="muted">{% trans %}You have no upcoming bookings.{% endtrans %}</p>{% endif %}
 </section>
 {% endblock %}

@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Import from Excel{% endblock %}
+{% block title %}{% trans %}Import from Excel{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Import from Excel</h1>
+<h1>{% trans %}Import from Excel{% endtrans %}</h1>
 <form method="post" enctype="multipart/form-data" class="card narrow">
   {{ csrf() }}
-  <p>Upload the condo's financial workbook (.xlsx). The "Cotisations proprietaires" sheet is read to build a preview of three datasets:
-    units with their ownership shares and monthly fees, owner names, and each unit's opening balance.
-    <strong>Nothing is saved until you confirm each dataset on the next page.</strong></p>
-  <label>Workbook <input type="file" name="workbook" accept=".xlsx" required></label>
-  <label>Balances as of (optional)
+  <p>{% trans %}Upload the condo's financial workbook (.xlsx). The "Cotisations proprietaires" sheet is read to build a preview of three datasets:
+    units with their ownership shares and monthly fees, owner names, and each unit's opening balance.{% endtrans %}
+    <strong>{% trans %}Nothing is saved until you confirm each dataset on the next page.{% endtrans %}</strong></p>
+  <label>{% trans %}Workbook{% endtrans %} <input type="file" name="workbook" accept=".xlsx" required></label>
+  <label>{% trans %}Balances as of (optional){% endtrans %}
     <input type="month" name="month">
-    <span class="muted">Leave empty to use the last month with payments recorded.</span></label>
-  <button class="btn primary">Upload and preview</button>
-  <a href="{{ url_for('units.index') }}">Cancel</a>
+    <span class="muted">{% trans %}Leave empty to use the last month with payments recorded.{% endtrans %}</span></label>
+  <button class="btn primary">{% trans %}Upload and preview{% endtrans %}</button>
+  <a href="{{ url_for('units.index') }}">{% trans %}Cancel{% endtrans %}</a>
 </form>
 {% if recent %}
 <section class="card narrow">
-  <h2>Earlier uploads</h2>
+  <h2>{% trans %}Earlier uploads{% endtrans %}</h2>
   <ul class="list">{% for b in recent %}
     <li><a href="{{ url_for('importer.preview', batch_id=b.id) }}">{{ b.filename }}</a>
-      <span class="muted">· {{ b.created_at.strftime('%Y-%m-%d %H:%M') }} UTC{% if b.created_by %} · {{ b.created_by.name }}{% endif %}</span></li>
+      <span class="muted">{% trans created_at=b.created_at|fdatetime('iso') %}· {{ created_at }} UTC{% endtrans %}{% if b.created_by %} · {{ b.created_by.name }}{% endif %}</span></li>
   {% endfor %}</ul>
 </section>
 {% endif %}

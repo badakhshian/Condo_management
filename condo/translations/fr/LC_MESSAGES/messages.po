@@ -1,0 +1,3529 @@
+# French translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-07 01:16+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#, python-format
+msgid "%(area)s · %(category)s · submitted by %(name)s on %(created_at)s"
+msgstr "%(area)s · %(category)s · soumis par %(name)s le %(created_at)s"
+
+#, python-format
+msgid "%(back)s by %(settled_by)s on %(settled_at)s"
+msgstr "%(back)s par %(settled_by)s le %(settled_at)s"
+
+#, python-format
+msgid "%(count)s old entry blocks the sheet"
+msgid_plural "%(count)s old entries block the sheet"
+msgstr[0] "%(count)s ancienne entrée bloque la feuille"
+msgstr[1] "%(count)s anciennes entrées bloquent la feuille"
+
+#, python-format
+msgid "%(entries)s rows"
+msgstr "%(entries)s lignes"
+
+#, python-format
+msgid "%(field)s cannot be negative."
+msgstr "%(field)s ne peut pas être négatif."
+
+#, python-format
+msgid "%(field)s must be a valid date (YYYY-MM-DD)."
+msgstr "%(field)s doit être une date valide (AAAA-MM-JJ)."
+
+#, python-format
+msgid "%(field)s must be a valid date and time."
+msgstr "%(field)s doit être une date et une heure valides."
+
+#, python-format
+msgid "%(field)s must be a whole number."
+msgstr "%(field)s doit être un nombre entier."
+
+#, python-format
+msgid "%(filename)s · balances as of the end of"
+msgstr "%(filename)s · soldes à la fin de"
+
+#, python-format
+msgid "%(get)s: %(e)s"
+msgstr "%(get)s : %(e)s"
+
+#, python-format
+msgid "%(key)s moved from %(name)s to %(name2)s."
+msgstr "%(key)s : passé de %(name)s à %(name2)s."
+
+#, python-format
+msgid "%(logout)sSign out"
+msgstr "%(logout)sSe déconnecter"
+
+#, python-format
+msgid "%(month_label)s, or they will be billed twice."
+msgstr "%(month_label)s, sinon ils seront facturés deux fois."
+
+#, python-format
+msgid "%(name)s added to unit %(number)s."
+msgstr "%(name)s a été ajouté(e) à l’unité %(number)s."
+
+#, python-format
+msgid "%(name)s added."
+msgstr "%(name)s a été ajouté(e)."
+
+#, python-format
+msgid "%(name)s booked for %(start)s–%(end)s."
+msgstr "%(name)s réservé(e) de %(start)s à %(end)s."
+
+#, python-format
+msgid "%(name)s can be booked for at most %(max_hours)s hour(s)."
+msgstr "%(name)s peut être réservé(e) pour au plus %(max_hours)s heure(s)."
+
+#, python-format
+msgid ""
+"%(name)s can't be %(position)s: only co-owners sit on the board (an "
+"outside contact can do Accounting)."
+msgstr ""
+"%(name)s ne peut pas être %(position)s : seuls les copropriétaires "
+"siègent au conseil (un contact externe peut s’occuper de la "
+"comptabilité)."
+
+#, python-format
+msgid "%(name)s can't be %(position)s: only co-owners sit on the board."
+msgstr ""
+"%(name)s ne peut pas être %(position)s : seuls les copropriétaires "
+"siègent au conseil."
+
+#, python-format
+msgid "%(name)s is already %(key)s."
+msgstr "%(name)s est déjà %(key)s."
+
+#, python-format
+msgid "%(name)s is no longer %(dropped)s: that role can't hold it."
+msgstr "%(name)s n’est plus %(dropped)s : ce rôle ne permet pas ce poste."
+
+#, python-format
+msgid "%(name)s is no longer %(key)s."
+msgstr "%(name)s n’est plus %(key)s."
+
+#, python-format
+msgid "%(name)s is not currently available for booking."
+msgstr "%(name)s n’est pas offert(e) à la réservation pour le moment."
+
+#, python-format
+msgid "%(name)s is now %(key)s."
+msgstr "%(name)s est maintenant %(key)s."
+
+#, python-format
+msgid "%(name)s is open %(open_hour)s:00–%(close_hour)s:00."
+msgstr "%(name)s est ouvert(e) de %(open_hour)s h à %(close_hour)s h."
+
+#, python-format
+msgid "%(name)s on %(created_at)s"
+msgstr "%(name)s le %(created_at)s"
+
+#, python-format
+msgid "%(name)s removed."
+msgstr "%(name)s a été retiré(e)."
+
+#, python-format
+msgid ""
+"%(name)s removed. Their household insurance now lists another member as "
+"policyholder."
+msgstr ""
+"%(name)s a été retiré(e). L’assurance de son ménage désigne maintenant un"
+" autre membre comme titulaire."
+
+#, python-format
+msgid "%(name)s updated."
+msgstr "%(name)s a été mis(e) à jour."
+
+#, python-format
+msgid "%(name)s — unit %(number)s"
+msgstr "%(name)s — unité %(number)s"
+
+#, python-format
+msgid "%(name)s: %(description)s"
+msgstr "%(name)s : %(description)s"
+
+#, python-format
+msgid "%(position)s has one holder: assigning replaces %(name)s."
+msgstr "%(position)s n’a qu’un titulaire : l’attribuer remplace %(name)s."
+
+#, python-format
+msgid "%(problems)s item(s) still need a look."
+msgstr "%(problems)s élément(s) à vérifier encore."
+
+#, python-format
+msgid "%(settle_method)s: %(description)s"
+msgstr "%(settle_method)s : %(description)s"
+
+#, python-format
+msgid "%(staff)s · your access is set by the board."
+msgstr "%(staff)s · vos accès sont définis par le conseil d’administration."
+
+#, python-format
+msgid ""
+"%(t)s UTC · %(opening)s opening balances, %(dues)s monthly fees, "
+"%(payment)s payments, %(credit)s purchase credits, %(expense)s building "
+"expenses"
+msgstr ""
+"%(t)s UTC · %(opening)s soldes d’ouverture, %(dues)s frais mensuels, "
+"%(payment)s paiements, %(credit)s crédits d’achat, %(expense)s dépenses "
+"de l’immeuble"
+
+#, python-format
+msgid "%(title)s · Directory"
+msgstr "%(title)s · Répertoire"
+
+#, python-format
+msgid "%(title)s · until %(valid_until)s"
+msgstr "%(title)s · jusqu’au %(valid_until)s"
+
+#, python-format
+msgid "%(units)s units"
+msgstr "%(units)s unités"
+
+#, python-format
+msgid "%(user)sMy profile"
+msgstr "%(user)sMon profil"
+
+#, python-format
+msgid "%(year)s by month"
+msgstr "%(year)s par mois"
+
+#, python-format
+msgid "%(year)s: %(monthly_total_cents)s a month"
+msgstr "%(year)s : %(monthly_total_cents)s par mois"
+
+msgid "(contact)"
+msgstr "(contact)"
+
+#, python-format
+msgid "(due %(deadline)s)"
+msgstr "(échéance le %(deadline)s)"
+
+msgid "(meeting date, adoption date…)"
+msgstr "(date de l’assemblée, date d’adoption…)"
+
+msgid "(optional)"
+msgstr "(facultatif)"
+
+msgid "(required to decline)"
+msgstr "(obligatoire pour refuser)"
+
+msgid "+ Cost"
+msgstr "+ Dépense"
+
+msgid "+ Payment"
+msgstr "+ Paiement"
+
+msgid "+ Special contribution"
+msgstr "+ Cotisation spéciale"
+
+#, python-format
+msgid ", %(owners)s owner contacts"
+msgstr ", %(owners)s contacts de copropriétaires"
+
+msgid ". Review each dataset and click its Load button. Load them in order."
+msgstr ""
+". Vérifiez chaque ensemble de données et cliquez sur son bouton Charger. "
+"Chargez-les dans l’ordre."
+
+msgid "1. Link the sheet"
+msgstr "1. Lier la feuille"
+
+msgid "1. Units"
+msgstr "1. Unités"
+
+msgid "2. Owner names"
+msgstr "2. Noms des copropriétaires"
+
+msgid "2. Preview and confirm"
+msgstr "2. Aperçu et confirmation"
+
+msgid "3. Automatic sync"
+msgstr "3. Synchronisation automatique"
+
+msgid "3. Opening balances"
+msgstr "3. Soldes d’ouverture"
+
+msgid ": add it only if this person also keeps their own policy."
+msgstr " : ajoutez-la seulement si cette personne a aussi sa propre police."
+
+msgid "<span class=\"muted\">No accounts</span>"
+msgstr "<span class=\"muted\">Aucun compte</span>"
+
+msgid "<span class=\"muted\">Vacant</span>"
+msgstr "<span class=\"muted\">Vacant</span>"
+
+msgid "A short title is required."
+msgstr "Un titre court est obligatoire."
+
+#, python-format
+msgid ""
+"A strong password is created and shown to you once, to pass on to "
+"%(split)s."
+msgstr ""
+"Un mot de passe robuste est créé et affiché une seule fois, pour que vous"
+" le transmettiez à %(split)s."
+
+msgid ""
+"A tenant asked for this repair, so the unit's owner must approve it "
+"before work is scheduled."
+msgstr ""
+"Un locataire a demandé cette réparation : le copropriétaire de l’unité "
+"doit l’approuver avant que les travaux soient planifiés."
+
+msgid "A unit:"
+msgstr "Une unité :"
+
+msgid "A valid email is required."
+msgstr "Une adresse courriel valide est obligatoire."
+
+msgid "Access"
+msgstr "Accès"
+
+msgid "Account"
+msgstr "Compte"
+
+msgid "Account active"
+msgstr "Compte actif"
+
+msgid "Account and more"
+msgstr "Compte et plus"
+
+#, python-format
+msgid "Account for %(name)s created."
+msgstr "Le compte de %(name)s a été créé."
+
+msgid "Account updated."
+msgstr "Compte mis à jour."
+
+msgid "Accounting"
+msgstr "Comptabilité"
+
+msgid "Accounting will now record it."
+msgstr "La comptabilité va maintenant l’enregistrer."
+
+#, python-format
+msgid "Accounting · %(label)s"
+msgstr "Comptabilité · %(label)s"
+
+#, python-format
+msgid "Accounting · Unit %(number)s · %(label)s"
+msgstr "Comptabilité · Unité %(number)s · %(label)s"
+
+msgid "Accounting: record payments, charges and costs"
+msgstr "Comptabilité : enregistrer les paiements, frais et dépenses"
+
+msgid "Accounting: view all units, payments and costs"
+msgstr "Comptabilité : voir toutes les unités, les paiements et les dépenses"
+
+msgid "Accounts"
+msgstr "Comptes"
+
+msgid "Accounts · Directory"
+msgstr "Comptes · Répertoire"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Active"
+msgstr "En cours"
+
+msgid "Active maintenance"
+msgstr "Entretien en cours"
+
+msgid "Active repairs"
+msgstr "Réparations en cours"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Add a charge"
+msgstr "Ajouter des frais"
+
+msgid "Add a comment"
+msgstr "Ajouter un commentaire"
+
+msgid "Add a cost"
+msgstr "Ajouter une dépense"
+
+msgid "Add a tenant"
+msgstr "Ajouter un locataire"
+
+msgid "Add account"
+msgstr "Ajouter un compte"
+
+msgid "Add amenity"
+msgstr "Ajouter un équipement"
+
+msgid "Add an owner"
+msgstr "Ajouter un copropriétaire"
+
+msgid "Add another person's own policy"
+msgstr "Ajouter la police personnelle d’une autre personne"
+
+msgid "Add charge"
+msgstr "Ajouter des frais"
+
+msgid "Add cost"
+msgstr "Ajouter une dépense"
+
+msgid "Add insurance"
+msgstr "Ajouter une assurance"
+
+msgid "Add owner"
+msgstr "Ajouter un copropriétaire"
+
+msgid "Add project"
+msgstr "Ajouter le projet"
+
+msgid "Add renewal"
+msgstr "Ajouter le renouvellement"
+
+msgid "Add tenant"
+msgstr "Ajouter un locataire"
+
+#, python-format
+msgid ""
+"Add the unit's %(group)s first; the policy names one of them as "
+"policyholder."
+msgstr ""
+"Ajoutez d’abord les %(group)s de l’unité; la police désigne l’une de ces "
+"personnes comme titulaire."
+
+msgid "Add these amounts to each unit’s statement and notify the owners?"
+msgstr ""
+"Ajouter ces montants au relevé de chaque unité et aviser les "
+"copropriétaires?"
+
+msgid "Add these opening balances to the unit statements?"
+msgstr "Ajouter ces soldes d’ouverture aux relevés des unités?"
+
+msgid "Add unit"
+msgstr "Ajouter une unité"
+
+msgid "Added"
+msgstr "Ajouté"
+
+#, python-format
+msgid ""
+"Adds a %(amount_cents)s credit to unit %(number)s's account (shown in "
+"Accounting as an owner-paid cost)."
+msgstr ""
+"Ajoute un crédit de %(amount_cents)s au compte de l’unité %(number)s "
+"(affiché en comptabilité comme une dépense payée par le copropriétaire)."
+
+msgid "Administration"
+msgstr "Administration"
+
+msgid "Administrator (temporary)"
+msgstr "Administrateur (temporaire)"
+
+msgid "Alerts"
+msgstr "Alertes"
+
+msgid "All"
+msgstr "Tout"
+
+msgid "All notices →"
+msgstr "Tous les avis →"
+
+msgid "All units"
+msgstr "Toutes les unités"
+
+msgid "All units are paid up."
+msgstr "Toutes les unités sont à jour."
+
+msgid "Already billed."
+msgstr "Déjà facturée."
+
+msgid "Already loaded"
+msgstr "Déjà chargé"
+
+#, python-format
+msgid "Also: %(name)s · %(policy)s"
+msgstr "Aussi : %(name)s · %(policy)s"
+
+msgid "Amenities"
+msgstr "Équipements"
+
+msgid "Amount"
+msgstr "Montant"
+
+msgid "Amount can have at most two decimal places."
+msgstr "Le montant peut avoir au plus deux décimales."
+
+msgid "Amount due"
+msgstr "Montant dû"
+
+msgid "Amount must be greater than zero."
+msgstr "Le montant doit être supérieur à zéro."
+
+msgid "Amounts I enter per unit"
+msgstr "Montants saisis par unité"
+
+msgid "An amenity with that name already exists."
+msgstr "Un équipement porte déjà ce nom."
+
+msgid "Announcement deleted."
+msgstr "Avis supprimé."
+
+msgid "Announcement posted."
+msgstr "Avis publié."
+
+msgid "Announcement updated."
+msgstr "Avis mis à jour."
+
+msgid "Annual"
+msgstr "Annuel"
+
+msgid "Annual meeting minutes"
+msgstr "Procès-verbaux des assemblées annuelles"
+
+msgid "Annual total"
+msgstr "Total annuel"
+
+msgid "Another account already uses that email."
+msgstr "Un autre compte utilise déjà cette adresse courriel."
+
+msgid "Any access"
+msgstr "Tout accès"
+
+msgid "Anyone with the link → Viewer"
+msgstr "Tous les utilisateurs qui ont le lien → Lecteur"
+
+msgid "Appliance"
+msgstr "Électroménager"
+
+#, python-format
+msgid "Applied to units on %(applied_at)s."
+msgstr "Appliqué aux unités le %(applied_at)s."
+
+msgid "Apply monthly fees to units"
+msgstr "Appliquer les frais mensuels aux unités"
+
+msgid "Approve"
+msgstr "Approuver"
+
+msgid "Approve cost"
+msgstr "Approuver le coût"
+
+msgid "Approve repair"
+msgstr "Approuver la réparation"
+
+msgid "Approved"
+msgstr "Approuvé"
+
+msgid "Approved amount ($)"
+msgstr "Montant approuvé ($)"
+
+msgid "Approved by"
+msgstr "Approuvé par"
+
+#, python-format
+msgid "Approved by %(decided_by)s"
+msgstr "Approuvé par %(decided_by)s"
+
+#, python-format
+msgid "Approved reimbursement to record: unit %(number)s, %(amount)s"
+msgstr "Remboursement approuvé à enregistrer : unité %(number)s, %(amount)s"
+
+msgid "Approved. Accounting has been notified."
+msgstr "Approuvé. La comptabilité a été avisée."
+
+#, python-format
+msgid "Approved: %(approved_by)s"
+msgstr "Approuvé : %(approved_by)s"
+
+msgid "Approved: owner to do the repair"
+msgstr "Approuvé : le copropriétaire fait la réparation"
+
+msgid "Approved: the owner can now do the repair and pay for it."
+msgstr ""
+"Approuvé : le copropriétaire peut maintenant faire la réparation et la "
+"payer."
+
+msgid "Approved: waiting for accounting"
+msgstr "Approuvé : en attente de la comptabilité"
+
+msgid "April"
+msgstr "avril"
+
+msgid "Area"
+msgstr "Superficie"
+
+msgid "Area (sq ft)"
+msgstr "Superficie (pi²)"
+
+msgid "Ask for another quote"
+msgstr "Demander une autre soumission"
+
+msgid "Ask the owner for a quote"
+msgstr "Demander une soumission au copropriétaire"
+
+msgid "Ask them to change it at their first sign-in"
+msgstr "Lui demander de le changer à sa première connexion"
+
+msgid "Ask them to change it at their next sign-in"
+msgstr "Lui demander de le changer à sa prochaine connexion"
+
+msgid "Assign"
+msgstr "Attribuer"
+
+msgid ""
+"Assign yourself your board position in Directory > Board first, or you'd "
+"lose access."
+msgstr ""
+"Attribuez-vous d’abord votre poste dans Répertoire > Conseil, sinon vous "
+"perdriez l’accès."
+
+msgid "At least 8 characters. Share it with the person privately."
+msgstr "Au moins 8 caractères. Transmettez-le à la personne en privé."
+
+msgid "Attach a file."
+msgstr "Joignez un fichier."
+
+msgid "Attach the receipt or invoice."
+msgstr "Joignez le reçu ou la facture."
+
+msgid "August"
+msgstr "août"
+
+msgid "Available for booking"
+msgstr "Offert à la réservation"
+
+msgid "Awaiting owner approval"
+msgstr "En attente de l’approbation du copropriétaire"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Back to dashboard"
+msgstr "Retour au tableau de bord"
+
+msgid "Balance"
+msgstr "Solde"
+
+msgid "Balance from transactions"
+msgstr "Solde selon les transactions"
+
+msgid "Balance today"
+msgstr "Solde à ce jour"
+
+msgid "Balances"
+msgstr "Soldes"
+
+msgid "Balances as of (optional)"
+msgstr "Soldes en date du (facultatif)"
+
+msgid "Balances tab"
+msgstr "Onglet Soldes"
+
+msgid "Bedrooms"
+msgstr "Chambres"
+
+msgid "Beds"
+msgstr "Chambres"
+
+msgid "Bill the units"
+msgstr "Facturer les unités"
+
+msgid "Billed"
+msgstr "Facturé"
+
+#, python-format
+msgid ""
+"Billed %(shares)s unit(s). Owners have been notified of their amount and "
+"the deadline."
+msgstr ""
+"%(shares)s unité(s) facturée(s). Les copropriétaires ont été avisés de "
+"leur montant et de l’échéance."
+
+#, python-format
+msgid "Billed · %(label)s"
+msgstr "Facturé · %(label)s"
+
+msgid ""
+"Bills every unit its monthly dues; units already billed for that month "
+"are skipped."
+msgstr ""
+"Facture à chaque unité ses frais mensuels; les unités déjà facturées pour"
+" ce mois sont ignorées."
+
+msgid "Board"
+msgstr "Conseil"
+
+msgid "Board of directors"
+msgstr "Conseil d’administration"
+
+msgid "Board · Directory"
+msgstr "Conseil · Répertoire"
+
+msgid "Book"
+msgstr "Réserver"
+
+msgid "Book an amenity"
+msgstr "Réserver un équipement"
+
+msgid "Booking cancelled."
+msgstr "Réservation annulée."
+
+msgid "Bookings must be in the future."
+msgstr "Les réservations doivent être dans le futur."
+
+msgid "Bookings must start and end on the same day."
+msgstr "Les réservations doivent commencer et se terminer le même jour."
+
+msgid "Budget"
+msgstr "Budget"
+
+#, python-format
+msgid "Budget: %(e)s"
+msgstr "Budget : %(e)s"
+
+msgid "Building"
+msgstr "Immeuble"
+
+msgid "Building expense"
+msgstr "Dépense de l’immeuble"
+
+msgid "Building expenses"
+msgstr "Dépenses de l’immeuble"
+
+msgid "Building insurance"
+msgstr "Assurance de l’immeuble"
+
+msgid "Building insurance needs the policy's start and end dates."
+msgstr "L’assurance de l’immeuble exige les dates de début et de fin de la police."
+
+msgid "By ownership share"
+msgstr "Selon la quote-part"
+
+msgid "CRON_SECRET isn't set on the server, so scheduled checks can't run yet."
+msgstr ""
+"CRON_SECRET n’est pas défini sur le serveur : les vérifications "
+"planifiées ne peuvent pas encore s’exécuter."
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Cancel this booking?"
+msgstr "Annuler cette réservation?"
+
+msgid "Card"
+msgstr "Carte"
+
+msgid "Cash"
+msgstr "Comptant"
+
+msgid "Category"
+msgstr "Catégorie"
+
+msgid "Certificate (PDF or photo, up to 4 MB)"
+msgstr "Certificat (PDF ou photo, 4 Mo maximum)"
+
+msgid "Change"
+msgstr "Modifier"
+
+msgid "Change password (optional)"
+msgstr "Changer le mot de passe (facultatif)"
+
+msgid "Change your own password from My profile."
+msgstr "Changez votre propre mot de passe dans Mon profil."
+
+msgid "Charge"
+msgstr "Frais"
+
+#, python-format
+msgid "Charge added to unit %(number)s."
+msgstr "Frais ajoutés à l’unité %(number)s."
+
+msgid "Charge removed."
+msgstr "Frais supprimés."
+
+msgid "Charges"
+msgstr "Frais"
+
+msgid "Cheque"
+msgstr "Chèque"
+
+msgid "Cheque no. or transfer ID"
+msgstr "N° de chèque ou de virement"
+
+msgid "Choose Owner or Tenant. Managing the building comes from a board position."
+msgstr ""
+"Choisissez Copropriétaire ou Locataire. La gestion de l’immeuble vient "
+"d’un poste au conseil."
+
+msgid "Choose a category."
+msgstr "Choisissez une catégorie."
+
+msgid "Choose a charge type."
+msgstr "Choisissez un type de frais."
+
+msgid "Choose a new password, different from the one you were given."
+msgstr "Choisissez un nouveau mot de passe, différent de celui qu’on vous a remis."
+
+msgid "Choose a payment method."
+msgstr "Choisissez un mode de paiement."
+
+msgid "Choose a person for the position."
+msgstr "Choisissez une personne pour ce poste."
+
+msgid "Choose a person…"
+msgstr "Choisir une personne…"
+
+msgid "Choose a priority."
+msgstr "Choisissez une priorité."
+
+msgid "Choose a role."
+msgstr "Choisissez un rôle."
+
+msgid "Choose a unit."
+msgstr "Choisissez une unité."
+
+msgid "Choose a unit…"
+msgstr "Choisir une unité…"
+
+msgid "Choose a valid billing month."
+msgstr "Choisissez un mois de facturation valide."
+
+msgid "Choose a valid month."
+msgstr "Choisissez un mois valide."
+
+msgid "Choose annual total or monthly total."
+msgstr "Choisissez le total annuel ou le total mensuel."
+
+msgid "Choose how to split it."
+msgstr "Choisissez comment répartir le montant."
+
+msgid "Choose how you'd like to be reimbursed."
+msgstr "Choisissez comment vous souhaitez être remboursé."
+
+msgid "Choose the Excel file to upload."
+msgstr "Choisissez le fichier Excel à téléverser."
+
+msgid "Choose the policyholder."
+msgstr "Choisissez le titulaire de la police."
+
+msgid "Choose the unit that paid."
+msgstr "Choisissez l’unité qui a payé."
+
+msgid "Choose the unit this person owns or rents."
+msgstr "Choisissez l’unité que cette personne possède ou loue."
+
+msgid "Choose who can see it."
+msgstr "Choisissez qui peut le voir."
+
+msgid "Choose your own password (required)"
+msgstr "Choisissez votre propre mot de passe (obligatoire)"
+
+msgid "Choose…"
+msgstr "Choisir…"
+
+msgid "Close request"
+msgstr "Fermer la demande"
+
+msgid "Close this request?"
+msgstr "Fermer cette demande?"
+
+msgid "Closed"
+msgstr "Fermée"
+
+msgid "Closes (hour)"
+msgstr "Fermeture (heure)"
+
+msgid "Co-owner"
+msgstr "Copropriétaire indivis"
+
+msgid "Collected"
+msgstr "Perçu"
+
+msgid "Collecting"
+msgstr "Perception en cours"
+
+msgid "Comment added."
+msgstr "Commentaire ajouté."
+
+msgid "Comment cannot be empty."
+msgstr "Le commentaire ne peut pas être vide."
+
+msgid "Common area"
+msgstr "Partie commune"
+
+msgid "Company or store"
+msgstr "Entreprise ou magasin"
+
+#, python-format
+msgid "Condo fee · %(year)s"
+msgstr "Frais de condo · %(year)s"
+
+msgid "Condo fees"
+msgstr "Frais de condo"
+
+#, python-format
+msgid ""
+"Condo fees saved for %(start)s – %(end)s: %(total)s in total, %(monthly)s"
+" a month."
+msgstr ""
+"Frais de condo enregistrés pour la période du %(start)s au %(end)s : "
+"%(total)s au total, %(monthly)s par mois."
+
+#, python-format
+msgid "Condo fees: the current rates end on %(end)s"
+msgstr "Frais de condo : les tarifs actuels prennent fin le %(end)s"
+
+msgid "Confirm and load"
+msgstr "Confirmer et charger"
+
+msgid "Confirm new password"
+msgstr "Confirmer le nouveau mot de passe"
+
+msgid "Confirm one sync first."
+msgstr "Confirmez d’abord une synchronisation."
+
+msgid "Contact the management office to link your account to a unit."
+msgstr "Communiquez avec la gestion pour lier votre compte à une unité."
+
+msgid "Contractor"
+msgstr "Entrepreneur"
+
+msgid "Contribution"
+msgstr "Cotisation"
+
+msgid "Copied"
+msgstr "Copié"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Copy address from"
+msgstr "Copier l’adresse de"
+
+msgid "Cost (money paid out)"
+msgstr "Dépense (argent versé)"
+
+msgid "Cost recorded."
+msgstr "Dépense enregistrée."
+
+msgid "Cost removed."
+msgstr "Dépense supprimée."
+
+msgid "Costs"
+msgstr "Dépenses"
+
+#, python-format
+msgid "Costs · %(label)s"
+msgstr "Dépenses · %(label)s"
+
+msgid "Couldn't reach Google Sheets. Try again in a minute."
+msgstr "Impossible de joindre Google Sheets. Réessayez dans une minute."
+
+msgid "Create login"
+msgstr "Créer l’accès"
+
+#, python-format
+msgid "Create or update these %(n)s units?"
+msgstr "Créer ou mettre à jour ces %(n)s unités?"
+
+msgid "Credit"
+msgstr "Crédit"
+
+msgid "Credit for a purchase (owner paid a cost)"
+msgstr "Crédit pour un achat (le copropriétaire a payé une dépense)"
+
+msgid "Credit on my next condo payment"
+msgstr "Crédit sur mon prochain paiement de frais de condo"
+
+msgid "Credit the account"
+msgstr "Créditer le compte"
+
+msgid "Credited"
+msgstr "Crédité"
+
+msgid "Current balance"
+msgstr "Solde actuel"
+
+msgid "Current password"
+msgstr "Mot de passe actuel"
+
+msgid "Current password is incorrect."
+msgstr "Le mot de passe actuel est incorrect."
+
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Date paid"
+msgstr "Date du paiement"
+
+msgid "Date received"
+msgstr "Date de réception"
+
+msgid "Deadline"
+msgstr "Échéance"
+
+#, python-format
+msgid "Deadline moved to %(new)s."
+msgstr "Échéance reportée au %(new)s."
+
+msgid "Deadline to pay"
+msgstr "Date limite de paiement"
+
+msgid "December"
+msgstr "décembre"
+
+msgid "Decision recorded and the owner notified."
+msgstr "Décision enregistrée et copropriétaire avisé."
+
+msgid "Decline"
+msgstr "Refuser"
+
+msgid "Declined"
+msgstr "Refusé"
+
+#, python-format
+msgid "Declined by %(decided_by)s"
+msgstr "Refusé par %(decided_by)s"
+
+msgid "Declined. The owner has been told why."
+msgstr "Refusé. Le copropriétaire a été informé de la raison."
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Delete this document?"
+msgstr "Supprimer ce document?"
+
+msgid "Delete this notice?"
+msgstr "Supprimer cet avis?"
+
+msgid "Delete this special contribution?"
+msgstr "Supprimer cette cotisation spéciale?"
+
+msgid "Delete this unit?"
+msgstr "Supprimer cette unité?"
+
+msgid "Describe the cost."
+msgstr "Décrivez la dépense."
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Description is required."
+msgstr "La description est obligatoire."
+
+msgid "Details"
+msgstr "Détails"
+
+msgid "Difference"
+msgstr "Écart"
+
+msgid "Director"
+msgstr "Administrateur"
+
+msgid "Directory"
+msgstr "Répertoire"
+
+msgid "Directory → Board"
+msgstr "Répertoire → Conseil"
+
+msgid "Directory → Owners"
+msgstr "Répertoire → Copropriétaires"
+
+msgid "Directory: see owners' and tenants' contact details"
+msgstr "Répertoire : voir les coordonnées des copropriétaires et des locataires"
+
+msgid "Document"
+msgstr "Document"
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Documents: see all documents, including managers-only ones"
+msgstr ""
+"Documents : voir tous les documents, y compris ceux réservés aux "
+"gestionnaires"
+
+msgid "Done"
+msgstr "Terminé"
+
+msgid "Download CSV"
+msgstr "Télécharger en CSV"
+
+msgid "Draft: not billed"
+msgstr "Brouillon : non facturée"
+
+msgid "Due date"
+msgstr "Date d’échéance"
+
+msgid ""
+"Each unit gets one \"Opening balance\" entry in its statement: positive "
+"means the unit owes money, negative means it is in credit. Amounts "
+"include late-payment interest. After loading, generate monthly dues only "
+"for months"
+msgstr ""
+"Chaque unité reçoit une entrée « Solde d’ouverture » dans son relevé : un"
+" montant positif signifie que l’unité doit de l’argent, un montant "
+"négatif qu’elle a un crédit. Les montants incluent les intérêts de "
+"retard. Après le chargement, générez les frais mensuels seulement pour "
+"les mois"
+
+msgid "Earlier uploads"
+msgstr "Téléversements précédents"
+
+msgid "Edit"
+msgstr "Modifier"
+
+#, python-format
+msgid "Edit %(name)s"
+msgstr "Modifier %(name)s"
+
+msgid "Edit document"
+msgstr "Modifier le document"
+
+msgid "Edit in the Google Sheet"
+msgstr "Modifier dans la feuille Google"
+
+msgid "Edit in the Google Sheet’s Owners tab"
+msgstr "Modifier dans l’onglet Owners de la feuille Google"
+
+msgid "Edit notice"
+msgstr "Modifier l’avis"
+
+msgid "Edit this in the Google Sheet"
+msgstr "Modifiez ceci dans la feuille Google"
+
+#, python-format
+msgid "Edit unit %(number)s"
+msgstr "Modifier l’unité %(number)s"
+
+#, python-format
+msgid "Edit “%(title)s”"
+msgstr "Modifier « %(title)s »"
+
+msgid "Electrical"
+msgstr "Électricité"
+
+msgid "Email"
+msgstr "Courriel"
+
+#, python-format
+msgid "Email all (%(emails)s)"
+msgstr "Écrire à tous (%(emails)s)"
+
+#, python-format
+msgid "Email all (%(n)s)"
+msgstr "Écrire à tous (%(n)s)"
+
+#, python-format
+msgid "Email the board (%(emails)s)"
+msgstr "Écrire au conseil (%(emails)s)"
+
+#, python-format
+msgid "Email these (%(n)s)"
+msgstr "Écrire à ces personnes (%(n)s)"
+
+msgid "End date"
+msgstr "Date de fin"
+
+msgid "End time must be after start time."
+msgstr "L’heure de fin doit être après l’heure de début."
+
+msgid "Ended"
+msgstr "Terminé"
+
+msgid "Enter a valid amount."
+msgstr "Entrez un montant valide."
+
+msgid "Enter the amount for at least one unit."
+msgstr "Entrez le montant d’au moins une unité."
+
+msgid "Enter the fees as"
+msgstr "Saisir les frais en"
+
+msgid ""
+"Enter the period and the total, then save: each unit’s part is calculated"
+" from its ownership share."
+msgstr ""
+"Entrez la période et le total, puis enregistrez : la part de chaque unité"
+" est calculée selon sa quote-part."
+
+msgid "Equally between units"
+msgstr "À parts égales entre les unités"
+
+msgid "Every owner and tenant on file has valid insurance."
+msgstr "Tous les copropriétaires et locataires inscrits ont une assurance valide."
+
+msgid "Every unit's balance matches the sheet."
+msgstr "Le solde de chaque unité correspond à la feuille."
+
+msgid "Every unit's balance now matches the sheet."
+msgstr "Le solde de chaque unité correspond maintenant à la feuille."
+
+msgid "Everyone signed in"
+msgstr "Toutes les personnes connectées"
+
+msgid "Everything"
+msgstr "Tout"
+
+#, python-format
+msgid "Exists · fee %(monthly_fee_cents)s"
+msgstr "Existe · frais %(monthly_fee_cents)s"
+
+msgid "Expired"
+msgstr "Expirée"
+
+msgid "Expiring soon"
+msgstr "Expire bientôt"
+
+msgid "February"
+msgstr "février"
+
+msgid "Fees & contributions"
+msgstr "Frais et cotisations"
+
+#, python-format
+msgid "Fees & contributions · %(year)s"
+msgstr "Frais et cotisations · %(year)s"
+
+msgid "Fees &amp; contributions"
+msgstr "Frais et cotisations"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "File (PDF, image, Word or Excel; up to 4 MB)"
+msgstr "Fichier (PDF, image, Word ou Excel; 4 Mo maximum)"
+
+msgid "Filed under Maintenance"
+msgstr "Classé sous Entretien"
+
+msgid "Files can be at most 4 MB."
+msgstr "Les fichiers peuvent faire au plus 4 Mo."
+
+msgid "Files must be PDF, an image (JPG, PNG, HEIC, WebP), Word, Excel or text."
+msgstr ""
+"Les fichiers doivent être en PDF, une image (JPG, PNG, HEIC, WebP), Word,"
+" Excel ou texte."
+
+msgid "Fine"
+msgstr "Amende"
+
+msgid "Fixed annual amount"
+msgstr "Montant annuel fixe"
+
+msgid "Fixed monthly amount"
+msgstr "Montant mensuel fixe"
+
+msgid ""
+"Fixed unit amounts were cleared because you switched between annual and "
+"monthly."
+msgstr ""
+"Les montants fixes des unités ont été effacés parce que vous êtes passé "
+"d’annuel à mensuel ou l’inverse."
+
+msgid "Floor"
+msgstr "Étage"
+
+msgid "For"
+msgstr "Pour"
+
+#, python-format
+msgid "For repair request #%(id)s · %(title)s"
+msgstr "Pour la demande de réparation n° %(id)s · %(title)s"
+
+msgid "For the special contribution"
+msgstr "Pour la cotisation spéciale"
+
+msgid "From"
+msgstr "Début"
+
+#, python-format
+msgid ""
+"From %(filename)s, read %(created_at)s UTC. Confirming replaces every "
+"entry that previously came from the sheet with the ones below."
+msgstr ""
+"Tiré de %(filename)s, lu le %(created_at)s UTC. Confirmer remplace toutes"
+" les entrées venant auparavant de la feuille par celles ci-dessous."
+
+msgid "Full name"
+msgstr "Nom complet"
+
+msgid "Full statement"
+msgstr "Relevé complet"
+
+msgid "Fully paid"
+msgstr "Entièrement payée"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "Generate one"
+msgstr "En générer un"
+
+msgid "Generate password"
+msgstr "Générer un mot de passe"
+
+msgid "Give the contribution a title, e.g. “Window replacement 2027”."
+msgstr ""
+"Donnez un titre à la cotisation, p. ex. « Remplacement des fenêtres 2027 "
+"»."
+
+msgid "Give the document a title."
+msgstr "Donnez un titre au document."
+
+#, python-format
+msgid "Give this password to %(name)s privately."
+msgstr "Remettez ce mot de passe à %(name)s en privé."
+
+msgid "Go"
+msgstr "Aller"
+
+msgid "Google Sheet"
+msgstr "Feuille Google"
+
+msgid "Google Sheet sync"
+msgstr "Synchronisation avec la feuille Google"
+
+msgid "Google Sheets link"
+msgstr "Lien Google Sheets"
+
+msgid ""
+"Google refused access to the sheet. In the sheet, click Share and set "
+"General access to \"Anyone with the link\" (Viewer)."
+msgstr ""
+"Google a refusé l’accès à la feuille. Dans la feuille, cliquez sur "
+"Partager et réglez l’accès général à « Tous les utilisateurs qui ont le "
+"lien » (Lecteur)."
+
+#, python-format
+msgid "Google returned an error (%(code)s) for the sheet."
+msgstr "Google a renvoyé une erreur (%(code)s) pour la feuille."
+
+msgid ""
+"Google sent a sign-in page instead of the sheet. Set General access to "
+"\"Anyone with the link\" (Viewer)."
+msgstr ""
+"Google a envoyé une page de connexion au lieu de la feuille. Réglez "
+"l’accès général à « Tous les utilisateurs qui ont le lien » (Lecteur)."
+
+msgid "HVAC"
+msgstr "Chauffage et climatisation"
+
+msgid "Held by"
+msgstr "Occupé par"
+
+msgid "High"
+msgstr "Élevée"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Home insurance"
+msgstr "Assurance habitation"
+
+msgid "Hours must be whole numbers."
+msgstr "Les heures doivent être des nombres entiers."
+
+msgid "How"
+msgstr "Mode"
+
+msgid "How would you like to be reimbursed?"
+msgstr "Comment souhaitez-vous être remboursé?"
+
+msgid "Import"
+msgstr "Importation"
+
+msgid "Import from Excel"
+msgstr "Importer d’Excel"
+
+msgid "Import preview"
+msgstr "Aperçu de l’importation"
+
+msgid "In credit by"
+msgstr "Crédit de"
+
+msgid "In credit today"
+msgstr "En crédit à ce jour"
+
+msgid "In progress"
+msgstr "En cours"
+
+msgid "In the app now"
+msgstr "Dans l’application actuellement"
+
+msgid "In unit"
+msgstr "Dans l’unité"
+
+msgid "Inactive"
+msgstr "Inactif"
+
+msgid "Insurance"
+msgstr "Assurances"
+
+msgid "Insurance policy removed."
+msgstr "Police d’assurance supprimée."
+
+#, python-format
+msgid "Insurance saved for the %(group)s of unit %(number)s."
+msgstr "Assurance enregistrée pour les %(group)s de l’unité %(number)s."
+
+msgid "Insurance to follow up"
+msgstr "Assurances à suivre"
+
+#, python-format
+msgid "Insurance · Unit %(number)s"
+msgstr "Assurance · Unité %(number)s"
+
+msgid "Insured"
+msgstr "Assuré"
+
+msgid "Insurer"
+msgstr "Assureur"
+
+msgid "Interac e-Transfer / bank transfer"
+msgstr "Virement Interac / virement bancaire"
+
+msgid "Invalid email or password."
+msgstr "Courriel ou mot de passe invalide."
+
+msgid "Is this bigger planned work for the building?"
+msgstr "S’agit-il de travaux planifiés plus importants pour l’immeuble?"
+
+msgid "It won't be shown again."
+msgstr "Il ne sera plus affiché."
+
+msgid "Job / company"
+msgstr "Fonction / entreprise"
+
+msgid "Job or company"
+msgstr "Fonction ou entreprise"
+
+msgid "July"
+msgstr "juillet"
+
+msgid "June"
+msgstr "juin"
+
+msgid "Keep me signed in"
+msgstr "Rester connecté"
+
+msgid "Language / Langue"
+msgstr "Langue / Language"
+
+#, python-format
+msgid "Last automatic check failed (%(t)s UTC): %(message)s"
+msgstr "La dernière vérification automatique a échoué (%(t)s UTC) : %(message)s"
+
+#, python-format
+msgid "Last check: %(t)s UTC"
+msgstr "Dernière vérification : %(t)s UTC"
+
+msgid "Last sync"
+msgstr "Dernière synchronisation"
+
+#, python-format
+msgid "Last updated %(updated_at)s."
+msgstr "Dernière mise à jour : %(updated_at)s."
+
+msgid "Leave empty if they live in the unit"
+msgstr "Laisser vide si la personne habite l’unité"
+
+msgid "Leave empty to use the last month with payments recorded."
+msgstr ""
+"Laisser vide pour utiliser le dernier mois où des paiements ont été "
+"enregistrés."
+
+msgid "Left"
+msgstr "Reste"
+
+msgid "Left to pay"
+msgstr "Reste à payer"
+
+msgid "Lives in the unit"
+msgstr "Habite l’unité"
+
+msgid "Load opening balances"
+msgstr "Charger les soldes d’ouverture"
+
+msgid "Load owner names"
+msgstr "Charger les noms des copropriétaires"
+
+msgid "Load the sheet once first."
+msgstr "Chargez d’abord la feuille une fois."
+
+msgid "Load the sheet once from a preview before turning on automatic sync."
+msgstr ""
+"Chargez la feuille une fois à partir d’un aperçu avant d’activer la "
+"synchronisation automatique."
+
+#, python-format
+msgid "Load the units first — missing: %(missing)s."
+msgstr "Chargez d’abord les unités — manquantes : %(missing)s."
+
+msgid ""
+"Load these transactions into the app? Entries from earlier syncs will be "
+"replaced."
+msgstr ""
+"Charger ces transactions dans l’application? Les entrées des "
+"synchronisations précédentes seront remplacées."
+
+msgid "Load units"
+msgstr "Charger les unités"
+
+#, python-format
+msgid "Loaded %(t)s UTC by %(by)s."
+msgstr "Chargé le %(t)s UTC par %(by)s."
+
+#, python-format
+msgid "Loaded %(t)s UTC by %(by)s: %(summary)s"
+msgstr "Chargé le %(t)s UTC par %(by)s : %(summary)s"
+
+msgid "Loads as"
+msgstr "Chargé comme"
+
+msgid "Location"
+msgstr "Emplacement"
+
+msgid "Login"
+msgstr "Accès"
+
+msgid "Login off"
+msgstr "Accès désactivé"
+
+msgid "Low"
+msgstr "Basse"
+
+msgid "Mailing address"
+msgstr "Adresse postale"
+
+msgid "Main menu"
+msgstr "Menu principal"
+
+msgid "Maintenance"
+msgstr "Entretien"
+
+msgid "Maintenance request submitted."
+msgstr "Demande d’entretien envoyée."
+
+msgid "Manage"
+msgstr "Gérer"
+
+msgid "Management dashboard"
+msgstr "Tableau de bord de gestion"
+
+msgid "Managers only"
+msgstr "Gestionnaires seulement"
+
+msgid "March"
+msgstr "mars"
+
+msgid "Mark all as read"
+msgstr "Tout marquer comme lu"
+
+msgid "Max hours"
+msgstr "Heures max."
+
+msgid "Maximum booking length must be at least 1 hour."
+msgstr "La durée maximale de réservation doit être d’au moins 1 heure."
+
+msgid "May"
+msgstr "mai"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Method"
+msgstr "Mode"
+
+msgid "Month"
+msgstr "Mois"
+
+msgid "Monthly"
+msgstr "Mensuel"
+
+msgid "Monthly dues"
+msgstr "Frais mensuels"
+
+msgid "Monthly dues ($)"
+msgstr "Frais mensuels ($)"
+
+msgid "Monthly fee"
+msgstr "Frais mensuels"
+
+#, python-format
+msgid "Monthly fee: %(e)s"
+msgstr "Frais mensuels : %(e)s"
+
+msgid "Monthly fees"
+msgstr "Frais mensuels"
+
+#, python-format
+msgid ""
+"Monthly fees updated on %(changed)s unit(s). Monthly dues billed from now"
+" on use the %(year)s rates."
+msgstr ""
+"Frais mensuels mis à jour pour %(changed)s unité(s). Les frais mensuels "
+"facturés à partir de maintenant suivent les tarifs de %(year)s."
+
+msgid "Monthly total"
+msgstr "Total mensuel"
+
+#, python-format
+msgid "Monthly vs %(year)s"
+msgstr "Mensuel vs %(year)s"
+
+msgid "More"
+msgstr "Plus"
+
+msgid "Move to Maintenance"
+msgstr "Déplacer vers Entretien"
+
+msgid "Move to Projects"
+msgstr "Déplacer vers Projets"
+
+msgid "Moved to Maintenance."
+msgstr "Déplacé vers Entretien."
+
+msgid "Moved to Projects."
+msgstr "Déplacé vers Projets."
+
+msgid "My account"
+msgstr "Mon compte"
+
+msgid "My bookings"
+msgstr "Mes réservations"
+
+msgid "My maintenance requests"
+msgstr "Mes demandes d’entretien"
+
+msgid "My profile"
+msgstr "Mon profil"
+
+msgid "My unit"
+msgstr "Mon unité"
+
+msgid "My upcoming bookings"
+msgstr "Mes prochaines réservations"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Name is required."
+msgstr "Le nom est obligatoire."
+
+msgid ""
+"Names differ between the workbook's sheets. These come from the monthly-"
+"fee table; correct them before loading."
+msgstr ""
+"Les noms diffèrent d’un onglet à l’autre du classeur. Ceux-ci viennent du"
+" tableau des frais mensuels; corrigez-les avant le chargement."
+
+msgid "Net"
+msgstr "Net"
+
+msgid "Net (payments − costs)"
+msgstr "Net (paiements − dépenses)"
+
+msgid "Never synced."
+msgstr "Jamais synchronisé."
+
+msgid "New"
+msgstr "Nouveau"
+
+msgid "New amenity"
+msgstr "Nouvel équipement"
+
+#, python-format
+msgid "New comment on “%(req)s” from %(name)s"
+msgstr "Nouveau commentaire sur « %(req)s » de %(name)s"
+
+#, python-format
+msgid "New deadline for “%(sc)s”: %(new)s"
+msgstr "Nouvelle échéance pour « %(sc)s » : %(new)s"
+
+msgid "New login"
+msgstr "Nouvel accès"
+
+msgid "New maintenance request"
+msgstr "Nouvelle demande d’entretien"
+
+msgid "New notice"
+msgstr "Nouvel avis"
+
+#, python-format
+msgid "New notice: %(item)s"
+msgstr "Nouvel avis : %(item)s"
+
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+msgid "New password must be at least 8 characters."
+msgstr "Le nouveau mot de passe doit contenir au moins 8 caractères."
+
+msgid "New passwords do not match."
+msgstr "Les nouveaux mots de passe ne correspondent pas."
+
+msgid "New project"
+msgstr "Nouveau projet"
+
+#, python-format
+msgid "New project (%(where)s): %(title)s"
+msgstr "Nouveau projet (%(where)s) : %(title)s"
+
+#, python-format
+msgid "New repair request (%(where)s): %(title)s"
+msgstr "Nouvelle demande de réparation (%(where)s) : %(title)s"
+
+msgid "New request"
+msgstr "Nouvelle demande"
+
+msgid "New special contribution"
+msgstr "Nouvelle cotisation spéciale"
+
+msgid "New staff account"
+msgstr "Nouveau compte d’employé"
+
+msgid "New unit"
+msgstr "Nouvelle unité"
+
+#, python-format
+msgid "New units created: %(units_created)s"
+msgstr "Nouvelles unités créées : %(units_created)s"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Next year"
+msgstr "Année suivante"
+
+msgid "No active repairs."
+msgstr "Aucune réparation en cours."
+
+msgid "No active requests."
+msgstr "Aucune demande en cours."
+
+msgid "No activity yet."
+msgstr "Aucune activité pour l’instant."
+
+msgid "No amenities configured."
+msgstr "Aucun équipement configuré."
+
+msgid "No areas yet. Ask the board to give you access."
+msgstr "Aucune section pour l’instant. Demandez au conseil de vous donner accès."
+
+msgid ""
+"No board member has an account yet, so the temporary administrator can "
+"set accounts up for now."
+msgstr ""
+"Aucun membre du conseil n’a encore de compte : l’administrateur "
+"temporaire peut configurer les comptes pour l’instant."
+
+msgid "No building insurance policy has been uploaded yet."
+msgstr "Aucune police d’assurance de l’immeuble n’a encore été téléversée."
+
+msgid "No building insurance policy is on file."
+msgstr "Aucune police d’assurance de l’immeuble au dossier."
+
+#, python-format
+msgid "No condo fees set for %(year)s yet."
+msgstr "Aucuns frais de condo fixés pour %(year)s."
+
+#, python-format
+msgid "No costs in %(label)s."
+msgstr "Aucune dépense en %(label)s."
+
+msgid ""
+"No database is connected, so changes are temporary and will be lost. "
+"Connect a Postgres database (DATABASE_URL) to keep data."
+msgstr ""
+"Aucune base de données n’est connectée : les modifications sont "
+"temporaires et seront perdues. Connectez une base Postgres (DATABASE_URL)"
+" pour conserver les données."
+
+msgid "No insurance"
+msgstr "Aucune assurance"
+
+msgid "No matches."
+msgstr "Aucun résultat."
+
+msgid "No notices have been posted."
+msgstr "Aucun avis n’a été publié."
+
+msgid "No notices."
+msgstr "Aucun avis."
+
+msgid "No owner of this unit has a website account, so record their answer here."
+msgstr ""
+"Aucun copropriétaire de cette unité n’a de compte sur le site : inscrivez"
+" sa réponse ici."
+
+#, python-format
+msgid "No owner recorded yet for unit(s) %(units_without)s."
+msgstr ""
+"Aucun copropriétaire inscrit pour l’instant pour l’unité ou les unités "
+"%(units_without)s."
+
+msgid "No owners recorded."
+msgstr "Aucun copropriétaire inscrit."
+
+#, python-format
+msgid "No payments in %(label)s."
+msgstr "Aucun paiement en %(label)s."
+
+msgid "No projects here."
+msgstr "Aucun projet ici."
+
+msgid "No projects yet."
+msgstr "Aucun projet pour l’instant."
+
+msgid "No requests yet."
+msgstr "Aucune demande pour l’instant."
+
+msgid "No requests."
+msgstr "Aucune demande."
+
+msgid "No special contributions."
+msgstr "Aucune cotisation spéciale."
+
+msgid "No staff accounts yet. Use Add account to give someone you hire access."
+msgstr ""
+"Aucun compte d’employé pour l’instant. Utilisez Ajouter un compte pour "
+"donner accès à une personne que vous engagez."
+
+msgid "No tenant: owner-occupied or vacant."
+msgstr "Aucun locataire : occupée par le copropriétaire ou vacante."
+
+msgid "No unit linked"
+msgstr "Aucune unité liée"
+
+msgid "No units yet."
+msgstr "Aucune unité pour l’instant."
+
+msgid "No unread notifications."
+msgstr "Aucune notification non lue."
+
+msgid "No upcoming bookings — it's all yours."
+msgstr "Aucune réservation à venir — l’équipement est libre."
+
+msgid "No upcoming bookings."
+msgstr "Aucune réservation à venir."
+
+msgid "No updates yet."
+msgstr "Aucune mise à jour pour l’instant."
+
+msgid "Nobody else eligible"
+msgstr "Personne d’autre n’est admissible"
+
+msgid "Nobody listed yet."
+msgstr "Personne d’inscrit pour l’instant."
+
+msgid "None yet"
+msgstr "Aucun pour l’instant"
+
+msgid "None."
+msgstr "Aucun."
+
+msgid "Normal"
+msgstr "Normale"
+
+msgid "Not applied yet: units still use their current monthly fee."
+msgstr ""
+"Pas encore appliqué : les unités utilisent encore leurs frais mensuels "
+"actuels."
+
+msgid "Not billed yet, so it can still be deleted."
+msgstr "Pas encore facturée : elle peut encore être supprimée."
+
+msgid "Not fixed after all?"
+msgstr "Finalement pas réglé?"
+
+#, python-format
+msgid ""
+"Not included above: opening balance of %(opening)s carried over from the "
+"previous records."
+msgstr ""
+"Non inclus ci-dessus : solde d’ouverture de %(opening)s reporté des "
+"registres précédents."
+
+msgid "Not paid yet"
+msgstr "Pas encore payé"
+
+msgid "Note"
+msgstr "Note"
+
+msgid "Note to the owner"
+msgstr "Note au copropriétaire"
+
+msgid "Notes"
+msgstr "Notes"
+
+#, python-format
+msgid "Nothing billed in %(label)s."
+msgstr "Rien de facturé en %(label)s."
+
+msgid "Nothing booked."
+msgstr "Aucune réservation."
+
+msgid "Nothing changes until you confirm the preview."
+msgstr "Rien ne change tant que vous n’avez pas confirmé l’aperçu."
+
+msgid "Nothing here."
+msgstr "Rien ici."
+
+msgid ""
+"Nothing is billed yet. After saving you can check the amounts, then bill "
+"the units, which notifies their owners."
+msgstr ""
+"Rien n’est encore facturé. Après l’enregistrement, vous pourrez vérifier "
+"les montants, puis facturer les unités, ce qui avise leurs "
+"copropriétaires."
+
+msgid "Nothing is saved until you confirm each dataset on the next page."
+msgstr ""
+"Rien n’est enregistré tant que vous n’avez pas confirmé chaque ensemble "
+"de données à la page suivante."
+
+msgid "Nothing owed"
+msgstr "Rien à payer"
+
+msgid "Nothing uploaded yet."
+msgstr "Rien de téléversé pour l’instant."
+
+msgid ""
+"Nothing yet. You'll be notified here about your requests, approvals and "
+"notices."
+msgstr ""
+"Rien pour l’instant. Vous serez avisé ici de vos demandes, des "
+"approbations et des avis."
+
+msgid "Notices"
+msgstr "Avis"
+
+msgid "Notices: post and edit notices"
+msgstr "Avis : publier et modifier des avis"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "November"
+msgstr "novembre"
+
+msgid "October"
+msgstr "octobre"
+
+msgid "Off"
+msgstr "Désactivé"
+
+msgid "On"
+msgstr "Activé"
+
+msgid ""
+"One home-insurance policy, including civil liability, covers the unit's "
+"owners together:"
+msgstr ""
+"Une seule police d’assurance habitation, incluant la responsabilité "
+"civile, couvre ensemble les copropriétaires de l’unité :"
+
+msgid "One policy covers all owners of the unit. None on file yet."
+msgstr ""
+"Une seule police couvre tous les copropriétaires de l’unité. Aucune au "
+"dossier pour l’instant."
+
+msgid "One policy covers the tenants. None on file yet."
+msgstr "Une seule police couvre les locataires. Aucune au dossier pour l’instant."
+
+msgid "One tenant (renter's) policy with liability coverage covers the household:"
+msgstr ""
+"Une seule police d’assurance locataire avec responsabilité civile couvre "
+"le ménage :"
+
+msgid ""
+"Only one owner needs to file it; the others are covered by the same "
+"policy."
+msgstr ""
+"Un seul copropriétaire doit la déposer; les autres sont couverts par la "
+"même police."
+
+msgid "Open"
+msgstr "Ouverte"
+
+#, python-format
+msgid "Open %(open)s–%(close)s · bookings up to %(max_hours)s hour(s)"
+msgstr ""
+"Ouvert de %(open)s à %(close)s · réservations jusqu’à %(max_hours)s "
+"heure(s)"
+
+#, python-format
+msgid "Open %(open)s–%(close)s · max %(max_hours)sh"
+msgstr "Ouvert de %(open)s à %(close)s · max. %(max_hours)s h"
+
+msgid "Open requests"
+msgstr "Demandes ouvertes"
+
+msgid "Opening balance"
+msgstr "Solde d’ouverture"
+
+msgid "Opening balances"
+msgstr "Soldes d’ouverture"
+
+msgid "Opening hours must satisfy 0 ≤ open < close ≤ 24."
+msgstr "Les heures d’ouverture doivent respecter 0 ≤ ouverture < fermeture ≤ 24."
+
+msgid "Opens (hour)"
+msgstr "Ouverture (heure)"
+
+msgid "Or type one"
+msgstr "Ou en saisir un"
+
+msgid "Other"
+msgstr "Autre"
+
+msgid "Other contact"
+msgstr "Autre contact"
+
+msgid "Outside contact"
+msgstr "Contact externe"
+
+msgid "Outstanding dues"
+msgstr "Frais impayés"
+
+msgid "Overdue"
+msgstr "En retard"
+
+msgid "Owed by units today"
+msgstr "Dû par les unités à ce jour"
+
+msgid "Owed today"
+msgstr "Dû à ce jour"
+
+msgid "Owes"
+msgstr "Doit"
+
+msgid "Owner"
+msgstr "Copropriétaire"
+
+msgid "Owner approval"
+msgstr "Approbation du copropriétaire"
+
+msgid "Owner contacts"
+msgstr "Contacts des copropriétaires"
+
+msgid "Owner name"
+msgstr "Nom du copropriétaire"
+
+msgid "Owner to get a quote"
+msgstr "Soumission à obtenir par le copropriétaire"
+
+msgid "Owner who gave approval"
+msgstr "Copropriétaire ayant donné son approbation"
+
+msgid "Owners"
+msgstr "Copropriétaires"
+
+msgid "Owners &amp; tenants"
+msgstr "Copropriétaires et locataires"
+
+msgid "Owners and managers"
+msgstr "Copropriétaires et gestionnaires"
+
+msgid "Owners are notified of a new deadline."
+msgstr "Les copropriétaires sont avisés d’une nouvelle échéance."
+
+#, python-format
+msgid "Owners who can approve online: %(owner_accounts)s."
+msgstr "Copropriétaires pouvant approuver en ligne : %(owner_accounts)s."
+
+msgid "Ownership share"
+msgstr "Quote-part"
+
+msgid "Owners’ insurance"
+msgstr "Assurance des copropriétaires"
+
+msgid "Paid"
+msgstr "Payé"
+
+msgid "Paid back"
+msgstr "Remboursé"
+
+msgid ""
+"Paid for something for the building? Request it back here with the "
+"receipt. The president approves it, then accounting credits your account "
+"or pays you back."
+msgstr ""
+"Vous avez payé quelque chose pour l’immeuble? Demandez un remboursement "
+"ici avec le reçu. Le président l’approuve, puis la comptabilité crédite "
+"votre compte ou vous rembourse."
+
+msgid "Paid for something for the building? Request it back with the receipt."
+msgstr ""
+"Vous avez payé quelque chose pour l’immeuble? Demandez un remboursement "
+"avec le reçu."
+
+msgid "Paid to"
+msgstr "Payé à"
+
+msgid "Paid to / reference"
+msgstr "Payé à / référence"
+
+#, python-format
+msgid "Paid · %(label)s"
+msgstr "Payé · %(label)s"
+
+msgid "Parking"
+msgstr "Stationnement"
+
+msgid "Parking spot"
+msgstr "Place de stationnement"
+
+msgid "Partly paid"
+msgstr "Payée en partie"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Password must be at least 8 characters."
+msgstr "Le mot de passe doit contenir au moins 8 caractères."
+
+msgid "Password set"
+msgstr "Mot de passe défini"
+
+#, python-format
+msgid "Password set · %(name)s"
+msgstr "Mot de passe défini · %(name)s"
+
+msgid "Password:"
+msgstr "Mot de passe :"
+
+msgid "Past deadline"
+msgstr "Échéance dépassée"
+
+msgid "Pay back"
+msgstr "Rembourser"
+
+msgid "Pay me back (e-transfer or cheque)"
+msgstr "Me rembourser (virement Interac ou chèque)"
+
+msgid "Payment"
+msgstr "Paiement"
+
+#, python-format
+msgid "Payment (%(method)s)"
+msgstr "Paiement (%(method)s)"
+
+#, python-format
+msgid "Payment recorded for unit %(number)s."
+msgstr "Paiement enregistré pour l’unité %(number)s."
+
+msgid "Payment removed."
+msgstr "Paiement supprimé."
+
+msgid "Payments"
+msgstr "Paiements"
+
+#, python-format
+msgid "Payments received · %(label)s"
+msgstr "Paiements reçus · %(label)s"
+
+msgid ""
+"People you hire, such as a cleaner, a contractor or an outside "
+"accountant, who aren't owners or tenants. Give each one only the access "
+"they need. Owners' and tenants' logins are managed in the Owners and "
+"Tenants tabs."
+msgstr ""
+"Les personnes que vous engagez, comme un service d’entretien ménager, un "
+"entrepreneur ou un comptable externe, qui ne sont ni copropriétaires ni "
+"locataires. Donnez à chacune seulement les accès dont elle a besoin. Les "
+"accès des copropriétaires et des locataires se gèrent dans les onglets "
+"Copropriétaires et Locataires."
+
+msgid "Period"
+msgstr "Période"
+
+msgid "Periods on file:"
+msgstr "Périodes au dossier :"
+
+msgid "Phone"
+msgstr "Téléphone"
+
+msgid "Pin to top"
+msgstr "Épingler en haut"
+
+msgid "Pinned"
+msgstr "Épinglé"
+
+msgid "Please choose your own password to continue."
+msgstr "Veuillez choisir votre propre mot de passe pour continuer."
+
+msgid "Please describe the problem."
+msgstr "Veuillez décrire le problème."
+
+msgid "Please give the owner a reason for declining."
+msgstr "Veuillez donner au copropriétaire la raison du refus."
+
+msgid "Please say why the repair is declined, so the tenant knows."
+msgstr ""
+"Veuillez indiquer pourquoi la réparation est refusée, pour que le "
+"locataire le sache."
+
+msgid "Please sign in to see this page."
+msgstr "Veuillez vous connecter pour voir cette page."
+
+msgid "Plumbing"
+msgstr "Plomberie"
+
+msgid "Policy"
+msgstr "Police"
+
+msgid "Policy end"
+msgstr "Fin de la police"
+
+msgid "Policy number"
+msgstr "Numéro de police"
+
+msgid "Policy period"
+msgstr "Période de la police"
+
+msgid "Policy start"
+msgstr "Début de la police"
+
+msgid "Policyholder"
+msgstr "Titulaire de la police"
+
+msgid "Position"
+msgstr "Poste"
+
+msgid "Post"
+msgstr "Publier"
+
+msgid "Post a notice"
+msgstr "Publier un avis"
+
+msgid "Post comment"
+msgstr "Publier le commentaire"
+
+msgid "Post notice"
+msgstr "Publier un avis"
+
+msgid "President"
+msgstr "Président"
+
+msgid "President's approval"
+msgstr "Approbation du président"
+
+msgid "Preview from Google Sheet"
+msgstr "Aperçu depuis la feuille Google"
+
+msgid "Preview from file"
+msgstr "Aperçu depuis le fichier"
+
+msgid "Previous"
+msgstr "Précédent"
+
+#, python-format
+msgid "Previous quote not approved: %(quote_decision_note)s"
+msgstr "Soumission précédente non approuvée : %(quote_decision_note)s"
+
+msgid "Previous year"
+msgstr "Année précédente"
+
+msgid "Primary"
+msgstr "Principal"
+
+msgid "Primary contact for this unit"
+msgstr "Contact principal de cette unité"
+
+msgid "Priority"
+msgstr "Priorité"
+
+msgid "Progress"
+msgstr "Progression"
+
+msgid "Project"
+msgstr "Projet"
+
+msgid "Project added."
+msgstr "Projet ajouté."
+
+msgid "Project details saved."
+msgstr "Détails du projet enregistrés."
+
+msgid "Projects"
+msgstr "Projets"
+
+msgid "Projects & Maintenance"
+msgstr "Projets et entretien"
+
+msgid "Projects &amp; Maintenance"
+msgstr "Projets et entretien"
+
+msgid ""
+"Projects are planned work for the building, such as a roof, windows or a "
+"renovation."
+msgstr ""
+"Les projets sont des travaux planifiés pour l’immeuble, comme la toiture,"
+" les fenêtres ou une rénovation."
+
+msgid "Purchase credit"
+msgstr "Crédit d’achat"
+
+msgid "Purchase credits"
+msgstr "Crédits d’achat"
+
+msgid "Quote"
+msgstr "Soumission"
+
+msgid "Quote &amp; board approval"
+msgstr "Soumission et approbation du conseil"
+
+msgid "Quote (PDF or photo)"
+msgstr "Soumission (PDF ou photo)"
+
+msgid "Quote awaiting board approval"
+msgstr "Soumission en attente de l’approbation du conseil"
+
+msgid "Quote sent to the board for approval."
+msgstr "Soumission envoyée au conseil pour approbation."
+
+#, python-format
+msgid "Quote to approve: unit %(number)s, %(amount)s — %(req)s"
+msgstr "Soumission à approuver : unité %(number)s, %(amount)s — %(req)s"
+
+msgid "Quoted amount ($)"
+msgstr "Montant de la soumission ($)"
+
+msgid "Reassign or remove the unit's residents before deleting it."
+msgstr "Réaffectez ou retirez les résidents de l’unité avant de la supprimer."
+
+msgid "Receipts"
+msgstr "Reçus"
+
+msgid "Receipts / invoice (PDF or photos, up to 4 MB each)"
+msgstr "Reçus / facture (PDF ou photos, 4 Mo maximum chacun)"
+
+msgid "Record a payment"
+msgstr "Enregistrer un paiement"
+
+msgid "Record it"
+msgstr "L’enregistrer"
+
+msgid "Record payback"
+msgstr "Enregistrer le remboursement"
+
+msgid "Record payment"
+msgstr "Enregistrer le paiement"
+
+msgid "Recorded as a purchase credit on the unit"
+msgstr "Enregistré comme crédit d’achat sur l’unité"
+
+#, python-format
+msgid "Recorded as “%(owner_name)s”, but no contact details yet."
+msgstr "Inscrit sous « %(owner_name)s », mais sans coordonnées pour l’instant."
+
+msgid "Recorded by accounting"
+msgstr "Enregistré par la comptabilité"
+
+#, python-format
+msgid "Recorded: %(amount)s credited to unit %(number)s's account."
+msgstr "Enregistré : %(amount)s crédité au compte de l’unité %(number)s."
+
+#, python-format
+msgid "Recorded: %(amount)s paid back."
+msgstr "Enregistré : %(amount)s remboursé."
+
+#, python-format
+msgid "Records a %(amount_cents)s building cost paid back to unit %(number)s."
+msgstr ""
+"Enregistre une dépense de l’immeuble de %(amount_cents)s remboursée à "
+"l’unité %(number)s."
+
+msgid "Reference"
+msgstr "Référence"
+
+msgid "Refund (money back)"
+msgstr "Remboursement (argent reçu)"
+
+msgid "Refund recorded."
+msgstr "Remboursement enregistré."
+
+msgid "Refunds"
+msgstr "Rembours."
+
+msgid "Reimburse by"
+msgstr "Rembourser par"
+
+#, python-format
+msgid "Reimbursement #%(id)s"
+msgstr "Remboursement n° %(id)s"
+
+#, python-format
+msgid "Reimbursement #%(id)s · %(amount_cents)s"
+msgstr "Remboursement n° %(id)s · %(amount_cents)s"
+
+#, python-format
+msgid "Reimbursement approved: %(amount)s"
+msgstr "Remboursement approuvé : %(amount)s"
+
+#, python-format
+msgid "Reimbursement declined: %(amount)s"
+msgstr "Remboursement refusé : %(amount)s"
+
+#, python-format
+msgid "Reimbursement settled: %(amount)s credited to unit %(number)s's account"
+msgstr "Remboursement réglé : %(amount)s crédité au compte de l’unité %(number)s"
+
+#, python-format
+msgid "Reimbursement settled: %(amount)s paid back"
+msgstr "Remboursement réglé : %(amount)s remboursé"
+
+#, python-format
+msgid "Reimbursement to approve: unit %(number)s, %(amount)s"
+msgstr "Remboursement à approuver : unité %(number)s, %(amount)s"
+
+msgid "Reimbursements"
+msgstr "Remboursements"
+
+msgid "Reimbursements waiting for you"
+msgstr "Remboursements qui vous attendent"
+
+msgid "Remove"
+msgstr "Retirer"
+
+#, python-format
+msgid "Remove %(name)s as %(position)s?"
+msgstr "Retirer %(name)s du poste de %(position)s?"
+
+#, python-format
+msgid ""
+"Remove %(name)s from unit %(number)s? Their insurance records are removed"
+" too."
+msgstr ""
+"Retirer %(name)s de l’unité %(number)s? Ses dossiers d’assurance seront "
+"aussi supprimés."
+
+msgid "Remove person"
+msgstr "Retirer la personne"
+
+msgid "Remove tenant"
+msgstr "Retirer le locataire"
+
+#, python-format
+msgid "Remove these %(n)s old entries and load the sheet’s own figures instead?"
+msgstr ""
+"Supprimer ces %(n)s anciennes entrées et charger plutôt les chiffres de "
+"la feuille?"
+
+msgid "Remove this cost?"
+msgstr "Supprimer cette dépense?"
+
+msgid "Remove this entry?"
+msgstr "Supprimer cette entrée?"
+
+#, python-format
+msgid "Removed %(num)s old entry and re-applied the sheet."
+msgid_plural "Removed %(num)s old entries and re-applied the sheet."
+msgstr[0] "%(num)s ancienne entrée supprimée et feuille réappliquée."
+msgstr[1] "%(num)s anciennes entrées supprimées et feuille réappliquée."
+
+msgid "Reopen"
+msgstr "Rouvrir"
+
+msgid "Repair"
+msgstr "Réparation"
+
+#, python-format
+msgid "Repair approved by the owner, ready to schedule: %(req)s"
+msgstr "Réparation approuvée par le copropriétaire, prête à planifier : %(req)s"
+
+msgid "Repair approved. The board can now schedule it."
+msgstr "Réparation approuvée. Le conseil peut maintenant la planifier."
+
+msgid "Repair declined."
+msgstr "Réparation refusée."
+
+msgid "Repairs & projects"
+msgstr "Réparations et projets"
+
+msgid "Repairs waiting for your approval"
+msgstr "Réparations en attente de votre approbation"
+
+msgid "Repairs: see and update all repair requests"
+msgstr "Réparations : voir et mettre à jour toutes les demandes de réparation"
+
+msgid "Replace"
+msgstr "Remplacer"
+
+msgid "Replace with the sheet's entries"
+msgstr "Remplacer par les entrées de la feuille"
+
+msgid "Request"
+msgstr "Demande"
+
+msgid "Request a reimbursement"
+msgstr "Demander un remboursement"
+
+msgid "Request reimbursement"
+msgstr "Demander un remboursement"
+
+msgid "Request sent to the unit's owner for approval."
+msgstr "Demande envoyée au copropriétaire de l’unité pour approbation."
+
+msgid "Request updated."
+msgstr "Demande mise à jour."
+
+msgid "Requested by"
+msgstr "Demandé par"
+
+#, python-format
+msgid "Requested by %(name)s"
+msgstr "Demandé par %(name)s"
+
+msgid "Reserved"
+msgstr "Réservé"
+
+msgid "Resident &amp; management portal"
+msgstr "Portail des résidents et de la gestion"
+
+msgid "Residents"
+msgstr "Résidents"
+
+msgid "Resolved"
+msgstr "Résolue"
+
+msgid "Role"
+msgstr "Rôle"
+
+#, python-format
+msgid "Same address as %(same_address_as)s"
+msgstr "Même adresse que %(same_address_as)s"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Save condo fees"
+msgstr "Enregistrer les frais de condo"
+
+msgid "Save insurance"
+msgstr "Enregistrer l’assurance"
+
+msgid "Save link"
+msgstr "Enregistrer le lien"
+
+msgid "Save the sheet link first, or upload a copy of the sheet."
+msgstr ""
+"Enregistrez d’abord le lien de la feuille, ou téléversez une copie de la "
+"feuille."
+
+msgid "Save these owner names?"
+msgstr "Enregistrer ces noms de copropriétaires?"
+
+msgid "Say what was paid for."
+msgstr "Indiquez ce qui a été payé."
+
+msgid "Scope of the work, contractors consulted, how it will be paid for…"
+msgstr "Portée des travaux, entrepreneurs consultés, mode de financement…"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Search name, email, phone or company"
+msgstr "Rechercher un nom, un courriel, un téléphone ou une entreprise"
+
+msgid "Search name, email, phone, address or unit"
+msgstr "Rechercher un nom, un courriel, un téléphone, une adresse ou une unité"
+
+msgid "Secretary"
+msgstr "Secrétaire"
+
+msgid "Security"
+msgstr "Sécurité"
+
+msgid "Select a unit, or mark this as a common-area issue."
+msgstr "Choisissez une unité, ou indiquez qu’il s’agit d’une partie commune."
+
+msgid "Select a unit."
+msgstr "Choisissez une unité."
+
+msgid "Select unit…"
+msgstr "Choisir une unité…"
+
+msgid "Select…"
+msgstr "Choisir…"
+
+msgid "Send quote to the board"
+msgstr "Envoyer la soumission au conseil"
+
+msgid "Send to the president"
+msgstr "Envoyer au président"
+
+msgid "Sent to the president for approval. You'll be notified of the decision."
+msgstr "Envoyé au président pour approbation. Vous serez avisé de la décision."
+
+msgid "September"
+msgstr "septembre"
+
+msgid "Set a password"
+msgstr "Définir un mot de passe"
+
+msgid "Set every unit’s monthly fee to these rates?"
+msgstr "Appliquer ces tarifs aux frais mensuels de chaque unité?"
+
+msgid "Set password"
+msgstr "Définir le mot de passe"
+
+#, python-format
+msgid "Set password · %(name)s"
+msgstr "Définir le mot de passe · %(name)s"
+
+#, python-format
+msgid ""
+"Set the condo fees for the period starting %(nxt)s and apply them to the "
+"units."
+msgstr ""
+"Fixez les frais de condo pour la période commençant le %(nxt)s et "
+"appliquez-les aux unités."
+
+msgid "Set the next period’s fees"
+msgstr "Fixer les frais de la prochaine période"
+
+msgid "Settled"
+msgstr "Réglé"
+
+msgid "Several people allowed"
+msgstr "Plusieurs personnes possibles"
+
+msgid "Share"
+msgstr "Quote-part"
+
+msgid "Sheet link saved. Preview a sync to check what it will load."
+msgstr ""
+"Lien de la feuille enregistré. Faites un aperçu de la synchronisation "
+"pour voir ce qui sera chargé."
+
+msgid "Sign in"
+msgstr "Se connecter"
+
+msgid "Sign-in email, role and unit"
+msgstr "Courriel de connexion, rôle et unité"
+
+msgid ""
+"Some units have no ownership share; split equally or enter amounts per "
+"unit instead."
+msgstr ""
+"Certaines unités n’ont pas de quote-part; répartissez à parts égales ou "
+"saisissez plutôt les montants par unité."
+
+msgid "Something went wrong."
+msgstr "Une erreur s’est produite."
+
+msgid "Special contribution"
+msgstr "Cotisation spéciale"
+
+msgid "Special contribution created. Check the amounts, then bill the units."
+msgstr ""
+"Cotisation spéciale créée. Vérifiez les montants, puis facturez les "
+"unités."
+
+msgid "Special contribution deleted."
+msgstr "Cotisation spéciale supprimée."
+
+#, python-format
+msgid "Special contribution: %(amount)s due by %(deadline)s"
+msgstr "Cotisation spéciale : %(amount)s à payer au plus tard le %(deadline)s"
+
+msgid "Special contributions"
+msgstr "Cotisations spéciales"
+
+msgid "Split"
+msgstr "Répartition"
+
+msgid "Staff"
+msgstr "Employé"
+
+msgid "Start date"
+msgstr "Date de début"
+
+msgid "Statement"
+msgstr "Relevé"
+
+#, python-format
+msgid "Statement · Unit %(number)s"
+msgstr "Relevé · Unité %(number)s"
+
+#, python-format
+msgid "Statement — Unit %(number)s"
+msgstr "Relevé — Unité %(number)s"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Still to collect"
+msgstr "Reste à percevoir"
+
+msgid "Submit request"
+msgstr "Envoyer la demande"
+
+msgid "Submitted"
+msgstr "Envoyé"
+
+msgid "Sync preview"
+msgstr "Aperçu de la synchronisation"
+
+msgid "Syndicate documents"
+msgstr "Documents du syndicat"
+
+msgid "Target date"
+msgstr "Date cible"
+
+msgid "Tell the owner why, e.g. ask for another quote."
+msgstr ""
+"Expliquez la raison au copropriétaire, p. ex. demander une autre "
+"soumission."
+
+msgid "Temporary administrator"
+msgstr "Administrateur temporaire"
+
+msgid "Tenant"
+msgstr "Locataire"
+
+msgid "Tenant insurance"
+msgstr "Assurance locataire"
+
+msgid "Tenants"
+msgstr "Locataires"
+
+msgid "That dataset was already loaded from this upload."
+msgstr "Cet ensemble de données a déjà été chargé à partir de ce téléversement."
+
+msgid "That doesn't look like a Google Sheets link (…/spreadsheets/d/…)."
+msgstr "Cela ne ressemble pas à un lien Google Sheets (…/spreadsheets/d/…)."
+
+msgid "That email address doesn't look right."
+msgstr "Cette adresse courriel semble incorrecte."
+
+msgid "That file is empty."
+msgstr "Ce fichier est vide."
+
+msgid "That file is too large (the limit is 4 MB)."
+msgstr "Ce fichier est trop volumineux (la limite est de 4 Mo)."
+
+msgid "That request could not be processed."
+msgstr "Cette requête n’a pas pu être traitée."
+
+msgid "That time overlaps an existing booking."
+msgstr "Cette plage chevauche une réservation existante."
+
+msgid "The \"Transactions\" tab is empty."
+msgstr "L’onglet « Transactions » est vide."
+
+#, python-format
+msgid "The \"Transactions\" tab is missing column(s): %(missing)s."
+msgstr "Il manque des colonnes dans l’onglet « Transactions » : %(missing)s."
+
+#, python-format
+msgid ""
+"The %(year)s rates haven't been set yet. Current monthly fee: "
+"%(monthly_fee_cents)s."
+msgstr ""
+"Les tarifs de %(year)s n’ont pas encore été fixés. Frais mensuels actuels"
+" : %(monthly_fee_cents)s."
+
+msgid "The Owners tab has no rows."
+msgstr "L’onglet Owners ne contient aucune ligne."
+
+msgid ""
+"The app can mirror the condo's transaction log in Google Sheets. Opening "
+"balances, monthly fees, payments, purchase credits and building expenses "
+"come from the sheet's"
+msgstr ""
+"L’application peut refléter le registre des transactions du condo tenu "
+"dans Google Sheets. Les soldes d’ouverture, frais mensuels, paiements, "
+"crédits d’achat et dépenses de l’immeuble proviennent de l’onglet"
+
+msgid "The board asked the owner to get a quote."
+msgstr "Le conseil a demandé au copropriétaire d’obtenir une soumission."
+
+#, python-format
+msgid ""
+"The board gets a renewal reminder on %(renewal_date)s, two months before "
+"these rates end."
+msgstr ""
+"Le conseil recevra un rappel de renouvellement le %(renewal_date)s, deux "
+"mois avant la fin de ces tarifs."
+
+#, python-format
+msgid "The board was reminded to renew on %(renewal_notified_at)s."
+msgstr "Le conseil a reçu le rappel de renouvellement le %(renewal_notified_at)s."
+
+msgid "The end date is before the start date."
+msgstr "La date de fin est antérieure à la date de début."
+
+msgid "The end date must be after the start date."
+msgstr "La date de fin doit être après la date de début."
+
+msgid "The fixed unit amounts add up to more than the total."
+msgstr "Les montants fixes des unités dépassent le total."
+
+#, python-format
+msgid "The household is already covered by %(name)s's policy, so this is"
+msgstr "Le ménage est déjà couvert par la police de %(name)s; celle-ci est donc"
+
+msgid "The new password is saved."
+msgstr "Le nouveau mot de passe est enregistré."
+
+#, python-format
+msgid "The owner approved your repair request: %(req)s"
+msgstr "Le copropriétaire a approuvé votre demande de réparation : %(req)s"
+
+#, python-format
+msgid "The owner declined your repair request: %(req)s"
+msgstr "Le copropriétaire a refusé votre demande de réparation : %(req)s"
+
+msgid "The owner has been asked for a quote."
+msgstr "Une soumission a été demandée au copropriétaire."
+
+msgid "The password must be at least 8 characters."
+msgstr "Le mot de passe doit contenir au moins 8 caractères."
+
+msgid "The sheet couldn't be read as a spreadsheet."
+msgstr "La feuille n’a pas pu être lue comme un tableur."
+
+msgid "The sheet has no \"Transactions\" tab."
+msgstr "La feuille n’a pas d’onglet « Transactions »."
+
+msgid ""
+"The sheet has no Owners tab, so owner contacts in the app are left as "
+"they are. Add a tab named “Owners” with columns Unit, Name, Email, Phone,"
+" Mailing address, Role, Primary to sync them too."
+msgstr ""
+"La feuille n’a pas d’onglet Owners : les contacts des copropriétaires "
+"dans l’application restent tels quels. Ajoutez un onglet nommé « Owners »"
+" avec les colonnes Unit, Name, Email, Phone, Mailing address, Role, "
+"Primary pour les synchroniser aussi."
+
+msgid "The sheet must be shared as"
+msgstr "La feuille doit être partagée en mode"
+
+msgid ""
+"The syndicate's board of directors. Assign positions here. Only co-owners"
+" sit on the board; an outside contact can be listed for Accounting."
+msgstr ""
+"Le conseil d’administration du syndicat. Attribuez les postes ici. Seuls "
+"les copropriétaires siègent au conseil; un contact externe peut être "
+"inscrit pour la comptabilité."
+
+#, python-format
+msgid ""
+"The temporary administrator account (%(email)s) is now %(name)s's own "
+"account, as %(key)s."
+msgstr ""
+"Le compte administrateur temporaire (%(email)s) est maintenant le compte "
+"personnel de %(name)s, à titre de %(key)s."
+
+msgid "The two passwords don't match."
+msgstr "Les deux mots de passe ne correspondent pas."
+
+msgid ""
+"The website checks the sheet every 10 minutes and updates when it has "
+"changed."
+msgstr ""
+"Le site vérifie la feuille toutes les 10 minutes et se met à jour quand "
+"elle a changé."
+
+#, python-format
+msgid "There are already fees for a period starting in %(year)s."
+msgstr "Il existe déjà des frais pour une période commençant en %(year)s."
+
+#, python-format
+msgid "These dates overlap the period %(start)s – %(end)s."
+msgstr "Ces dates chevauchent la période du %(start)s au %(end)s."
+
+#, python-format
+msgid "These rates end on %(end)s."
+msgstr "Ces tarifs prennent fin le %(end)s."
+
+msgid ""
+"These were entered in the app before the sheet was linked (for example by"
+" the Excel import). The sheet has its own figures for the same unit and "
+"month, so its lines were skipped and"
+msgstr ""
+"Ces entrées ont été saisies dans l’application avant que la feuille soit "
+"liée (par exemple par l’importation Excel). La feuille a ses propres "
+"chiffres pour la même unité et le même mois : ses lignes ont donc été "
+"ignorées et"
+
+msgid "They sign in with"
+msgstr "La personne se connecte avec"
+
+msgid ""
+"They'll only see these parts of the portal, plus notices and documents "
+"shared with everyone."
+msgstr ""
+"Elle ne verra que ces sections du portail, ainsi que les avis et "
+"documents partagés avec tout le monde."
+
+msgid "This account has been deactivated. Contact the management office."
+msgstr "Ce compte a été désactivé. Communiquez avec la gestion."
+
+msgid "This amenity is not currently available for booking."
+msgstr "Cet équipement n’est pas offert à la réservation pour le moment."
+
+msgid "This contribution has been billed; it can't be deleted."
+msgstr "Cette cotisation a été facturée; elle ne peut pas être supprimée."
+
+msgid ""
+"This cost comes from the Google Sheet. Change it there; the next sync "
+"updates the app."
+msgstr ""
+"Cette dépense vient de la feuille Google. Modifiez-la là; la prochaine "
+"synchronisation mettra l’application à jour."
+
+msgid ""
+"This entry comes from the Google Sheet. Change it there; the next sync "
+"updates the app."
+msgstr ""
+"Cette entrée vient de la feuille Google. Modifiez-la là; la prochaine "
+"synchronisation mettra l’application à jour."
+
+msgid ""
+"This owner comes from the Google Sheet's Owners tab. Change it there; the"
+" next sync updates the app."
+msgstr ""
+"Ce copropriétaire vient de l’onglet Owners de la feuille Google. "
+"Modifiez-le là; la prochaine synchronisation mettra l’application à jour."
+
+msgid "This owner comes from the Google Sheet's Owners tab. Remove them there."
+msgstr ""
+"Ce copropriétaire vient de l’onglet Owners de la feuille Google. Retirez-"
+"le là."
+
+msgid "This preview was already loaded."
+msgstr "Cet aperçu a déjà été chargé."
+
+msgid "This repair is waiting for the owner. Record the owner's approval first."
+msgstr ""
+"Cette réparation attend le copropriétaire. Enregistrez d’abord son "
+"approbation."
+
+msgid "This request is closed."
+msgstr "Cette demande est fermée."
+
+msgid "This unit has billing history and cannot be deleted."
+msgstr "Cette unité a un historique de facturation et ne peut pas être supprimée."
+
+msgid "Time to renew."
+msgstr "Il est temps de renouveler."
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "Title and message are both required."
+msgstr "Le titre et le message sont tous deux obligatoires."
+
+msgid "To"
+msgstr "Fin"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Total amount"
+msgstr "Montant total"
+
+msgid "Total charged"
+msgstr "Total facturé"
+
+msgid "Total for the period"
+msgstr "Total pour la période"
+
+msgid "Total paid"
+msgstr "Total payé"
+
+#, python-format
+msgid "Total · %(method)s"
+msgstr "Total · %(method)s"
+
+#, python-format
+msgid "Total: %(e)s"
+msgstr "Total : %(e)s"
+
+msgid "Totals"
+msgstr "Totaux"
+
+msgid "Transactions"
+msgstr "Transactions"
+
+msgid "Treasurer"
+msgstr "Trésorier"
+
+msgid "Turn off automatic sync"
+msgstr "Désactiver la synchronisation automatique"
+
+msgid "Turn on automatic sync"
+msgstr "Activer la synchronisation automatique"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Type it again"
+msgstr "Saisissez-le de nouveau"
+
+msgid "Unavailable"
+msgstr "Non offert"
+
+msgid "Unit"
+msgstr "Unité"
+
+#, python-format
+msgid "Unit %(number)s"
+msgstr "Unité %(number)s"
+
+#, python-format
+msgid "Unit %(number)s already exists."
+msgstr "L’unité %(number)s existe déjà."
+
+#, python-format
+msgid "Unit %(number)s created."
+msgstr "Unité %(number)s créée."
+
+#, python-format
+msgid "Unit %(number)s deleted."
+msgstr "Unité %(number)s supprimée."
+
+#, python-format
+msgid "Unit %(number)s updated."
+msgstr "Unité %(number)s mise à jour."
+
+#, python-format
+msgid "Unit %(number)s: %(e)s"
+msgstr "Unité %(number)s : %(e)s"
+
+msgid "Unit number"
+msgstr "Numéro d’unité"
+
+msgid "Unit number is required."
+msgstr "Le numéro d’unité est obligatoire."
+
+msgid "Unit that paid"
+msgstr "Unité qui a payé"
+
+msgid "Units"
+msgstr "Unités"
+
+#, python-format
+msgid "Units (%(occupied)s occupied)"
+msgstr "Unités (%(occupied)s occupées)"
+
+msgid "Units after the sync"
+msgstr "Unités après la synchronisation"
+
+msgid "Units with a balance due"
+msgstr "Unités avec un solde dû"
+
+#, python-format
+msgid ""
+"Units without an ownership share: %(missing_shares)s. Set their share on "
+"the unit page, or give them a fixed amount below."
+msgstr ""
+"Unités sans quote-part : %(missing_shares)s. Indiquez leur quote-part sur"
+" la page de l’unité, ou donnez-leur un montant fixe ci-dessous."
+
+msgid "Unread"
+msgstr "Non lues"
+
+msgid "Upcoming bookings"
+msgstr "Réservations à venir"
+
+msgid "Update"
+msgstr "Mettre à jour"
+
+msgid "Updates"
+msgstr "Suivi"
+
+msgid "Upload"
+msgstr "Téléverser"
+
+msgid "Upload a document"
+msgstr "Téléverser un document"
+
+msgid "Upload and preview"
+msgstr "Téléverser et prévisualiser"
+
+msgid "Upload another file"
+msgstr "Téléverser un autre fichier"
+
+msgid "Upload document"
+msgstr "Téléverser le document"
+
+msgid "Upload it"
+msgstr "La téléverser"
+
+msgid "Upload it in Documents"
+msgstr "Téléversez-la dans Documents"
+
+msgid ""
+"Upload the condo's financial workbook (.xlsx). The \"Cotisations "
+"proprietaires\" sheet is read to build a preview of three datasets: units"
+" with their ownership shares and monthly fees, owner names, and each "
+"unit's opening balance."
+msgstr ""
+"Téléversez le classeur financier du condo (.xlsx). L’onglet « Cotisations"
+" proprietaires » est lu pour préparer un aperçu de trois ensembles de "
+"données : les unités avec leurs quotes-parts et frais mensuels, les noms "
+"des copropriétaires et le solde d’ouverture de chaque unité."
+
+msgid "Urgent"
+msgstr "Urgente"
+
+msgid "Use the quote buttons to move a request through the quote step."
+msgstr ""
+"Utilisez les boutons de soumission pour faire avancer une demande à "
+"l’étape de la soumission."
+
+msgid "Use this amount"
+msgstr "Utiliser ce montant"
+
+msgid ""
+"Use “+ Special contribution” for a one-off amount owners must pay by a "
+"deadline."
+msgstr ""
+"Utilisez « + Cotisation spéciale » pour un montant ponctuel que les "
+"copropriétaires doivent payer avant une échéance."
+
+msgid "Utilities"
+msgstr "Services publics"
+
+msgid "Vacant"
+msgstr "Vacant"
+
+msgid "Vice-president"
+msgstr "Vice-président"
+
+msgid "View certificate"
+msgstr "Voir le certificat"
+
+msgid "View policy"
+msgstr "Voir la police"
+
+msgid "View statement"
+msgstr "Voir le relevé"
+
+msgid "Visible to"
+msgstr "Visible par"
+
+msgid "Waiting for me"
+msgstr "En attente de moi"
+
+msgid "Waiting for owner approval"
+msgstr "En attente de l’approbation du copropriétaire"
+
+msgid "Waiting for the board to approve the cost."
+msgstr "En attente de l’approbation du coût par le conseil."
+
+msgid "Waiting for the owner to approve."
+msgstr "En attente de l’approbation du copropriétaire."
+
+msgid "Waiting for the owner's quote."
+msgstr "En attente de la soumission du copropriétaire."
+
+msgid "Waiting for the president"
+msgstr "En attente du président"
+
+msgid ""
+"Want the owner to arrange this repair? Ask them for a quote first; once "
+"the board approves the cost, they do the repair, pay, and request a "
+"reimbursement."
+msgstr ""
+"Vous voulez que le copropriétaire s’occupe de cette réparation? Demandez-"
+"lui d’abord une soumission; une fois le coût approuvé par le conseil, il "
+"fait la réparation, la paie et demande un remboursement."
+
+msgid "We couldn't find that page."
+msgstr "Nous n’avons pas trouvé cette page."
+
+msgid "Welcome! Please choose your own password to continue."
+msgstr "Bienvenue! Veuillez choisir votre propre mot de passe pour continuer."
+
+#, python-format
+msgid "Welcome, %(split)s"
+msgstr "Bienvenue, %(split)s"
+
+msgid "What did you pay for?"
+msgstr "Qu’avez-vous payé?"
+
+msgid "What it’s for, when it was voted"
+msgstr "À quoi elle sert, quand elle a été votée"
+
+msgid "What's the problem?"
+msgstr "Quel est le problème?"
+
+msgid "When did it start? Where exactly? Best times to access the unit?"
+msgstr ""
+"Depuis quand? À quel endroit exactement? Quels sont les meilleurs moments"
+" pour accéder à l’unité?"
+
+msgid ""
+"When it's renewed, add the new policy here; earlier ones are kept. If one"
+" owner has filed the policy, the others don't need to."
+msgstr ""
+"Au renouvellement, ajoutez la nouvelle police ici; les précédentes sont "
+"conservées. Si un copropriétaire a déposé la police, les autres n’ont pas"
+" à le faire."
+
+msgid "Whole building / common area"
+msgstr "Tout l’immeuble / partie commune"
+
+msgid "Will be added"
+msgstr "Sera ajouté"
+
+msgid "Will choose their own password at next sign-in"
+msgstr "Choisira son propre mot de passe à la prochaine connexion"
+
+msgid "Workbook"
+msgstr "Classeur"
+
+msgid "Year"
+msgstr "Année"
+
+msgid "You cannot deactivate your own account."
+msgstr "Vous ne pouvez pas désactiver votre propre compte."
+
+msgid "You don't have permission to view this page."
+msgstr "Vous n’avez pas la permission de voir cette page."
+
+msgid "You have been signed out."
+msgstr "Vous avez été déconnecté."
+
+msgid "You have no upcoming bookings."
+msgstr "Vous n’avez aucune réservation à venir."
+
+msgid ""
+"You're using the temporary administrator account. To make it your own: "
+"add yourself in"
+msgstr ""
+"Vous utilisez le compte administrateur temporaire. Pour en faire votre "
+"compte : ajoutez-vous dans"
+
+msgid "Your access"
+msgstr "Vos accès"
+
+msgid "Your account is not linked to a unit."
+msgstr "Votre compte n’est lié à aucune unité."
+
+msgid "Your account is not linked to a unit; report it as a common-area issue."
+msgstr ""
+"Votre compte n’est lié à aucune unité; signalez-le comme un problème de "
+"partie commune."
+
+msgid "Your decision"
+msgstr "Votre décision"
+
+msgid ""
+"Your password was set by the board. Enter it as the current password, "
+"then choose your own."
+msgstr ""
+"Votre mot de passe a été défini par le conseil. Entrez-le comme mot de "
+"passe actuel, puis choisissez le vôtre."
+
+#, python-format
+msgid "Your repair request is now %(new_status)s: %(req)s"
+msgstr "Votre demande de réparation est maintenant « %(new_status)s » : %(req)s"
+
+#, python-format
+msgid "Your tenant asked for a repair: %(title)s"
+msgstr "Votre locataire a demandé une réparation : %(title)s"
+
+msgid "Your tenant asked for these. Open one to approve or decline it."
+msgstr ""
+"Votre locataire a fait ces demandes. Ouvrez-en une pour l’approuver ou la"
+" refuser."
+
+msgid "Zero — skipped"
+msgstr "Zéro — ignoré"
+
+msgid "a month"
+msgstr "par mois"
+
+msgid "a year"
+msgstr "par année"
+
+msgid "after"
+msgstr "après"
+
+msgid "and will be asked to choose their own password straight away"
+msgstr "et devra choisir son propre mot de passe tout de suite"
+
+#, python-format
+msgid "as of %(month_end)s"
+msgstr "en date du %(month_end)s"
+
+msgid "auto"
+msgstr "auto"
+
+msgid "balances don't match the sheet"
+msgstr "les soldes ne correspondent pas à la feuille"
+
+#, python-format
+msgid "by %(name)s"
+msgstr "par %(name)s"
+
+#, python-format
+msgid "by %(owner_decision_by)s on %(owner_decision_at)s"
+msgstr "par %(owner_decision_by)s le %(owner_decision_at)s"
+
+#, python-format
+msgid "by %(quote_decided_by)s, %(quote_decided_at)s"
+msgstr "par %(quote_decided_by)s, %(quote_decided_at)s"
+
+msgid "by share"
+msgstr "selon la quote-part"
+
+msgid "certificate"
+msgstr "certificat"
+
+msgid "credit"
+msgstr "crédit"
+
+msgid "e.g. Approved at the AGM of April 20"
+msgstr "p. ex. Approuvé à l’assemblée générale du 20 avril"
+
+msgid "e.g. Cleaning company, Accountant, Handyman"
+msgstr "p. ex. Entreprise d’entretien ménager, Comptable, Homme à tout faire"
+
+msgid "e.g. Declaration of co-ownership, AGM minutes 2026"
+msgstr "p. ex. Déclaration de copropriété, procès-verbal de l’AGA 2026"
+
+msgid "e.g. Desjardins"
+msgstr "p. ex. Desjardins"
+
+msgid "e.g. Leaking faucet in bathroom"
+msgstr "p. ex. Robinet qui fuit dans la salle de bain"
+
+msgid "e.g. November condo fee"
+msgstr "p. ex. Frais de condo de novembre"
+
+msgid "e.g. Please get two quotes from licensed plumbers"
+msgstr "p. ex. Veuillez obtenir deux soumissions de plombiers certifiés"
+
+msgid "e.g. Plumber — garage drain"
+msgstr "p. ex. Plombier — drain du garage"
+
+msgid "e.g. Roof replacement"
+msgstr "p. ex. Réfection de la toiture"
+
+msgid "e.g. Roof replacement assessment"
+msgstr "p. ex. Évaluation de la réfection de la toiture"
+
+msgid "e.g. Snow removal — December"
+msgstr "p. ex. Déneigement — décembre"
+
+msgid "e.g. Window replacement 2027"
+msgstr "p. ex. Remplacement des fenêtres 2027"
+
+msgid "e.g. Ying Zhou, by phone"
+msgstr "p. ex. Ying Zhou, par téléphone"
+
+msgid "fixed"
+msgstr "fixe"
+
+#, python-format
+msgid "for %(n)s months"
+msgstr "pour %(n)s mois"
+
+msgid "for the building"
+msgstr "pour l’immeuble"
+
+msgid "from sheet"
+msgstr "de la feuille"
+
+msgid "from the Owners tab · replaces contacts from earlier syncs"
+msgstr ""
+"de l’onglet Owners · remplace les contacts des synchronisations "
+"précédentes"
+
+#, python-format
+msgid "from unit %(number)s."
+msgstr "de l’unité %(number)s."
+
+msgid "https://docs.google.com/spreadsheets/d/…"
+msgstr "https://docs.google.com/spreadsheets/d/…"
+
+msgid "must change at next sign-in"
+msgstr "doit le changer à la prochaine connexion"
+
+msgid "of which late interest"
+msgstr "dont intérêts de retard"
+
+msgid "optional"
+msgstr "facultative"
+
+#, python-format
+msgid "owed %(owed)s · credit %(credit)s"
+msgstr "dû %(owed)s · crédit %(credit)s"
+
+msgid "set a new password"
+msgstr "définir un nouveau mot de passe"
+
+msgid "sheet"
+msgstr "feuille"
+
+msgid "so owners and tenants can see it."
+msgstr "pour que les copropriétaires et les locataires puissent la consulter."
+
+msgid "so the website can read it."
+msgstr "pour que le site puisse la lire."
+
+msgid "sq ft"
+msgstr "pi²"
+
+msgid ""
+"tab is used as a cross-check. Each sync replaces only what came from the "
+"sheet. Entries typed into the app by hand are kept."
+msgstr ""
+"sert de vérification croisée. Chaque synchronisation remplace seulement "
+"ce qui vient de la feuille. Les entrées saisies à la main dans "
+"l’application sont conservées."
+
+msgid "tab, and owner contacts from an optional"
+msgstr "et les contacts des copropriétaires d’un onglet facultatif"
+
+msgid "tab; the"
+msgstr "; l’onglet"
+
+msgid "temporary"
+msgstr "temporaire"
+
+msgid "temporary password"
+msgstr "mot de passe temporaire"
+
+msgid "the previous page"
+msgstr "la page précédente"
+
+msgid "the project"
+msgstr "le projet"
+
+msgid "the request"
+msgstr "la demande"
+
+msgid "the unit"
+msgstr "l’unité"
+
+msgid "to approve"
+msgstr "à approuver"
+
+msgid "to record"
+msgstr "à enregistrer"
+
+#, python-format
+msgid "unit %(number)s"
+msgstr "unité %(number)s"
+
+#, python-format
+msgid "until %(valid_until)s"
+msgstr "jusqu’au %(valid_until)s"
+
+msgid "view"
+msgstr "voir"
+
+#, python-format
+msgid "with the email %(email)s, then give yourself your position in"
+msgstr "avec le courriel %(email)s, puis attribuez-vous votre poste dans"
+
+#, python-format
+msgid "· %(created_at)s UTC"
+msgstr "· %(created_at)s UTC"
+
+#, python-format
+msgid "· %(days)s days left"
+msgstr "· %(days)s jours restants"
+
+#, python-format
+msgid "· %(f)s of the building"
+msgstr "· %(f)s de l’immeuble"
+
+#, python-format
+msgid "· Unit %(number)s"
+msgstr "· Unité %(number)s"
+
+#, python-format
+msgid "· Unit %(number)s · asked by %(name)s on %(created_at)s"
+msgstr "· Unité %(number)s · demandé par %(name)s le %(created_at)s"
+
+#, python-format
+msgid "· asked by %(name)s on %(created_at)s"
+msgstr "· demandé par %(name)s le %(created_at)s"
+
+#, python-format
+msgid "· board approved %(quote_approved_cents)s"
+msgstr "· approuvé par le conseil : %(quote_approved_cents)s"
+
+#, python-format
+msgid "· policy %(policy_number)s"
+msgstr "· police %(policy_number)s"
+
+#, python-format
+msgid "· policyholder %(name)s"
+msgstr "· titulaire %(name)s"
+
+#, python-format
+msgid "· share %(f)s"
+msgstr "· quote-part %(f)s"
+
+#, python-format
+msgid "· unit %(number)s"
+msgstr "· unité %(number)s"
+
+#, python-format
+msgid "· unit %(number)s · %(description)s"
+msgstr "· unité %(number)s · %(description)s"
+
+#, python-format
+msgid "· until %(valid_until)s"
+msgstr "· jusqu’au %(valid_until)s"
+
+msgid "— Choose —"
+msgstr "— Choisir —"
+
+msgid "— Type a new address —"
+msgstr "— Saisir une nouvelle adresse —"
+
+#, python-format
+msgid "— current: %(filename)s; choose a file only to replace it"
+msgstr "— actuel : %(filename)s; choisissez un fichier seulement pour le remplacer"
+
+#, python-format
+msgid "“%(doc)s” deleted."
+msgstr "« %(doc)s » supprimé."
+
+#, python-format
+msgid "“%(doc)s” updated."
+msgstr "« %(doc)s » mis à jour."
+
+#, python-format
+msgid "“%(doc)s” uploaded."
+msgstr "« %(doc)s » téléversé."
+
+msgid "…or preview from a downloaded copy (.xlsx)"
+msgstr "…ou prévisualiser à partir d’une copie téléchargée (.xlsx)"
+
+#, python-format
+msgid "← Back to %(label)s"
+msgstr "← Retour : %(label)s"
+
+msgid "✓ matches"
+msgstr "✓ correspond"
+

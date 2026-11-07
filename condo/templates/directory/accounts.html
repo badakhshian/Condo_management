@@ -1,35 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Accounts · Directory{% endblock %}
+{% block title %}{% trans %}Accounts · Directory{% endtrans %}{% endblock %}
 {% block content %}
 {% include "directory/_tabs.html" %}
-<p class="muted">People you hire, such as a cleaner, a contractor or an outside accountant, who aren't owners or tenants. Give each one only the access they need. Owners' and tenants' logins are managed in the Owners and Tenants tabs.</p>
-{% if bootstrap %}<div class="flash flash-info">No board member has an account yet, so the temporary administrator can set accounts up for now.</div>{% endif %}
+<p class="muted">{% trans %}People you hire, such as a cleaner, a contractor or an outside accountant, who aren't owners or tenants. Give each one only the access they need. Owners' and tenants' logins are managed in the Owners and Tenants tabs.{% endtrans %}</p>
+{% if bootstrap %}<div class="flash flash-info">{% trans %}No board member has an account yet, so the temporary administrator can set accounts up for now.{% endtrans %}</div>{% endif %}
 <div class="head">
   <form class="search" method="get" style="margin:0">
-    <input name="q" placeholder="Search name, email, phone or company" value="{{ q }}">
-    <select name="role" style="width:auto;margin:0"><option value="">Any access</option>
+    <input name="q" placeholder="{{ _('Search name, email, phone or company') }}" value="{{ q }}">
+    <select name="role" style="width:auto;margin:0"><option value="">{% trans %}Any access{% endtrans %}</option>
       {% for k, label in perms.items() %}<option value="{{ k }}" {{ 'selected' if role == k }}>{{ label.split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</option>{% endfor %}</select>
-    <button class="btn">Search</button>
+    <button class="btn">{% trans %}Search{% endtrans %}</button>
   </form>
   <div class="actions">
-    {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">Email all ({{ emails|length }})</a>{% endif %}
-    <a class="btn" href="{{ url_for('directory.export', group='accounts', q=q, role=role) }}">Download CSV</a>
-    <a class="btn primary" href="{{ url_for('residents.new', back=here()) }}">Add account</a>
+    {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">{% trans emails=emails|length %}Email all ({{ emails }}){% endtrans %}</a>{% endif %}
+    <a class="btn" href="{{ url_for('directory.export', group='accounts', q=q, role=role) }}">{% trans %}Download CSV{% endtrans %}</a>
+    <a class="btn primary" href="{{ url_for('residents.new', back=here()) }}">{% trans %}Add account{% endtrans %}</a>
   </div>
 </div>
 <div class="card">
 <table>
-  <thead><tr><th>Name</th><th>Job / company</th><th>Access</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+  <thead><tr><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Job / company{% endtrans %}</th><th>{% trans %}Access{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th></th></tr></thead>
   <tbody>
   {% for u in users %}
-    <tr class="{{ 'inactive' if not u.active }}"><td><strong>{{ u.name }}</strong>{% if not u.active %} <span class="badge status-closed">Inactive</span>{% endif %}</td>
-      <td class="muted">{{ u.job_title or ('Temporary administrator' if u.is_temp_admin else '—') }}</td>
-      <td>{% if u.is_temp_admin %}<span class="tag">Everything</span>{% else %}{% for k in u.permission_keys %}<span class="tag">{{ perms[k].split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</span> {% else %}<span class="muted">None yet</span>{% endfor %}{% endif %}</td>
+    <tr class="{{ 'inactive' if not u.active }}"><td><strong>{{ u.name }}</strong>{% if not u.active %} <span class="badge status-closed">{% trans %}Inactive{% endtrans %}</span>{% endif %}</td>
+      <td class="muted">{{ u.job_title or (_('Temporary administrator') if u.is_temp_admin else '—') }}</td>
+      <td>{% if u.is_temp_admin %}<span class="tag">{% trans %}Everything{% endtrans %}</span>{% else %}{% for k in u.permission_keys %}<span class="tag">{{ perms[k].split(':')[0] }}{{ ' (record)' if k == 'accounting_edit' else '' }}</span> {% else %}<span class="muted">{% trans %}None yet{% endtrans %}</span>{% endfor %}{% endif %}</td>
       <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td><td>{% if u.phone %}<a href="{{ u.phone|tel }}" class="nowrap">{{ u.phone|phone }}</a>{% else %}—{% endif %}</td>
-      <td class="actions nowrap"><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id, back=here()) }}">Edit</a>
-        {% if u.id != current_user.id %}<a class="btn small" href="{{ url_for('residents.set_password', user_id=u.id, back=here()) }}">Set password</a>{% endif %}
-        {% if u.must_change_password %}<span class="tag" title="Will choose their own password at next sign-in">temporary</span>{% endif %}</td></tr>
-  {% else %}<tr><td colspan="6" class="muted">{{ 'No matches.' if q or role else 'No staff accounts yet. Use Add account to give someone you hire access.' }}</td></tr>{% endfor %}
+      <td class="actions nowrap"><a class="btn small" href="{{ url_for('residents.edit', user_id=u.id, back=here()) }}">{% trans %}Edit{% endtrans %}</a>
+        {% if u.id != current_user.id %}<a class="btn small" href="{{ url_for('residents.set_password', user_id=u.id, back=here()) }}">{% trans %}Set password{% endtrans %}</a>{% endif %}
+        {% if u.must_change_password %}<span class="tag" title="{{ _('Will choose their own password at next sign-in') }}">{% trans %}temporary{% endtrans %}</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">{{ _('No matches.') if q or role else _('No staff accounts yet. Use Add account to give someone you hire access.') }}</td></tr>{% endfor %}
   </tbody>
 </table>
 </div>

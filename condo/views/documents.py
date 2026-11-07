@@ -8,6 +8,7 @@ from .. import files
 from ..extensions import db
 from ..models import DOCUMENT_CATEGORIES, DOCUMENT_VISIBILITY, Document, insurance_state
 from ..utils import admin_required, parse_date
+from ..i18n import gettext as _
 
 bp = Blueprint("documents", __name__, url_prefix="/documents")
 
@@ -50,11 +51,11 @@ def _apply_form(doc, form, file, creating):
     category = form.get("category", "other")
     visibility = form.get("visibility", "everyone")
     if not title:
-        errors.append("Give the document a title.")
+        errors.append(_("Give the document a title."))
     if category not in DOCUMENT_CATEGORIES:
-        errors.append("Choose a category.")
+        errors.append(_("Choose a category."))
     if visibility not in DOCUMENT_VISIBILITY:
-        errors.append("Choose who can see it.")
+        errors.append(_("Choose who can see it."))
     dates = {}
     for field, label in (("document_date", "Date"), ("valid_from", "Start date"), ("valid_until", "End date")):
         raw = form.get(field, "").strip()
@@ -66,9 +67,9 @@ def _apply_form(doc, form, file, creating):
         else:
             dates[field] = None
     if category == "insurance" and not (dates.get("valid_from") and dates.get("valid_until")):
-        errors.append("Building insurance needs the policy's start and end dates.")
+        errors.append(_("Building insurance needs the policy's start and end dates."))
     if dates.get("valid_from") and dates.get("valid_until") and dates["valid_until"] < dates["valid_from"]:
-        errors.append("The end date is before the start date.")
+        errors.append(_("The end date is before the start date."))
     stored = files.take_upload(file, errors, required=creating)
     if errors:
         return errors
@@ -93,7 +94,7 @@ def new():
         if not errors:
             db.session.add(doc)
             db.session.commit()
-            flash(f"“{doc.title}” uploaded.", "success")
+            flash(_("“%(doc)s” uploaded.", doc=doc.title), "success")
             return redirect(url_for("documents.index"))
         for e in errors:
             flash(e, "error")
@@ -114,7 +115,7 @@ def edit(doc_id):
         errors = _apply_form(doc, request.form, request.files.get("file"), creating=False)
         if not errors:
             db.session.commit()
-            flash(f"“{doc.title}” updated.", "success")
+            flash(_("“%(doc)s” updated.", doc=doc.title), "success")
             return redirect(url_for("documents.index"))
         db.session.rollback()
         for e in errors:
@@ -135,7 +136,7 @@ def delete(doc_id):
     doc = db.session.get(Document, doc_id) or abort(404)
     db.session.delete(doc)
     db.session.commit()
-    flash(f"“{doc.title}” deleted.", "success")
+    flash(_("“%(doc)s” deleted.", doc=doc.title), "success")
     return redirect(url_for("documents.index"))
 
 

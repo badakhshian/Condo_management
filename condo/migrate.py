@@ -24,6 +24,7 @@ ADDED_COLUMNS = [
     ("insurance_policy", "holder_group", "VARCHAR(10)"),
     ("expense", "category", "VARCHAR(20)"),
     ("user", "must_change_password", "BOOLEAN NOT NULL DEFAULT FALSE"),
+    ("user", "language", "VARCHAR(5)"),
     ("user", "job_title", "VARCHAR(120)"),
     ("payment", "special_id", "INTEGER"),
     ("fee_schedule", "basis", "VARCHAR(10) NOT NULL DEFAULT 'annual'"),

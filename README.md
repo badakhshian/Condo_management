@@ -87,6 +87,26 @@ How a sync works:
 
 The website reads the sheet through its `.xlsx` export, so the sheet must be shared as *Anyone with the link → Viewer*. You can also preview a sync from a downloaded copy of the sheet.
 
+## English and French
+
+Every page, message and notification is available in English and French (Quebec usage). People switch with the
+**EN | FR** button at the top of each page (also on the sign-in page). The choice is saved on their account; before
+they choose, the browser's language is used. Notifications are written in each recipient's own language, and money,
+dates and percentages follow the language (`$34,691.00` / `34 691,00 $`, `Nov 6, 2026` / `6 nov. 2026`).
+Amounts can be typed either way (`1,234.50` or `1 234,50`).
+
+Texts are marked with `_()` / `{% trans %}`; the French is in `condo/translations/fr/LC_MESSAGES/messages.po`.
+After adding or changing texts:
+
+```bash
+pybabel extract -F babel.cfg -k _l -k lazy_gettext --no-location --sort-output -o condo/translations/messages.pot condo
+pybabel update -i condo/translations/messages.pot -d condo/translations --no-fuzzy-matching
+# translate the new entries in messages.po, then:
+pybabel compile -d condo/translations
+```
+
+The compiled `messages.mo` is committed, so the server needs no build step.
+
 ## Deploying to Vercel
 
 `app.py` exposes the Flask app; Vercel detects it and runs it with its Flask runtime.

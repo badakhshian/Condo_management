@@ -5,6 +5,7 @@ from sqlalchemy import func
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .extensions import db, login_manager
+from .i18n import lazy_gettext as _l
 
 
 def utcnow():
@@ -15,18 +16,18 @@ ROLES = ("admin", "owner", "tenant")
 # Accounts are owners or tenants. Managing the building comes from holding a board position
 # (Directory > Board). "admin" only remains for the first, temporary account until its person
 # is in the Directory with a board position; it is then converted automatically.
-ROLE_LABELS = {"owner": "Owner", "tenant": "Tenant", "staff": "Staff", "admin": "Administrator (temporary)"}
-ACCOUNT_ROLES = {"owner": "Owner", "tenant": "Tenant", "staff": "Staff"}
-RESIDENT_ROLES = {"owner": "Owner", "tenant": "Tenant"}
+ROLE_LABELS = {"owner": _l("Owner"), "tenant": _l("Tenant"), "staff": _l("Staff"), "admin": _l("Administrator (temporary)")}
+ACCOUNT_ROLES = {"owner": _l("Owner"), "tenant": _l("Tenant"), "staff": _l("Staff")}
+RESIDENT_ROLES = {"owner": _l("Owner"), "tenant": _l("Tenant")}
 
 # What a hired staff account (not an owner or tenant) may be given access to.
 STAFF_PERMISSIONS = {
-    "maintenance": "Repairs: see and update all repair requests",
-    "accounting": "Accounting: view all units, payments and costs",
-    "accounting_edit": "Accounting: record payments, charges and costs",
-    "directory": "Directory: see owners' and tenants' contact details",
-    "documents": "Documents: see all documents, including managers-only ones",
-    "notices": "Notices: post and edit notices",
+    "maintenance": _l("Repairs: see and update all repair requests"),
+    "accounting": _l("Accounting: view all units, payments and costs"),
+    "accounting_edit": _l("Accounting: record payments, charges and costs"),
+    "directory": _l("Directory: see owners' and tenants' contact details"),
+    "documents": _l("Documents: see all documents, including managers-only ones"),
+    "notices": _l("Notices: post and edit notices"),
 }
 
 
@@ -40,6 +41,7 @@ class User(UserMixin, db.Model):
     unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"))
     active = db.Column(db.Boolean, nullable=False, default=True)
     must_change_password = db.Column(db.Boolean, nullable=False, default=False)
+    language = db.Column(db.String(5))  # 'en' or 'fr'; None = follow the browser
     job_title = db.Column(db.String(120))      # staff: e.g. "Cleaning company"
     permissions = db.Column(db.String(300))    # staff: comma-separated STAFF_PERMISSIONS keys
     created_at = db.Column(db.DateTime, default=utcnow)
@@ -108,7 +110,7 @@ class User(UserMixin, db.Model):
     @property
     def role_label(self):
         if self.is_board:
-            return ", ".join(BOARD_POSITIONS[k] for k in self.board_positions)
+            return ", ".join(str(BOARD_POSITIONS[k]) for k in self.board_positions)
         if self.is_staff and self.job_title:
             return self.job_title
         return ROLE_LABELS.get(self.role, self.role)
@@ -223,8 +225,8 @@ class Unit(db.Model):
         return rows
 
 
-CHARGE_KINDS = {"dues": "Monthly dues", "special": "Special contribution", "fine": "Fine", "other": "Other",
-                "opening": "Opening balance"}
+CHARGE_KINDS = {"dues": _l("Monthly dues"), "special": _l("Special contribution"), "fine": _l("Fine"), "other": _l("Other"),
+                "opening": _l("Opening balance")}
 # Kinds created by the system (dues generation, spreadsheet import), never by the manual charge form.
 SYSTEM_CHARGE_KINDS = ("dues", "opening")
 
@@ -246,9 +248,9 @@ class Charge(db.Model):
 
 
 PAYMENT_METHODS = ("check", "bank transfer", "card", "cash", "purchase credit", "other")
-PAYMENT_METHOD_LABELS = {"bank transfer": "Interac e-Transfer / bank transfer", "check": "Cheque", "card": "Card",
-                         "cash": "Cash", "purchase credit": "Credit for a purchase (owner paid a cost)",
-                         "other": "Other"}
+PAYMENT_METHOD_LABELS = {"bank transfer": _l("Interac e-Transfer / bank transfer"), "check": _l("Cheque"), "card": _l("Card"),
+                         "cash": _l("Cash"), "purchase credit": _l("Credit for a purchase (owner paid a cost)"),
+                         "other": _l("Other")}
 
 
 class Payment(db.Model):
@@ -269,18 +271,21 @@ class Payment(db.Model):
 
     @property
     def label(self):
-        text = self.notes or f"Payment ({self.method})"
+        text = self.notes or str(_l("Payment (%(method)s)", method=PAYMENT_METHOD_LABELS.get(self.method, self.method)))
         return text + (f" #{self.reference}" if self.reference else "")
 
 
-REQUEST_STATUSES = {"awaiting_owner": "Awaiting owner approval", "open": "Open",
-                    "quote_requested": "Owner to get a quote", "quote_review": "Quote awaiting board approval",
-                    "owner_repair": "Approved: owner to do the repair", "in_progress": "In progress",
-                    "resolved": "Resolved", "closed": "Closed"}
+REQUEST_STATUSES = {"awaiting_owner": _l("Awaiting owner approval"), "open": _l("Open"),
+                    "quote_requested": _l("Owner to get a quote"), "quote_review": _l("Quote awaiting board approval"),
+                    "owner_repair": _l("Approved: owner to do the repair"), "in_progress": _l("In progress"),
+                    "resolved": _l("Resolved"), "closed": _l("Closed")}
 ACTIVE_STATUSES = ("awaiting_owner", "open", "quote_requested", "quote_review", "owner_repair", "in_progress")
 QUOTE_STATUSES = ("quote_requested", "quote_review", "owner_repair")
-REQUEST_PRIORITIES = {"low": "Low", "normal": "Normal", "high": "High", "urgent": "Urgent"}
+REQUEST_PRIORITIES = {"low": _l("Low"), "normal": _l("Normal"), "high": _l("High"), "urgent": _l("Urgent")}
 REQUEST_CATEGORIES = ("Plumbing", "Electrical", "HVAC", "Appliance", "Common area", "Security", "Other")
+# Stored in English; shown in the reader's language.
+CATEGORY_LABELS = {"Plumbing": _l("Plumbing"), "Electrical": _l("Electrical"), "HVAC": _l("HVAC"), "Appliance": _l("Appliance"),
+                   "Common area": _l("Common area"), "Security": _l("Security"), "Other": _l("Other")}
 
 
 class MaintenanceRequest(db.Model):
@@ -398,12 +403,12 @@ class ImportBatch(db.Model):
 
 
 COST_CATEGORIES = {
-    "utilities": "Utilities",
-    "insurance": "Insurance",
-    "maintenance": "Maintenance",
-    "repairs": "Repairs & projects",
-    "administration": "Administration",
-    "other": "Other",
+    "utilities": _l("Utilities"),
+    "insurance": _l("Insurance"),
+    "maintenance": _l("Maintenance"),
+    "repairs": _l("Repairs & projects"),
+    "administration": _l("Administration"),
+    "other": _l("Other"),
 }
 _COST_KEYWORDS = [
     ("insurance", ("insurance", "assurance")),
@@ -477,16 +482,16 @@ class Setting(db.Model):
             row.value = value
 
 
-OWNER_ROLES = {"owner": "Owner", "co-owner": "Co-owner", "tenant": "Tenant", "contact": "Other contact"}
+OWNER_ROLES = {"owner": _l("Owner"), "co-owner": _l("Co-owner"), "tenant": _l("Tenant"), "contact": _l("Other contact")}
 
 # Board of directors of the syndicate. Order = display order.
 BOARD_POSITIONS = {
-    "president": "President",
-    "vice-president": "Vice-president",
-    "treasurer": "Treasurer",
-    "secretary": "Secretary",
-    "accounting": "Accounting",
-    "director": "Director",
+    "president": _l("President"),
+    "vice-president": _l("Vice-president"),
+    "treasurer": _l("Treasurer"),
+    "secretary": _l("Secretary"),
+    "accounting": _l("Accounting"),
+    "director": _l("Director"),
 }
 SINGLE_HOLDER_POSITIONS = ("president", "vice-president", "treasurer", "secretary")
 OPEN_TO_CONTACTS = ("accounting",)  # positions an outside contact (not a co-owner) may hold
@@ -538,7 +543,7 @@ class Owner(db.Model):
 
     @property
     def position_labels(self):
-        return [BOARD_POSITIONS[k] for k in self.positions]
+        return [str(BOARD_POSITIONS[k]) for k in self.positions]
 
     @property
     def insurance_group(self):
@@ -576,12 +581,12 @@ class StoredFile(db.Model):
 
 
 DOCUMENT_CATEGORIES = {
-    "syndicate": "Syndicate documents",
-    "insurance": "Building insurance",
-    "minutes": "Annual meeting minutes",
-    "other": "Other",
+    "syndicate": _l("Syndicate documents"),
+    "insurance": _l("Building insurance"),
+    "minutes": _l("Annual meeting minutes"),
+    "other": _l("Other"),
 }
-DOCUMENT_VISIBILITY = {"everyone": "Everyone signed in", "owners": "Owners and managers", "managers": "Managers only"}
+DOCUMENT_VISIBILITY = {"everyone": _l("Everyone signed in"), "owners": _l("Owners and managers"), "managers": _l("Managers only")}
 
 
 class Document(db.Model):
@@ -622,7 +627,7 @@ def insurance_state(valid_until, today=None):
     return "valid"
 
 
-INSURANCE_STATE_LABELS = {"valid": "Insured", "expiring": "Expiring soon", "expired": "Expired", "missing": "No insurance"}
+INSURANCE_STATE_LABELS = {"valid": _l("Insured"), "expiring": _l("Expiring soon"), "expired": _l("Expired"), "missing": _l("No insurance")}
 
 
 class InsurancePolicy(db.Model):
@@ -674,9 +679,9 @@ class Notification(db.Model):
     user = db.relationship("User")
 
 
-REIMBURSEMENT_STATUSES = {"submitted": "Waiting for the president", "approved": "Approved: waiting for accounting",
-                          "declined": "Declined", "settled": "Settled"}
-SETTLE_METHODS = {"credit": "Credit on my next condo payment", "transfer": "Pay me back (e-transfer or cheque)"}
+REIMBURSEMENT_STATUSES = {"submitted": _l("Waiting for the president"), "approved": _l("Approved: waiting for accounting"),
+                          "declined": _l("Declined"), "settled": _l("Settled")}
+SETTLE_METHODS = {"credit": _l("Credit on my next condo payment"), "transfer": _l("Pay me back (e-transfer or cheque)")}
 
 
 class Reimbursement(db.Model):
@@ -766,7 +771,7 @@ def add_months(d, months):
     return date(y, m, min(d.day, calendar.monthrange(y, m)[1]))
 
 
-FEE_BASES = {"annual": "Annual total", "monthly": "Monthly total"}
+FEE_BASES = {"annual": _l("Annual total"), "monthly": _l("Monthly total")}
 RENEWAL_NOTICE_MONTHS = 2
 
 
@@ -845,7 +850,7 @@ class FeeOverride(db.Model):
     __table_args__ = (db.UniqueConstraint("schedule_id", "unit_id", name="uq_fee_override_unit"),)
 
 
-SPLIT_METHODS = {"share": "By ownership share", "equal": "Equally between units", "custom": "Amounts I enter per unit"}
+SPLIT_METHODS = {"share": _l("By ownership share"), "equal": _l("Equally between units"), "custom": _l("Amounts I enter per unit")}
 
 
 class SpecialContribution(db.Model):
@@ -892,7 +897,7 @@ class SpecialContribution(db.Model):
         return min(sum(self.paid_by_unit().values()), self.total_cents)
 
 
-SPECIAL_STATUS_LABELS = {"paid": "Paid", "partial": "Partly paid", "unpaid": "Not paid yet", "overdue": "Overdue"}
+SPECIAL_STATUS_LABELS = {"paid": _l("Paid"), "partial": _l("Partly paid"), "unpaid": _l("Not paid yet"), "overdue": _l("Overdue")}
 
 
 class SpecialShare(db.Model):

@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Add charge{% endblock %}
+{% block title %}{% trans %}Add charge{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Add a charge</h1>
+<h1>{% trans %}Add a charge{% endtrans %}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   <div class="row">
-    <label>Unit <select name="unit_id" required><option value="">Select…</option>
+    <label>{% trans %}Unit{% endtrans %} <select name="unit_id" required><option value="">{% trans %}Select…{% endtrans %}</option>
       {% for u in units %}<option value="{{ u.id }}" {{ 'selected' if form.get('unit_id')|string == u.id|string }}>{{ u.number }}</option>{% endfor %}</select></label>
-    <label>Type <select name="kind">{% for k, label in kinds.items() %}<option value="{{ k }}" {{ 'selected' if form.get('kind') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Type{% endtrans %} <select name="kind">{% for k, label in kinds.items() %}<option value="{{ k }}" {{ 'selected' if form.get('kind') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
-  <label>Description <input name="description" required value="{{ form.get('description', '') }}" placeholder="e.g. Roof replacement assessment"></label>
+  <label>{% trans %}Description{% endtrans %} <input name="description" required value="{{ form.get('description', '') }}" placeholder="{{ _('e.g. Roof replacement assessment') }}"></label>
   <div class="row">
-    <label>Amount <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
-    <label>Due date <input type="date" name="due_date" required value="{{ form.get('due_date', '') }}"></label>
+    <label>{% trans %}Amount{% endtrans %} <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
+    <label>{% trans %}Due date{% endtrans %} <input type="date" name="due_date" required value="{{ form.get('due_date', '') }}"></label>
   </div>
-  <div class="form-actions"><button class="btn primary">Add charge</button>
-  <a href="{{ url_for('billing.index') }}">Cancel</a></div>
+  <div class="form-actions"><button class="btn primary">{% trans %}Add charge{% endtrans %}</button>
+  <a href="{{ url_for('billing.index') }}">{% trans %}Cancel{% endtrans %}</a></div>
 </form>
 {% endblock %}

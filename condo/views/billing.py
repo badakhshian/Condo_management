@@ -8,6 +8,7 @@ from ..extensions import db
 from ..models import (CHARGE_KINDS, COST_CATEGORIES, PAYMENT_METHOD_LABELS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment,
                       Setting, Unit, guess_cost_category)
 from ..utils import admin_required, can_access_unit, permission_required, parse_date, parse_money
+from ..i18n import gettext as _
 
 # Shown as "Accounting"; the blueprint keeps its old name so existing links keep working.
 bp = Blueprint("billing", __name__, url_prefix="/accounting")
@@ -202,9 +203,9 @@ def new_cost():
         category = request.form.get("category", "other")
         refund = request.form.get("kind") == "refund"
         if not description:
-            errors.append("Describe the cost.")
+            errors.append(_("Describe the cost."))
         if category not in COST_CATEGORIES:
-            errors.append("Choose a category.")
+            errors.append(_("Choose a category."))
         try:
             amount = parse_money(request.form.get("amount"))
         except ValueError as e:
@@ -220,7 +221,7 @@ def new_cost():
                                    source=request.form.get("source", "").strip()[:255] or None,
                                    notes=request.form.get("notes", "").strip() or None))
             db.session.commit()
-            flash("Refund recorded." if refund else "Cost recorded.", "success")
+            flash(_("Refund recorded.") if refund else _("Cost recorded."), "success")
             return redirect(url_for("billing.index", view="month", year=spent_on.year, month=spent_on.month))
         for e in errors:
             flash(e, "error")
@@ -234,11 +235,11 @@ def new_cost():
 def delete_cost(cost_id):
     cost = db.session.get(Expense, cost_id) or abort(404)
     if cost.origin == "sheet":
-        flash("This cost comes from the Google Sheet. Change it there; the next sync updates the app.", "error")
+        flash(_("This cost comes from the Google Sheet. Change it there; the next sync updates the app."), "error")
     else:
         db.session.delete(cost)
         db.session.commit()
-        flash("Cost removed.", "success")
+        flash(_("Cost removed."), "success")
     return redirect(request.referrer or url_for("billing.index"))
 
 
@@ -250,7 +251,7 @@ def generate():
         if not 1 <= month <= 12:
             raise ValueError
     except ValueError:
-        flash("Choose a valid billing month.", "error")
+        flash(_("Choose a valid billing month."), "error")
         return redirect(url_for("billing.index"))
     created, skipped = generate_dues(year, month)
     msg = f"Generated dues for {created} unit(s)."
@@ -278,7 +279,7 @@ def _unit_from_form(errors):
     raw = request.form.get("unit_id", "")
     unit = db.session.get(Unit, int(raw)) if raw.isdigit() else None
     if unit is None:
-        errors.append("Select a unit.")
+        errors.append(_("Select a unit."))
     return unit
 
 
@@ -290,10 +291,10 @@ def new_charge():
         unit = _unit_from_form(errors)
         kind = request.form.get("kind", "other")
         if kind not in CHARGE_KINDS or kind in SYSTEM_CHARGE_KINDS:
-            errors.append("Choose a charge type.")
+            errors.append(_("Choose a charge type."))
         description = request.form.get("description", "").strip()
         if not description:
-            errors.append("Description is required.")
+            errors.append(_("Description is required."))
         try:
             amount = parse_money(request.form.get("amount"))
         except ValueError as e:
@@ -306,7 +307,7 @@ def new_charge():
             db.session.add(Charge(unit=unit, kind=kind, description=description,
                                   amount_cents=amount, due_date=due))
             db.session.commit()
-            flash(f"Charge added to unit {unit.number}.", "success")
+            flash(_("Charge added to unit %(number)s.", number=unit.number), "success")
             return redirect(url_for("billing.ledger", unit_id=unit.id))
         for e in errors:
             flash(e, "error")
@@ -324,7 +325,7 @@ def new_payment():
         unit = _unit_from_form(errors)
         method = request.form.get("method", "check")
         if method not in PAYMENT_METHODS:
-            errors.append("Choose a payment method.")
+            errors.append(_("Choose a payment method."))
         try:
             amount = parse_money(request.form.get("amount"))
         except ValueError as e:
@@ -343,7 +344,7 @@ def new_payment():
                                    notes=notes, special_id=special.id if special else None,
                                    recorded_by_id=current_user.id))
             db.session.commit()
-            flash(f"Payment recorded for unit {unit.number}.", "success")
+            flash(_("Payment recorded for unit %(number)s.", number=unit.number), "success")
             if special is not None:
                 return redirect(url_for("fees.special", special_id=special.id))
             return redirect(url_for("billing.ledger", unit_id=unit.id))
@@ -363,11 +364,11 @@ def delete_charge(charge_id):
     charge = db.session.get(Charge, charge_id) or abort(404)
     unit_id = charge.unit_id
     if charge.origin == "sheet":
-        flash("This entry comes from the Google Sheet. Change it there; the next sync updates the app.", "error")
+        flash(_("This entry comes from the Google Sheet. Change it there; the next sync updates the app."), "error")
         return redirect(url_for("billing.ledger", unit_id=unit_id))
     db.session.delete(charge)
     db.session.commit()
-    flash("Charge removed.", "success")
+    flash(_("Charge removed."), "success")
     return redirect(url_for("billing.ledger", unit_id=unit_id))
 
 
@@ -377,11 +378,11 @@ def delete_payment(payment_id):
     payment = db.session.get(Payment, payment_id) or abort(404)
     unit_id = payment.unit_id
     if payment.origin == "sheet":
-        flash("This entry comes from the Google Sheet. Change it there; the next sync updates the app.", "error")
+        flash(_("This entry comes from the Google Sheet. Change it there; the next sync updates the app."), "error")
         return redirect(url_for("billing.ledger", unit_id=unit_id))
     db.session.delete(payment)
     db.session.commit()
-    flash("Payment removed.", "success")
+    flash(_("Payment removed."), "success")
     return redirect(url_for("billing.ledger", unit_id=unit_id))
 
 
@@ -400,6 +401,6 @@ def ledger(unit_id):
 @login_required
 def my_account():
     if current_user.unit_id is None:
-        flash("Your account is not linked to a unit.", "info")
+        flash(_("Your account is not linked to a unit."), "info")
         return redirect(url_for("dashboard.index"))
     return redirect(url_for("billing.ledger", unit_id=current_user.unit_id))

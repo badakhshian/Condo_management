@@ -14,6 +14,7 @@ from .. import sheet_sync
 from ..extensions import csrf, db
 from ..models import ImportBatch, Setting, utcnow
 from ..utils import admin_required
+from ..i18n import gettext as _, ngettext
 
 bp = Blueprint("sheet", __name__, url_prefix="/sheet")
 
@@ -33,7 +34,7 @@ def index():
             cfg = {"url": url, "auto": False}  # a new sheet must be confirmed again
         Setting.put("sheet", cfg)
         db.session.commit()
-        flash("Sheet link saved. Preview a sync to check what it will load.", "success")
+        flash(_("Sheet link saved. Preview a sync to check what it will load."), "success")
         return redirect(url_for("sheet.index"))
     plan = _latest_plan()
     clashes = sheet_sync.clashing_entries(plan) if plan else []
@@ -53,7 +54,7 @@ def preview():
         else:
             cfg = sheet_sync.config()
             if not cfg.get("url"):
-                flash("Save the sheet link first, or upload a copy of the sheet.", "error")
+                flash(_("Save the sheet link first, or upload a copy of the sheet."), "error")
                 return redirect(url_for("sheet.index"))
             data, source = sheet_sync.fetch(cfg["url"]), "Google Sheet"
         plan = sheet_sync.parse(data)
@@ -86,7 +87,7 @@ def review(batch_id):
 def apply(batch_id):
     batch = _plan_batch(batch_id)
     if batch.payload.get("loaded"):
-        flash("This preview was already loaded.", "info")
+        flash(_("This preview was already loaded."), "info")
         return redirect(url_for("sheet.review", batch_id=batch.id))
     summary = sheet_sync.apply(batch.payload)
     payload = dict(batch.payload)
@@ -114,7 +115,7 @@ def resolve_clashes():
     """Remove app-entered charges that block the sheet's entries, then load the sheet again."""
     plan = _latest_plan()
     if not plan:
-        flash("Load the sheet once first.", "error")
+        flash(_("Load the sheet once first."), "error")
         return redirect(url_for("sheet.index"))
     clashes = sheet_sync.clashing_entries(plan)
     for c in clashes:
@@ -122,9 +123,10 @@ def resolve_clashes():
     db.session.flush()
     summary = sheet_sync.apply(plan)
     problems = len(summary["mismatches"]) + len(summary["skipped"])
-    flash(f"Removed {len(clashes)} old entr{'y' if len(clashes) == 1 else 'ies'} and re-applied the sheet."
-          + (" Every unit's balance now matches the sheet." if not problems else f" {problems} item(s) still need a look."),
-          "success" if not problems else "info")
+    flash(ngettext("Removed %(num)s old entry and re-applied the sheet.",
+                   "Removed %(num)s old entries and re-applied the sheet.", len(clashes)), "success" if not problems else "info")
+    flash(_("Every unit's balance now matches the sheet.") if not problems
+          else _("%(problems)s item(s) still need a look.", problems=problems), "success" if not problems else "info")
     return redirect(url_for("sheet.index"))
 
 
@@ -134,7 +136,7 @@ def auto():
     cfg = sheet_sync.config()
     turn_on = request.form.get("auto") == "on"
     if turn_on and not (cfg.get("url") and cfg.get("confirmed")):
-        flash("Load the sheet once from a preview before turning on automatic sync.", "error")
+        flash(_("Load the sheet once from a preview before turning on automatic sync."), "error")
         return redirect(url_for("sheet.index"))
     cfg["auto"] = turn_on
     Setting.put("sheet", cfg)

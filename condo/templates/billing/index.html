@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% from "_macros.html" import balance, csrf, post_button %}
-{% block title %}Accounting · {{ period.label }}{% endblock %}
+{% block title %}{% trans label=period.label %}Accounting · {{ label }}{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>Accounting</h1>
+<div class="head"><h1>{% trans %}Accounting{% endtrans %}</h1>
   <div class="actions">
-    <a class="btn primary" href="{{ url_for('fees.index', year=period.year) }}">Fees &amp; contributions</a>
+    <a class="btn primary" href="{{ url_for('fees.index', year=period.year) }}">{% trans %}Fees &amp; contributions{% endtrans %}</a>
     {% if current_user.can('accounting_edit') %}
-    <a class="btn" href="{{ url_for('sheet.index') }}">Google Sheet</a>
-    <a class="btn" href="{{ url_for('importer.upload') }}">Import from Excel</a>
-    <a class="btn" href="{{ url_for('billing.new_charge') }}">Add charge</a>
-    <a class="btn" href="{{ url_for('reimbursements.index') }}">Reimbursements{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
+    <a class="btn" href="{{ url_for('sheet.index') }}">{% trans %}Google Sheet{% endtrans %}</a>
+    <a class="btn" href="{{ url_for('importer.upload') }}">{% trans %}Import from Excel{% endtrans %}</a>
+    <a class="btn" href="{{ url_for('billing.new_charge') }}">{% trans %}Add charge{% endtrans %}</a>
+    <a class="btn" href="{{ url_for('reimbursements.index') }}">{% trans %}Reimbursements{% endtrans %}{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
     {% endif %}
   </div></div>
 
@@ -18,24 +18,24 @@
 {% if not sheet.get('url') and current_user.can('accounting_edit') %}
 <form method="post" action="{{ url_for('billing.generate') }}" class="card inline-form">
   {{ csrf() }}
-  <strong>Monthly dues</strong>
+  <strong>{% trans %}Monthly dues{% endtrans %}</strong>
   <input type="month" name="period" value="{{ today.strftime('%Y-%m') }}" required>
-  <button class="btn small">Generate</button>
-  <span class="muted">Bills every unit its monthly dues; units already billed for that month are skipped.</span>
+  <button class="btn small">{% trans %}Generate{% endtrans %}</button>
+  <span class="muted">{% trans %}Bills every unit its monthly dues; units already billed for that month are skipped.{% endtrans %}</span>
 </form>
 {% endif %}
 
 <div class="stats">
-  <div class="stat"><span class="credit">{{ paid_total|money }}</span>Payments received · {{ period.label }}</div>
-  <div class="stat"><span class="owed">{{ cost_total|money }}</span>Costs · {{ period.label }}</div>
-  <div class="stat"><span class="{{ 'credit' if paid_total - cost_total >= 0 else 'owed' }}">{{ (paid_total - cost_total)|money }}</span>Net (payments − costs)</div>
-  <div class="stat"><span class="{{ 'owed' if outstanding }}">{{ outstanding|money }}</span>Owed by units today</div>
+  <div class="stat"><span class="credit">{{ paid_total|money }}</span>{% trans label=period.label %}Payments received · {{ label }}{% endtrans %}</div>
+  <div class="stat"><span class="owed">{{ cost_total|money }}</span>{% trans label=period.label %}Costs · {{ label }}{% endtrans %}</div>
+  <div class="stat"><span class="{{ 'credit' if paid_total - cost_total >= 0 else 'owed' }}">{{ (paid_total - cost_total)|money }}</span>{% trans %}Net (payments − costs){% endtrans %}</div>
+  <div class="stat"><span class="{{ 'owed' if outstanding }}">{{ outstanding|money }}</span>{% trans %}Owed by units today{% endtrans %}</div>
 </div>
 
 <section class="card">
-  <h2>Units</h2>
+  <h2>{% trans %}Units{% endtrans %}</h2>
   <table>
-    <thead><tr><th>Unit</th><th>Owner</th><th class="num">Billed · {{ period.label }}</th><th class="num">Paid · {{ period.label }}</th><th class="num">Balance today</th></tr></thead>
+    <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans label=period.label %}Billed · {{ label }}{% endtrans %}</th><th class="num">{% trans label=period.label %}Paid · {{ label }}{% endtrans %}</th><th class="num">{% trans %}Balance today{% endtrans %}</th></tr></thead>
     <tbody>{% for r in rows %}
       <tr><td><a href="{{ url_for('billing.index', view=period.view, year=period.year, month=period.month, unit=r.unit.id) }}">{{ r.unit.number }}</a></td>
         <td class="muted">{{ r.unit.owner_display or '—' }}</td>
@@ -45,51 +45,51 @@
 </section>
 <div class="grid two money-panels">
   <section class="card panel-in">
-    <div class="card-head"><h2>Payments <span class="muted count">{{ payments|length }}</span></h2>
+    <div class="card-head"><h2>{% trans %}Payments{% endtrans %} <span class="muted count">{{ payments|length }}</span></h2>
       <span class="credit">{{ paid_total|money }}</span>
-      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_payment') }}">+ Payment</a>{% endif %}</div>
+      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_payment') }}">{% trans %}+ Payment{% endtrans %}</a>{% endif %}</div>
     {% if payments %}<table>
-      <thead><tr><th>Date</th><th>Unit</th><th>Details</th><th class="num">Amount</th></tr></thead>
+      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
       <tbody>{% for p in payments %}
-        <tr><td class="nowrap">{{ p.paid_on.strftime('%b %d' if period.view == 'month' else '%Y-%m-%d') }}</td>
+        <tr><td class="nowrap">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</td>
           <td><a href="{{ url_for('billing.ledger', unit_id=p.unit_id) }}">{{ p.unit.number }}</a></td>
-          <td class="muted">{{ p.label|truncate(70) }}{% if p.method == 'purchase credit' %} <span class="tag">credit</span>{% endif %}</td>
+          <td class="muted">{{ p.label|truncate(70) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
           <td class="num">{{ p.amount_cents|money }}</td></tr>
       {% endfor %}</tbody>
-    </table>{% else %}<p class="muted">No payments in {{ period.label }}.</p>{% endif %}
+    </table>{% else %}<p class="muted">{% trans label=period.label %}No payments in {{ label }}.{% endtrans %}</p>{% endif %}
   </section>
 
   <section class="card panel-out">
-    <div class="card-head"><h2>Costs <span class="muted count">{{ costs|length }}</span></h2>
+    <div class="card-head"><h2>{% trans %}Costs{% endtrans %} <span class="muted count">{{ costs|length }}</span></h2>
       <span class="owed">{{ cost_total|money }}</span>
-      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_cost') }}">+ Cost</a>{% endif %}</div>
+      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_cost') }}">{% trans %}+ Cost{% endtrans %}</a>{% endif %}</div>
     {% if categories %}<div class="cat-chips">{% for label, amount in categories %}<span class="tag">{{ label }} {{ amount|money }}</span>{% endfor %}</div>{% endif %}
     {% if costs %}<table>
-      <thead><tr><th>Date</th><th>Description</th><th class="num">Amount</th><th></th></tr></thead>
+      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th></th></tr></thead>
       <tbody>{% for x in costs %}
-        <tr><td class="nowrap">{{ x.spent_on.strftime('%b %d' if period.view == 'month' else '%Y-%m-%d') }}</td>
+        <tr><td class="nowrap">{{ x.spent_on|fdate('short' if period.view == 'month' else 'iso') }}</td>
           <td>{{ x.description|truncate(80) }} <span class="tag">{{ x.category_label }}</span>
             {% if x.paid_by %}<div class="excerpt">{{ x.paid_by }}</div>{% endif %}
-            {% if x.approved_by %}<div class="excerpt">Approved: {{ x.approved_by|truncate(60) }}</div>{% endif %}</td>
+            {% if x.approved_by %}<div class="excerpt">{% trans approved_by=x.approved_by|truncate(60) %}Approved: {{ approved_by }}{% endtrans %}</div>{% endif %}</td>
           <td class="num">{{ x.cost_cents|money }}</td>
-          <td>{% if x.origin == 'credit' %}<span class="tag" title="Recorded as a purchase credit on the unit">credit</span>{% elif x.origin == 'sheet' %}<span class="tag" title="Edit in the Google Sheet">sheet</span>{% elif current_user.can('accounting_edit') %}{{ post_button(url_for('billing.delete_cost', cost_id=x.id), '×', cls='link-btn danger', confirm='Remove this cost?') }}{% endif %}</td></tr>
+          <td>{% if x.origin == 'credit' %}<span class="tag" title="{{ _('Recorded as a purchase credit on the unit') }}">{% trans %}credit{% endtrans %}</span>{% elif x.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet') }}">{% trans %}sheet{% endtrans %}</span>{% elif current_user.can('accounting_edit') %}{{ post_button(url_for('billing.delete_cost', cost_id=x.id), '×', cls='link-btn danger', confirm=_('Remove this cost?')) }}{% endif %}</td></tr>
       {% endfor %}</tbody>
-    </table>{% else %}<p class="muted">No costs in {{ period.label }}.</p>{% endif %}
+    </table>{% else %}<p class="muted">{% trans label=period.label %}No costs in {{ label }}.{% endtrans %}</p>{% endif %}
   </section>
 </div>
 
 {% if months %}
 <section class="card">
-  <h2>{{ period.year }} by month</h2>
+  <h2>{% trans year=period.year %}{{ year }} by month{% endtrans %}</h2>
   <table>
-    <thead><tr><th>Month</th><th class="num">Payments</th><th class="num">Costs</th><th class="num">Net</th></tr></thead>
+    <thead><tr><th>{% trans %}Month{% endtrans %}</th><th class="num">{% trans %}Payments{% endtrans %}</th><th class="num">{% trans %}Costs{% endtrans %}</th><th class="num">{% trans %}Net{% endtrans %}</th></tr></thead>
     <tbody>{% for m in months %}
       <tr class="{{ 'muted' if not (m.payments or m.costs) }}"><td><a href="{{ url_for('billing.index', view='month', year=period.year, month=m.month) }}">{{ m.name }}</a></td>
         <td class="num">{{ m.payments|money if m.payments else '—' }}</td>
         <td class="num">{{ m.costs|money if m.costs else '—' }}</td>
         <td class="num {{ 'credit' if m.net > 0 else 'owed' if m.net < 0 }}">{{ m.net|money if (m.payments or m.costs) else '—' }}</td></tr>
     {% endfor %}</tbody>
-    <tfoot><tr><th>Total</th><th class="num">{{ paid_total|money }}</th><th class="num">{{ cost_total|money }}</th><th class="num">{{ (paid_total - cost_total)|money }}</th></tr></tfoot>
+    <tfoot><tr><th>{% trans %}Total{% endtrans %}</th><th class="num">{{ paid_total|money }}</th><th class="num">{{ cost_total|money }}</th><th class="num">{{ (paid_total - cost_total)|money }}</th></tr></tfoot>
   </table>
 </section>
 {% endif %}

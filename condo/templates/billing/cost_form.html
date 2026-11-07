@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf %}
-{% block title %}Add cost{% endblock %}
+{% block title %}{% trans %}Add cost{% endtrans %}{% endblock %}
 {% block content %}
-<h1>Add a cost</h1>
+<h1>{% trans %}Add a cost{% endtrans %}</h1>
 <form method="post" class="card narrow">
   {{ csrf() }}
   <div class="row">
-    <label>Type <select name="kind">
-      <option value="cost" {{ 'selected' if form.get('kind') != 'refund' }}>Cost (money paid out)</option>
-      <option value="refund" {{ 'selected' if form.get('kind') == 'refund' }}>Refund (money back)</option></select></label>
-    <label>Category <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Type{% endtrans %} <select name="kind">
+      <option value="cost" {{ 'selected' if form.get('kind') != 'refund' }}>{% trans %}Cost (money paid out){% endtrans %}</option>
+      <option value="refund" {{ 'selected' if form.get('kind') == 'refund' }}>{% trans %}Refund (money back){% endtrans %}</option></select></label>
+    <label>{% trans %}Category{% endtrans %} <select name="category">{% for k, label in categories.items() %}<option value="{{ k }}" {{ 'selected' if form.get('category') == k }}>{{ label }}</option>{% endfor %}</select></label>
   </div>
-  <label>Description <input name="description" required maxlength="255" value="{{ form.get('description', '') }}" placeholder="e.g. Snow removal — December"></label>
+  <label>{% trans %}Description{% endtrans %} <input name="description" required maxlength="255" value="{{ form.get('description', '') }}" placeholder="{{ _('e.g. Snow removal — December') }}"></label>
   <div class="row">
-    <label>Amount <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
-    <label>Date <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
+    <label>{% trans %}Amount{% endtrans %} <span class="money-input"><input name="amount" inputmode="decimal" placeholder="0.00" required value="{{ form.get('amount', '') }}"></span></label>
+    <label>{% trans %}Date{% endtrans %} <input type="date" name="spent_on" required value="{{ form.get('spent_on', '') }}"></label>
   </div>
   <div class="row">
-    <label>Approved by <input name="approved_by" maxlength="255" value="{{ form.get('approved_by', '') }}"></label>
-    <label>Paid to / reference <input name="source" maxlength="255" value="{{ form.get('source', '') }}"></label>
+    <label>{% trans %}Approved by{% endtrans %} <input name="approved_by" maxlength="255" value="{{ form.get('approved_by', '') }}"></label>
+    <label>{% trans %}Paid to / reference{% endtrans %} <input name="source" maxlength="255" value="{{ form.get('source', '') }}"></label>
   </div>
-  <label>Notes <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
-  <div class="form-actions"><button class="btn primary">Save</button>
-  <a href="{{ url_for('billing.index') }}">Cancel</a></div>
+  <label>{% trans %}Notes{% endtrans %} <textarea name="notes" rows="2">{{ form.get('notes', '') }}</textarea></label>
+  <div class="form-actions"><button class="btn primary">{% trans %}Save{% endtrans %}</button>
+  <a href="{{ url_for('billing.index') }}">{% trans %}Cancel{% endtrans %}</a></div>
 </form>
 {% endblock %}

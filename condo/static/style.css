@@ -441,3 +441,12 @@ body.with-rail { padding-left: 108px; }
   .rail .bell-count { top: 3px; right: calc(50% - 26px); }
   .rail-pop { left: auto; right: 10px; bottom: 84px; }
 }
+
+/* English / Français switch */
+.page-top-right { display: flex; align-items: center; gap: 14px; }
+.lang-switch { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 2px; background: var(--surface); }
+.lang-switch a { padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; color: var(--muted); letter-spacing: .03em; }
+.lang-switch a:hover { color: var(--text); text-decoration: none; }
+.lang-switch a.active { background: var(--primary); color: var(--primary-ink); }
+.public-top { display: flex; justify-content: flex-end; padding: 14px 20px 0; }
+@media (max-width: 760px) { .page-top-right { gap: 8px; } }

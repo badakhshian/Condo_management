@@ -14,7 +14,8 @@ from .. import files, notify
 from ..extensions import db
 from ..models import (COST_CATEGORIES, REIMBURSEMENT_STATUSES, SETTLE_METHODS, Expense, MaintenanceComment,
                       MaintenanceRequest, Payment, Reimbursement, ReimbursementFile, Unit, utcnow)
-from ..utils import board_positions_of, parse_date, parse_money
+from ..utils import board_positions_of, money, parse_date, parse_money
+from ..i18n import gettext as _, lazy_gettext as _l, lazy_money
 
 bp = Blueprint("reimbursements", __name__, url_prefix="/reimbursements")
 
@@ -112,10 +113,10 @@ def new():
         else:
             unit = current_user.unit
         if unit is None:
-            errors.append("Choose the unit that paid.")
+            errors.append(_("Choose the unit that paid."))
         description = request.form.get("description", "").strip()
         if not description:
-            errors.append("Say what was paid for.")
+            errors.append(_("Say what was paid for."))
         try:
             amount = parse_money(request.form.get("amount"))
         except ValueError as e:
@@ -126,13 +127,13 @@ def new():
             errors.append(str(e))
         method = request.form.get("settle_method", "credit")
         if method not in SETTLE_METHODS:
-            errors.append("Choose how you'd like to be reimbursed.")
+            errors.append(_("Choose how you'd like to be reimbursed."))
         category = request.form.get("category", "repairs")
         if category not in COST_CATEGORIES:
             category = "other"
         uploads = [f for f in request.files.getlist("files") if f and f.filename]
         if not uploads:
-            errors.append("Attach the receipt or invoice.")
+            errors.append(_("Attach the receipt or invoice."))
         stored = [files.take_upload(f, errors) for f in uploads]
         if not errors:
             r = Reimbursement(unit=unit, requested_by_id=current_user.id, request=repair,
@@ -143,10 +144,10 @@ def new():
             db.session.add(r)
             db.session.flush()
             _note_on_request(r, f"Reimbursement of ${amount / 100:,.2f} requested.")
-            notify.send(notify.president(), f"Reimbursement to approve: unit {unit.number}, ${amount / 100:,.2f}",
+            notify.send(notify.president(), _l("Reimbursement to approve: unit %(number)s, %(amount)s", number=unit.number, amount=lazy_money(amount)),
                         url=_url(r), body=description, kind="reimbursement")
             db.session.commit()
-            flash("Sent to the president for approval. You'll be notified of the decision.", "success")
+            flash(_("Sent to the president for approval. You'll be notified of the decision."), "success")
             return redirect(_url(r))
         for e in errors:
             flash(e, "error")
@@ -182,23 +183,23 @@ def decide(reimb_id):
     if decision not in ("approve", "decline"):
         abort(400)
     if decision == "decline" and not note:
-        flash("Please give the owner a reason for declining.", "error")
+        flash(_("Please give the owner a reason for declining."), "error")
         return redirect(_url(r))
     r.status = "approved" if decision == "approve" else "declined"
     r.decided_by, r.decided_at, r.decision_note = current_user.name, utcnow(), note or None
-    amount = f"${r.amount_cents / 100:,.2f}"
+    amount = f"${r.amount_cents / 100:,.2f}"  # for the stored note
     if decision == "approve":
-        notify.send([r.requested_by], f"Reimbursement approved: {amount}", url=_url(r),
-                    body="Accounting will now record it.", kind="reimbursement", include_actor=True)
-        notify.send(notify.accounting(), f"Approved reimbursement to record: unit {r.unit.number}, {amount}",
-                    url=_url(r), body=f"{SETTLE_METHODS[r.settle_method]}: {r.description}", kind="reimbursement")
+        notify.send([r.requested_by], _l("Reimbursement approved: %(amount)s", amount=lazy_money(r.amount_cents)), url=_url(r),
+                    body=_l("Accounting will now record it."), kind="reimbursement", include_actor=True)
+        notify.send(notify.accounting(), _l("Approved reimbursement to record: unit %(number)s, %(amount)s", number=r.unit.number, amount=lazy_money(r.amount_cents)),
+                    url=_url(r), body=_l("%(settle_method)s: %(description)s", settle_method=SETTLE_METHODS[r.settle_method], description=r.description), kind="reimbursement")
         _note_on_request(r, f"Reimbursement of {amount} approved by {current_user.name}.")
     else:
-        notify.send([r.requested_by], f"Reimbursement declined: {amount}", url=_url(r), body=note,
+        notify.send([r.requested_by], _l("Reimbursement declined: %(amount)s", amount=lazy_money(r.amount_cents)), url=_url(r), body=note,
                     kind="reimbursement", include_actor=True)
         _note_on_request(r, f"Reimbursement of {amount} declined by {current_user.name}: {note}")
     db.session.commit()
-    flash("Approved. Accounting has been notified." if decision == "approve" else "Declined. The owner has been told why.",
+    flash(_("Approved. Accounting has been notified.") if decision == "approve" else _("Declined. The owner has been told why."),
           "success")
     return redirect(_url(r))
 
@@ -233,11 +234,17 @@ def settle(reimb_id):
         done = "paid back"
     r.status, r.settled_by, r.settled_at, r.settle_reference = "settled", current_user.name, utcnow(), reference
     amount = f"${r.amount_cents / 100:,.2f}"
-    notify.send([r.requested_by], f"Reimbursement settled: {amount} {done}", url=_url(r), kind="reimbursement",
-                include_actor=True)
+    if r.settle_method == "credit":
+        title = _l("Reimbursement settled: %(amount)s credited to unit %(number)s's account",
+                   amount=lazy_money(r.amount_cents), number=r.unit.number)
+        msg = _("Recorded: %(amount)s credited to unit %(number)s's account.", amount=money(r.amount_cents), number=r.unit.number)
+    else:
+        title = _l("Reimbursement settled: %(amount)s paid back", amount=lazy_money(r.amount_cents))
+        msg = _("Recorded: %(amount)s paid back.", amount=money(r.amount_cents))
+    notify.send([r.requested_by], title, url=_url(r), kind="reimbursement", include_actor=True)
     _note_on_request(r, f"Reimbursement of {amount} {done}.")
     db.session.commit()
-    flash(f"Recorded: {amount} {done}.", "success")
+    flash(msg, "success")
     return redirect(_url(r))
 
 
