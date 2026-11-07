@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 05:14+0000\n"
+"POT-Creation-Date: 2026-11-07 06:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -932,6 +932,9 @@ msgstr ""
 msgid "Company or store"
 msgstr ""
 
+msgid "Condo Management"
+msgstr ""
+
 #, python-format
 msgid "Condo fee · %(year)s"
 msgstr ""
@@ -947,6 +950,14 @@ msgstr ""
 
 #, python-format
 msgid "Condo fees: the current rates end on %(end)s"
+msgstr ""
+
+msgid "Condo management by DMBT"
+msgstr ""
+
+msgid ""
+"Condo management by DMBT: accounting, repairs, documents, votes and more "
+"for owners and the board."
 msgstr ""
 
 msgid "Confirm and load"
@@ -1836,6 +1847,9 @@ msgstr ""
 msgid ""
 "Names differ between the workbook's sheets. These come from the monthly-"
 "fee table; correct them before loading."
+msgstr ""
+
+msgid "Need help? Contact DMBT support:"
 msgstr ""
 
 msgid "Net"
@@ -3677,6 +3691,9 @@ msgstr ""
 
 #, python-format
 msgid "by %(quote_decided_by)s, %(quote_decided_at)s"
+msgstr ""
+
+msgid "by DMBT"
 msgstr ""
 
 msgid "by share"

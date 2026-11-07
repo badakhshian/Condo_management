@@ -101,6 +101,25 @@ def create_app(test_config=None):
                 403: _l("You don't have permission to view this page."),
                 404: _l("We couldn't find that page.")}
 
+    @app.route("/manifest.webmanifest")
+    def manifest():
+        """Lets phones and computers install the portal as an app (Add to Home Screen)."""
+        from flask import jsonify, url_for
+        from .i18n import gettext as _
+        name = app.config["CONDO_NAME"]
+        resp = jsonify({
+            "name": name, "short_name": "Condo", "description": _("Condo management by DMBT"),
+            "start_url": "/", "scope": "/", "display": "standalone", "orientation": "any",
+            "background_color": "#FAF7F2", "theme_color": "#E8612C",
+            "icons": [
+                {"src": url_for("static", filename="icons/icon-192.png"), "sizes": "192x192", "type": "image/png"},
+                {"src": url_for("static", filename="icons/icon-512.png"), "sizes": "512x512", "type": "image/png"},
+                {"src": url_for("static", filename="icons/maskable-512.png"), "sizes": "512x512", "type": "image/png",
+                 "purpose": "maskable"},
+            ]})
+        resp.mimetype = "application/manifest+json"
+        return resp
+
     def handle_error(err):
         code = getattr(err, "code", 500)
         return render_template("error.html", code=code,

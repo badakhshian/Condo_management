@@ -530,3 +530,11 @@ td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
   .rail svg { width: 21px; height: 21px; }
   .rail-mark { width: 36px; height: 36px; font-size: .8rem; }
 }
+
+/* "Condo Management by DMBT" footer, like TactLab's */
+.site-footer { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 14px;
+  max-width: 1150px; margin: 0 auto; padding: 18px 24px 26px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--border); }
+.site-footer strong { color: var(--text); }
+.site-footer a { color: var(--primary); }
+.site-footer .dot { color: var(--border); }
+@media (max-width: 760px) { .site-footer { padding-bottom: 110px; } .site-footer .dot { display: none; } }

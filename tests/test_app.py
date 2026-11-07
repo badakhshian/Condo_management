@@ -283,3 +283,13 @@ def test_seed_command(app):
     result = runner.invoke(args=["seed"])
     assert result.exit_code == 0, result.output
     assert db.session.scalar(db.select(db.func.count(Unit.id))) == 16
+
+
+def test_installable_as_an_app_and_branded_dmbt(client):
+    m = client.get("/manifest.webmanifest")
+    assert m.status_code == 200 and m.mimetype == "application/manifest+json"
+    data = m.get_json()
+    assert data["display"] == "standalone" and any(i["sizes"] == "512x512" for i in data["icons"])
+    page = client.get("/login").data.decode()
+    assert 'rel="manifest"' in page and "apple-touch-icon" in page
+    assert "by DMBT" in page and "support@dmbtgroup.com" in page
