@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 01:52+0000\n"
+"POT-Creation-Date: 2026-11-07 02:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1026,6 +1026,12 @@ msgstr ""
 msgid "Delete this notice?"
 msgstr ""
 
+msgid "Delete this project? Its updates and quote are deleted too."
+msgstr ""
+
+msgid "Delete this request? Its updates and quote are deleted too."
+msgstr ""
+
 msgid "Delete this routine task and its history?"
 msgstr ""
 
@@ -1415,9 +1421,6 @@ msgid "In progress"
 msgstr ""
 
 msgid "In the app now"
-msgstr ""
-
-msgid "In unit"
 msgstr ""
 
 msgid "Inactive"
@@ -2301,6 +2304,10 @@ msgstr ""
 msgid "Project added."
 msgstr ""
 
+#, python-format
+msgid "Project deleted: %(title)s."
+msgstr ""
+
 msgid "Project details saved."
 msgstr ""
 
@@ -2517,6 +2524,10 @@ msgid "Request"
 msgstr ""
 
 msgid "Request a reimbursement"
+msgstr ""
+
+#, python-format
+msgid "Request deleted: %(title)s."
 msgstr ""
 
 msgid "Request reimbursement"
@@ -3499,10 +3510,6 @@ msgstr ""
 
 #, python-format
 msgid "unit %(number)s"
-msgstr ""
-
-#, python-format
-msgid "until %(valid_until)s"
 msgstr ""
 
 msgid "view"

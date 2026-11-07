@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 01:52+0000\n"
+"POT-Creation-Date: 2026-11-07 02:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -1004,6 +1004,12 @@ msgstr "Supprimer ce document?"
 msgid "Delete this notice?"
 msgstr "Supprimer cet avis?"
 
+msgid "Delete this project? Its updates and quote are deleted too."
+msgstr "Supprimer ce projet? Son suivi et sa soumission seront aussi supprimés."
+
+msgid "Delete this request? Its updates and quote are deleted too."
+msgstr "Supprimer cette demande? Son suivi et sa soumission seront aussi supprimés."
+
 msgid "Delete this routine task and its history?"
 msgstr "Supprimer cette tâche d’entretien courant et son historique?"
 
@@ -1380,9 +1386,6 @@ msgstr "En cours"
 
 msgid "In the app now"
 msgstr "Dans l’application actuellement"
-
-msgid "In unit"
-msgstr "Dans l’unité"
 
 msgid "Inactive"
 msgstr "Inactif"
@@ -2238,6 +2241,10 @@ msgstr "Projet"
 msgid "Project added."
 msgstr "Projet ajouté."
 
+#, python-format
+msgid "Project deleted: %(title)s."
+msgstr "Projet supprimé : %(title)s."
+
 msgid "Project details saved."
 msgstr "Détails du projet enregistrés."
 
@@ -2451,6 +2458,10 @@ msgstr "Demande"
 
 msgid "Request a reimbursement"
 msgstr "Demander un remboursement"
+
+#, python-format
+msgid "Request deleted: %(title)s."
+msgstr "Demande supprimée : %(title)s."
 
 msgid "Request reimbursement"
 msgstr "Demander un remboursement"
@@ -3379,10 +3390,6 @@ msgstr "à enregistrer"
 #, python-format
 msgid "unit %(number)s"
 msgstr "unité %(number)s"
-
-#, python-format
-msgid "until %(valid_until)s"
-msgstr "jusqu’au %(valid_until)s"
 
 msgid "view"
 msgstr "voir"

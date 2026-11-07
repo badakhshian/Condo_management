@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, status_badge, priority_badge, post_button %}
+{% from "_icons.html" import icon_post %}
 {% block title %}{{ _('Project') if req.is_project else _('Request') }} #{{ req.id }}{% endblock %}
 {% block content %}
 <div class="head"><h1>#{{ req.id }} · {{ req.title }}</h1>
-  <div>{{ priority_badge(req.priority, priorities) }} {{ status_badge(req.status, statuses) }}</div></div>
+  <div class="actions">{{ priority_badge(req.priority, priorities) }} {{ status_badge(req.status, statuses) }}
+    {% if can_delete %}{{ icon_post('trash', url_for('maintenance.delete', request_id=req.id), _('Delete'), cls='danger',
+         confirm=(_('Delete this project? Its updates and quote are deleted too.') if req.is_project else _('Delete this request? Its updates and quote are deleted too.'))) }}{% endif %}</div></div>
 <div class="grid two wide-left">
   <section>
     <div class="card">

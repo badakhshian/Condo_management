@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import status_badge, priority_badge %}
+{% from "_icons.html" import icon_post %}
 {% block title %}{{ tabs[tab] }}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans %}Projects &amp; Maintenance{% endtrans %}</h1>
@@ -16,26 +17,26 @@
 <div class="card">
 <table>
   {% if tab == 'projects' %}
-  <thead><tr><th>#</th><th>{% trans %}Project{% endtrans %}</th><th>{% trans %}Location{% endtrans %}</th><th class="num">{% trans %}Budget{% endtrans %}</th><th>{% trans %}Target date{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th>{% trans %}Added{% endtrans %}</th></tr></thead>
+  <thead><tr>{% if can_add_projects %}<th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th>{% endif %}<th>#</th><th>{% trans %}Project{% endtrans %}</th><th>{% trans %}Location{% endtrans %}</th><th class="num">{% trans %}Budget{% endtrans %}</th><th>{% trans %}Target date{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th>{% trans %}Added{% endtrans %}</th></tr></thead>
   <tbody>
   {% for r in requests %}
-    <tr><td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a> <span class="muted">· {{ CATEGORY_LABELS.get(r.category, r.category) }}</span></td>
+    <tr>{% if can_add_projects %}<td class="row-actions">{{ icon_post('trash', url_for('maintenance.delete', request_id=r.id), _('Delete'), cls='danger', confirm=(_('Delete this project? Its updates and quote are deleted too.') if r.is_project else _('Delete this request? Its updates and quote are deleted too.'))) }}</td>{% endif %}<td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a> <span class="muted">· {{ CATEGORY_LABELS.get(r.category, r.category) }}</span></td>
       <td>{{ _('Unit %(number)s', number=r.unit.number) if r.unit else _('Building') }}</td>
       <td class="num">{{ r.budget_cents|money if r.budget_cents is not none else '—' }}</td>
       <td class="nowrap">{{ r.target_date|fdate('medium') if r.target_date else '—' }}</td>
       <td>{{ status_badge(r.status, statuses) }}</td>
       <td>{{ r.created_at|fdate('iso') }} <span class="muted">· {{ r.submitted_by.name }}</span></td></tr>
-  {% else %}<tr><td colspan="7" class="muted">{% if status == 'all' %}{% trans %}No projects yet.{% endtrans %}{% else %}{% trans %}No projects here.{% endtrans %}{% endif %}{% if can_add_projects %} {% trans %}Projects are planned work for the building, such as a roof, windows or a renovation.{% endtrans %}{% endif %}</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="{{ 8 if can_add_projects else 7 }}" class="muted">{% if status == 'all' %}{% trans %}No projects yet.{% endtrans %}{% else %}{% trans %}No projects here.{% endtrans %}{% endif %}{% if can_add_projects %} {% trans %}Projects are planned work for the building, such as a roof, windows or a renovation.{% endtrans %}{% endif %}</td></tr>{% endfor %}
   </tbody>
   {% else %}
-  <thead><tr><th>#</th><th>{% trans %}Title{% endtrans %}</th><th>{% trans %}Location{% endtrans %}</th><th>{% trans %}Category{% endtrans %}</th><th>{% trans %}Priority{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th>{% trans %}Submitted{% endtrans %}</th></tr></thead>
+  <thead><tr>{% if can_add_projects %}<th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th>{% endif %}<th>#</th><th>{% trans %}Title{% endtrans %}</th><th>{% trans %}Location{% endtrans %}</th><th>{% trans %}Category{% endtrans %}</th><th>{% trans %}Priority{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th>{% trans %}Submitted{% endtrans %}</th></tr></thead>
   <tbody>
   {% for r in requests %}
-    <tr><td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a></td>
+    <tr>{% if can_add_projects %}<td class="row-actions">{{ icon_post('trash', url_for('maintenance.delete', request_id=r.id), _('Delete'), cls='danger', confirm=(_('Delete this project? Its updates and quote are deleted too.') if r.is_project else _('Delete this request? Its updates and quote are deleted too.'))) }}</td>{% endif %}<td>{{ r.id }}</td><td><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a></td>
       <td>{{ _('Unit %(number)s', number=r.unit.number) if r.unit else _('Common area') }}</td><td>{{ CATEGORY_LABELS.get(r.category, r.category) }}</td>
       <td>{{ priority_badge(r.priority, priorities) }}</td><td>{{ status_badge(r.status, statuses) }}</td>
       <td>{{ r.created_at|fdate('iso') }} <span class="muted">· {{ r.submitted_by.name }}</span></td></tr>
-  {% else %}<tr><td colspan="7" class="muted">{% trans %}No requests.{% endtrans %}</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="{{ 8 if can_add_projects else 7 }}" class="muted">{% trans %}No requests.{% endtrans %}</td></tr>{% endfor %}
   </tbody>
   {% endif %}
 </table>

@@ -205,7 +205,7 @@ def detail(request_id):
     return render_template("maintenance/detail.html", req=req, statuses=REQUEST_STATUSES,
                            priorities=REQUEST_PRIORITIES, can_decide=can_decide(req), owner_accounts=owners,
                            board=is_board(), unit_owner=is_unit_owner(req), accept=files.ACCEPT,
-                           can_projects=can_add_projects())
+                           can_projects=can_add_projects(), can_delete=can_delete(req))
 
 
 def is_unit_owner(req, user=None):
@@ -378,6 +378,36 @@ def project_details(request_id):
     db.session.commit()
     flash(_("Moved to Projects.") if moved and kind == "project" else _("Moved to Maintenance.") if moved else _("Project details saved."), "success")
     return redirect(_url(req))
+
+
+def can_delete(req, user=None):
+    """The board and repair staff can delete anything; the person who asked can delete their own request
+    while nothing has happened on it yet."""
+    user = user or current_user
+    if sees_all(user):
+        return True
+    untouched = req.status in ("open", "awaiting_owner") and not any(c.author_id != user.id for c in req.comments)
+    return req.submitted_by_id == user.id and req.kind == "maintenance" and untouched
+
+
+@bp.route("/<int:request_id>/delete", methods=["POST"])
+@login_required
+def delete(request_id):
+    req = _get_visible(request_id)
+    if not can_delete(req):
+        abort(403)
+    from ..models import Reimbursement
+    for r in db.session.scalars(db.select(Reimbursement).where(Reimbursement.request_id == req.id)):
+        r.request_id = None  # reimbursements are money records: keep them, just unlink
+    tab = "projects" if req.is_project else "maintenance"
+    title, quote = req.title, req.quote_file
+    db.session.delete(req)
+    if quote is not None:
+        db.session.delete(quote)
+    db.session.commit()
+    flash(_("Project deleted: %(title)s.", title=title) if tab == "projects"
+          else _("Request deleted: %(title)s.", title=title), "success")
+    return redirect(url_for("maintenance.index", tab=tab))
 
 
 @bp.route("/<int:request_id>/comment", methods=["POST"])
