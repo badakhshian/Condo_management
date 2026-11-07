@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ _('Edit draft vote') if poll.id else _('New vote') }}{% endblock %}
+{% block content %}
+<h1>{{ _('Edit draft vote') if poll.id else _('New vote') }}</h1>
+<form method="post" class="card narrow" id="poll-form">
+  {{ csrf() }}
+  <p class="muted">{% trans %}This is a draft: nobody is notified until you publish it.{% endtrans %}</p>
+  <label>{% trans %}Question{% endtrans %} <input name="title" required maxlength="200" value="{{ form.title }}" placeholder="{{ _('e.g. Approve the 2027 roof replacement budget of $85,000?') }}"></label>
+  <label>{% trans %}Details{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><textarea name="description" rows="4" placeholder="{{ _('Background, quotes considered, what happens if it passes…') }}">{{ form.description }}</textarea></label>
+  <fieldset>
+    <legend>{% trans %}Choices{% endtrans %}</legend>
+    <div id="options">{% for o in form.options %}<input name="options" maxlength="200" value="{{ o }}" class="option-input">{% endfor %}</div>
+    <button type="button" class="btn small" id="add-option">+ {% trans %}Add a choice{% endtrans %}</button>
+  </fieldset>
+  <fieldset>
+    <legend>{% trans %}Who votes{% endtrans %}</legend>
+    {% for k, label in audiences.items() %}<label class="check"><input type="radio" name="audience" value="{{ k }}" {{ 'checked' if form.audience == k }}> {{ label }}</label>{% endfor %}
+    <div id="unit-pick" class="unit-pick">{% for u in units %}<label class="check"><input type="checkbox" name="unit_ids" value="{{ u.id }}" {{ 'checked' if u.id in form.unit_ids }}> {{ u.number }}{% if u.ownership_share %} <span class="muted">({{ (u.ownership_share * 100)|pct }})</span>{% endif %}</label>{% endfor %}</div>
+  </fieldset>
+  <label id="weighting-field">{% trans %}How votes are counted{% endtrans %}
+    <select name="weighting">{% for k, label in weightings.items() %}<option value="{{ k }}" {{ 'selected' if form.weighting == k }}>{{ label }}</option>{% endfor %}</select>
+    <span class="field-hint">{% trans %}With ownership share, a unit that owns an eighth of the building counts for an eighth of the vote; if it has two owners, each counts for half.{% endtrans %}</span></label>
+  <label>{% trans %}Deadline (Montreal time){% endtrans %} <input type="datetime-local" name="deadline" required value="{{ form.deadline }}"></label>
+  <div class="form-actions"><button class="btn primary">{% trans %}Save draft{% endtrans %}</button>
+    <a href="{{ url_for('votes.detail', poll_id=poll.id) if poll.id else url_for('votes.index') }}">{% trans %}Cancel{% endtrans %}</a></div>
+</form>
+<script>
+(function () {
+  var f = document.getElementById('poll-form'), box = document.getElementById('options');
+  document.getElementById('add-option').onclick = function () {
+    var i = document.createElement('input'); i.name = 'options'; i.maxLength = 200; i.className = 'option-input'; box.appendChild(i); i.focus();
+  };
+  function sync() {
+    var a = (f.querySelector('input[name=audience]:checked') || {}).value;
+    document.getElementById('unit-pick').hidden = a !== 'units';
+    document.getElementById('weighting-field').hidden = a === 'board';
+  }
+  f.querySelectorAll('input[name=audience]').forEach(function (r) { r.addEventListener('change', sync); }); sync();
+})();
+</script>
+{% endblock %}

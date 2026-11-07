@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 04:48+0000\n"
+"POT-Creation-Date: 2026-11-07 05:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -71,6 +71,10 @@ msgstr "%(logout)sSe déconnecter"
 #, python-format
 msgid "%(month_label)s, or they will be billed twice."
 msgstr "%(month_label)s, sinon ils seront facturés deux fois."
+
+#, python-format
+msgid "%(n)s voter(s)"
+msgstr "%(n)s votant(s)"
 
 #, python-format
 msgid "%(name)s added to unit %(number)s."
@@ -185,12 +189,19 @@ msgid "%(user)sMy profile"
 msgstr "%(user)sMon profil"
 
 #, python-format
+msgid "%(voted)s of %(eligible)s voters voted, representing %(turnout)s of the vote."
+msgstr "%(voted)s votants sur %(eligible)s ont voté, ce qui représente %(turnout)s des voix."
+
+#, python-format
 msgid "%(year)s by month"
 msgstr "%(year)s par mois"
 
 #, python-format
 msgid "%(year)s: %(monthly_total_cents)s a month"
 msgstr "%(year)s : %(monthly_total_cents)s par mois"
+
+msgid "(Montreal time)"
+msgstr "(heure de Montréal)"
 
 msgid "(contact)"
 msgstr "(contact)"
@@ -245,6 +256,9 @@ msgstr "<span class=\"muted\">Aucun compte</span>"
 msgid "<span class=\"muted\">Vacant</span>"
 msgstr "<span class=\"muted\">Vacant</span>"
 
+msgid "A published vote can't be changed."
+msgstr "Un vote publié ne peut pas être modifié."
+
 msgid "A short title is required."
 msgstr "Un titre court est obligatoire."
 
@@ -260,6 +274,9 @@ msgstr "Une unité :"
 
 msgid "A valid email is required."
 msgstr "Une adresse courriel valide est obligatoire."
+
+msgid "Abstain"
+msgstr "Abstention"
 
 msgid "Access"
 msgstr "Accès"
@@ -326,6 +343,9 @@ msgstr "Ajouter"
 
 msgid "Add a charge"
 msgstr "Ajouter des frais"
+
+msgid "Add a choice"
+msgstr "Ajouter un choix"
 
 msgid "Add a comment"
 msgstr "Ajouter un commentaire"
@@ -415,6 +435,9 @@ msgstr "Tout"
 
 msgid "All notices →"
 msgstr "Tous les avis →"
+
+msgid "All owners"
+msgstr "Tous les copropriétaires"
 
 msgid "All units"
 msgstr "Toutes les unités"
@@ -582,6 +605,9 @@ msgstr "Retour"
 msgid "Back to dashboard"
 msgstr "Retour au tableau de bord"
 
+msgid "Background, quotes considered, what happens if it passes…"
+msgstr "Contexte, soumissions examinées, ce qui se passe si la proposition est adoptée…"
+
 msgid "Balance"
 msgstr "Solde"
 
@@ -599,6 +625,9 @@ msgstr "Soldes en date du (facultatif)"
 
 msgid "Balances tab"
 msgstr "Onglet Soldes"
+
+msgid "Ballots"
+msgstr "Bulletins"
 
 msgid "Bedrooms"
 msgstr "Chambres"
@@ -625,6 +654,9 @@ msgstr "Facture à chaque unité ses frais mensuels; les unités déjà facturé
 
 msgid "Board"
 msgstr "Conseil"
+
+msgid "Board members"
+msgstr "Membres du conseil"
 
 msgid "Board of directors"
 msgstr "Conseil d’administration"
@@ -679,6 +711,9 @@ msgstr "Par %(name)s le %(when)s UTC."
 msgid "By ownership share"
 msgstr "Selon la quote-part"
 
+msgid "By ownership share (a unit's owners split its share)"
+msgstr "Selon la quote-part (les copropriétaires d’une unité se partagent sa quote-part)"
+
 msgid "CRON_SECRET isn't set on the server, so scheduled checks can't run yet."
 msgstr "CRON_SECRET n’est pas défini sur le serveur : les vérifications planifiées ne peuvent pas encore s’exécuter."
 
@@ -703,6 +738,9 @@ msgstr "Certificat (PDF ou photo, 4 Mo maximum)"
 msgid "Change"
 msgstr "Modifier"
 
+msgid "Change my vote"
+msgstr "Modifier mon vote"
+
 msgid "Change password (optional)"
 msgstr "Changer le mot de passe (facultatif)"
 
@@ -722,11 +760,20 @@ msgstr "Frais supprimés."
 msgid "Charges"
 msgstr "Frais"
 
+msgid "Check the question, the choices and the voters below. Publishing notifies them and voting opens until the deadline; a published vote can't be changed."
+msgstr "Vérifiez la question, les choix et les votants ci-dessous. La publication les avise et le vote est ouvert jusqu’à l’échéance; un vote publié ne peut pas être modifié."
+
 msgid "Cheque"
 msgstr "Chèque"
 
 msgid "Cheque no. or transfer ID"
 msgstr "N° de chèque ou de virement"
+
+msgid "Choice"
+msgstr "Choix"
+
+msgid "Choices"
+msgstr "Choix"
 
 msgid "Choose Owner or Tenant. Managing the building comes from a board position."
 msgstr "Choisissez Copropriétaire ou Locataire. La gestion de l’immeuble vient d’un poste au conseil."
@@ -770,6 +817,9 @@ msgstr "Choisissez un mois valide."
 msgid "Choose annual total or monthly total."
 msgstr "Choisissez le total annuel ou le total mensuel."
 
+msgid "Choose at least one unit."
+msgstr "Choisissez au moins une unité."
+
 msgid "Choose both the first and the last month of the season, or neither."
 msgstr "Choisissez le premier et le dernier mois de la saison, ou aucun des deux."
 
@@ -779,8 +829,14 @@ msgstr "Choisissez la fréquence."
 msgid "Choose how to split it."
 msgstr "Choisissez comment répartir le montant."
 
+msgid "Choose how votes are counted."
+msgstr "Choisissez comment les voix sont comptées."
+
 msgid "Choose how you'd like to be reimbursed."
 msgstr "Choisissez comment vous souhaitez être remboursé."
+
+msgid "Choose one of the answers."
+msgstr "Choisissez une des réponses."
 
 msgid "Choose the Excel file to upload."
 msgstr "Choisissez le fichier Excel à téléverser."
@@ -797,6 +853,9 @@ msgstr "Choisissez l’unité que cette personne possède ou loue."
 msgid "Choose who can see it."
 msgstr "Choisissez qui peut le voir."
 
+msgid "Choose who votes."
+msgstr "Choisissez qui vote."
+
 msgid "Choose your own password (required)"
 msgstr "Choisissez votre propre mot de passe (obligatoire)"
 
@@ -812,11 +871,20 @@ msgstr "Fermer la demande"
 msgid "Close this request?"
 msgstr "Fermer cette demande?"
 
+msgid "Close voting now"
+msgstr "Fermer le vote maintenant"
+
+msgid "Close voting now?"
+msgstr "Fermer le vote maintenant?"
+
 msgid "Closed"
 msgstr "Fermée"
 
 msgid "Closes (hour)"
 msgstr "Fermeture (heure)"
+
+msgid "Closes voting now and shows the results to the voters."
+msgstr "Ferme le vote immédiatement et montre les résultats aux votants."
 
 msgid "Co-owner"
 msgstr "Copropriétaire indivis"
@@ -920,6 +988,9 @@ msgstr "Dépenses · %(label)s"
 msgid "Couldn't reach Google Sheets. Try again in a minute."
 msgstr "Impossible de joindre Google Sheets. Réessayez dans une minute."
 
+msgid "Counted"
+msgstr "Calcul"
+
 msgid "Create login"
 msgstr "Créer l’accès"
 
@@ -969,6 +1040,9 @@ msgstr "Date de réception"
 msgid "Deadline"
 msgstr "Échéance"
 
+msgid "Deadline (Montreal time)"
+msgstr "Échéance (heure de Montréal)"
+
 #, python-format
 msgid "Deadline moved to %(new)s."
 msgstr "Échéance reportée au %(new)s."
@@ -1007,6 +1081,9 @@ msgstr "Supprimer cette dépense? Elle vient de la feuille Google : supprimez au
 msgid "Delete this document?"
 msgstr "Supprimer ce document?"
 
+msgid "Delete this draft?"
+msgstr "Supprimer ce brouillon?"
+
 msgid "Delete this notice?"
 msgstr "Supprimer cet avis?"
 
@@ -1030,6 +1107,9 @@ msgstr "Supprimer cette cotisation spéciale?"
 
 msgid "Delete this unit?"
 msgstr "Supprimer cette unité?"
+
+msgid "Delete this vote and all its ballots? This cannot be undone."
+msgstr "Supprimer ce vote et tous ses bulletins? Cette action est irréversible."
 
 msgid "Describe the cost."
 msgstr "Décrivez la dépense."
@@ -1079,6 +1159,21 @@ msgstr "Fait le"
 msgid "Download CSV"
 msgstr "Télécharger en CSV"
 
+msgid "Draft"
+msgstr "Brouillon"
+
+msgid "Draft a vote, check it, then publish it: only then are the voters notified. You see who voted for what; voters see the results after the deadline."
+msgstr "Préparez un vote, vérifiez-le, puis publiez-le : c’est seulement à ce moment que les votants sont avisés. Vous voyez qui a voté quoi; les votants voient les résultats après l’échéance."
+
+msgid "Draft saved. Nobody has been told yet: check it, then publish it."
+msgstr "Brouillon enregistré. Personne n’a encore été avisé : vérifiez-le, puis publiez-le."
+
+msgid "Draft updated."
+msgstr "Brouillon mis à jour."
+
+msgid "Draft: nobody has been notified"
+msgstr "Brouillon : personne n’a été avisé"
+
 msgid "Draft: not billed"
 msgstr "Brouillon : non facturée"
 
@@ -1106,6 +1201,9 @@ msgstr "Modifier %(name)s"
 
 msgid "Edit document"
 msgstr "Modifier le document"
+
+msgid "Edit draft vote"
+msgstr "Modifier le brouillon du vote"
 
 msgid "Edit in the Google Sheet’s Owners tab"
 msgstr "Modifier dans l’onglet Owners de la feuille Google"
@@ -1152,6 +1250,9 @@ msgstr "Écrire à ces personnes (%(n)s)"
 msgid "End date"
 msgstr "Date de fin"
 
+msgid "End early"
+msgstr "Terminer plus tôt"
+
 msgid "End time must be after start time."
 msgstr "L’heure de fin doit être après l’heure de début."
 
@@ -1163,6 +1264,9 @@ msgstr "Entrez un montant valide."
 
 msgid "Enter the amount for at least one unit."
 msgstr "Entrez le montant d’au moins une unité."
+
+msgid "Enter the deadline date and time."
+msgstr "Entrez la date et l’heure de l’échéance."
 
 msgid "Enter the fees as"
 msgstr "Saisir les frais en"
@@ -1310,6 +1414,9 @@ msgstr "En générer un"
 msgid "Generate password"
 msgstr "Générer un mot de passe"
 
+msgid "Give at least two choices."
+msgstr "Donnez au moins deux choix."
+
 msgid "Give the contribution a title, e.g. “Window replacement 2027”."
 msgstr "Donnez un titre à la cotisation, p. ex. « Remplacement des fenêtres 2027 »."
 
@@ -1318,6 +1425,9 @@ msgstr "Donnez un titre au document."
 
 msgid "Give the task a name, e.g. “Snow removal”."
 msgstr "Donnez un nom à la tâche, p. ex. « Déneigement »."
+
+msgid "Give the vote a question or title."
+msgstr "Donnez une question ou un titre au vote."
 
 #, python-format
 msgid "Give this password to %(name)s privately."
@@ -1377,6 +1487,9 @@ msgstr "Mode"
 
 msgid "How often"
 msgstr "Fréquence"
+
+msgid "How votes are counted"
+msgstr "Calcul des voix"
 
 msgid "How would you like to be reimbursed?"
 msgstr "Comment souhaitez-vous être remboursé?"
@@ -1741,6 +1854,13 @@ msgstr "Nouvelle unité"
 msgid "New units created: %(units_created)s"
 msgstr "Nouvelles unités créées : %(units_created)s"
 
+msgid "New vote"
+msgstr "Nouveau vote"
+
+#, python-format
+msgid "New vote: %(title)s"
+msgstr "Nouveau vote : %(title)s"
+
 msgid "Next"
 msgstr "Suivant"
 
@@ -1749,6 +1869,9 @@ msgstr "Prochaine échéance"
 
 msgid "Next year"
 msgstr "Année suivante"
+
+msgid "No"
+msgstr "Non"
 
 msgid "No active repairs."
 msgstr "Aucune réparation en cours."
@@ -1856,6 +1979,12 @@ msgstr "Aucune réservation à venir."
 msgid "No updates yet."
 msgstr "Aucune mise à jour pour l’instant."
 
+msgid "No votes yet."
+msgstr "Aucun vote pour l’instant."
+
+msgid "Nobody can vote yet: the chosen owners need sign-in accounts."
+msgstr "Personne ne peut encore voter : les copropriétaires choisis doivent avoir un compte de connexion."
+
 msgid "Nobody else eligible"
 msgstr "Personne d’autre n’est admissible"
 
@@ -1889,6 +2018,9 @@ msgstr "Non inclus ci-dessus : solde d’ouverture de %(opening)s reporté des r
 
 msgid "Not paid yet"
 msgstr "Pas encore payé"
+
+msgid "Not voted yet"
+msgstr "Pas encore voté"
 
 msgid "Note"
 msgstr "Note"
@@ -1963,6 +2095,12 @@ msgstr "Une seule police couvre les locataires. Aucune au dossier pour l’insta
 
 msgid "One tenant (renter's) policy with liability coverage covers the household:"
 msgstr "Une seule police d’assurance locataire avec responsabilité civile couvre le ménage :"
+
+msgid "One vote per person"
+msgstr "Une voix par personne"
+
+msgid "One vote per unit (a unit's owners split it)"
+msgstr "Une voix par unité (partagée entre ses copropriétaires)"
 
 msgid "Only one owner needs to file it; the others are covered by the same policy."
 msgstr "Un seul copropriétaire doit la déposer; les autres sont couverts par la même police."
@@ -2052,6 +2190,9 @@ msgstr "Copropriétaires et gestionnaires"
 
 msgid "Owners are notified of a new deadline."
 msgstr "Les copropriétaires sont avisés d’une nouvelle échéance."
+
+msgid "Owners of selected units"
+msgstr "Copropriétaires des unités choisies"
 
 #, python-format
 msgid "Owners who can approve online: %(owner_accounts)s."
@@ -2152,6 +2293,9 @@ msgstr "Paiements reçus · %(label)s"
 
 msgid "People you hire, such as a cleaner, a contractor or an outside accountant, who aren't owners or tenants. Give each one only the access they need. Owners' and tenants' logins are managed in the Owners and Tenants tabs."
 msgstr "Les personnes que vous engagez, comme un service d’entretien ménager, un entrepreneur ou un comptable externe, qui ne sont ni copropriétaires ni locataires. Donnez à chacune seulement les accès dont elle a besoin. Les accès des copropriétaires et des locataires se gèrent dans les onglets Copropriétaires et Locataires."
+
+msgid "Percentages are weighted by how much each vote counts."
+msgstr "Les pourcentages tiennent compte du poids de chaque voix."
 
 msgid "Period"
 msgstr "Période"
@@ -2281,11 +2425,27 @@ msgstr "Projets et entretien"
 msgid "Projects are planned work for the building, such as a roof, windows or a renovation."
 msgstr "Les projets sont des travaux planifiés pour l’immeuble, comme la toiture, les fenêtres ou une rénovation."
 
+msgid "Publish and notify voters"
+msgstr "Publier et aviser les votants"
+
+msgid "Publish this vote and notify the voters?"
+msgstr "Publier ce vote et aviser les votants?"
+
+msgid "Published"
+msgstr "Publié"
+
+#, python-format
+msgid "Published: %(n)s people can vote and have been notified."
+msgstr "Publié : %(n)s personnes peuvent voter et ont été avisées."
+
 msgid "Purchase credit"
 msgstr "Crédit d’achat"
 
 msgid "Purchase credits"
 msgstr "Crédits d’achat"
+
+msgid "Question"
+msgstr "Question"
 
 msgid "Quote"
 msgstr "Soumission"
@@ -2407,6 +2567,10 @@ msgstr "Remboursements"
 msgid "Reimbursements waiting for you"
 msgstr "Remboursements qui vous attendent"
 
+#, python-format
+msgid "Reminder: vote on “%(title)s” before %(when)s"
+msgstr "Rappel : votez sur « %(title)s » avant le %(when)s"
+
 msgid "Remove"
 msgstr "Retirer"
 
@@ -2516,6 +2680,17 @@ msgstr "Résidents"
 msgid "Resolved"
 msgstr "Résolue"
 
+msgid "Results"
+msgstr "Résultats"
+
+#, python-format
+msgid "Results are in: %(title)s"
+msgstr "Résultats disponibles : %(title)s"
+
+#, python-format
+msgid "Results are shown after the deadline, %(when)s."
+msgstr "Les résultats seront affichés après l’échéance, le %(when)s."
+
 msgid "Role"
 msgstr "Rôle"
 
@@ -2551,6 +2726,9 @@ msgstr "Enregistrer"
 
 msgid "Save condo fees"
 msgstr "Enregistrer les frais de condo"
+
+msgid "Save draft"
+msgstr "Enregistrer le brouillon"
 
 msgid "Save insurance"
 msgstr "Enregistrer l’assurance"
@@ -2670,6 +2848,9 @@ msgstr "Se connecte avec %(email)s."
 msgid "Snow removal"
 msgstr "Déneigement"
 
+msgid "Some units have no ownership share. Set their share on the unit page, or count one vote per unit."
+msgstr "Certaines unités n’ont pas de quote-part. Indiquez-la sur la page de l’unité, ou comptez une voix par unité."
+
 msgid "Some units have no ownership share; split equally or enter amounts per unit instead."
 msgstr "Certaines unités n’ont pas de quote-part; répartissez à parts égales ou saisissez plutôt les montants par unité."
 
@@ -2767,6 +2948,9 @@ msgstr "Assurance locataire"
 msgid "Tenants"
 msgstr "Locataires"
 
+msgid "Thank you, your vote was recorded."
+msgstr "Merci, votre vote a été enregistré."
+
 msgid "That dataset was already loaded from this upload."
 msgstr "Cet ensemble de données a déjà été chargé à partir de ce téléversement."
 
@@ -2818,6 +3002,12 @@ msgstr "Le conseil a reçu le rappel de renouvellement le %(renewal_notified_at)
 
 msgid "The cost was added to Accounting."
 msgstr "Le coût a été ajouté à la comptabilité."
+
+msgid "The deadline has already passed. Edit the draft and choose a later one."
+msgstr "L’échéance est déjà passée. Modifiez le brouillon et choisissez une date plus tardive."
+
+msgid "The deadline must be in the future."
+msgstr "L’échéance doit être dans le futur."
 
 msgid "The end date is before the start date."
 msgstr "La date de fin est antérieure à la date de début."
@@ -2915,6 +3105,9 @@ msgstr "Cette cotisation a été facturée; elle ne peut pas être supprimée."
 
 msgid "This entry comes from the Google Sheet. Change it there; the next sync updates the app."
 msgstr "Cette entrée vient de la feuille Google. Modifiez-la là; la prochaine synchronisation mettra l’application à jour."
+
+msgid "This is a draft: nobody is notified until you publish it."
+msgstr "Ceci est un brouillon : personne n’est avisé tant que vous ne le publiez pas."
 
 msgid "This owner comes from the Google Sheet's Owners tab. Change it there; the next sync updates the app."
 msgstr "Ce copropriétaire vient de l’onglet Owners de la feuille Google. Modifiez-le là; la prochaine synchronisation mettra l’application à jour."
@@ -3127,6 +3320,38 @@ msgstr "Voir le relevé"
 msgid "Visible to"
 msgstr "Visible par"
 
+msgid "Vote"
+msgstr "Voter"
+
+#, python-format
+msgid "Vote before %(when)s."
+msgstr "Votez avant le %(when)s."
+
+msgid "Vote deleted."
+msgstr "Vote supprimé."
+
+msgid "Voted"
+msgstr "Ont voté"
+
+msgid "Voter"
+msgstr "Votant"
+
+#, python-format
+msgid "Voters if published now (%(n)s)"
+msgstr "Votants si le vote est publié maintenant (%(n)s)"
+
+msgid "Votes"
+msgstr "Votes"
+
+msgid "Votes you are invited to. Your choice is private to the board; everyone sees the results after the deadline."
+msgstr "Les votes auxquels vous êtes invité. Votre choix n’est visible que par le conseil; tout le monde voit les résultats après l’échéance."
+
+msgid "Voting closed. Voters can now see the results."
+msgstr "Vote fermé. Les votants peuvent maintenant voir les résultats."
+
+msgid "Voting is closed."
+msgstr "Le vote est fermé."
+
 msgid "Waiting for me"
 msgstr "En attente de moi"
 
@@ -3151,6 +3376,9 @@ msgstr "Vous voulez que le copropriétaire s’occupe de cette réparation? Dema
 msgid "We couldn't find that page."
 msgstr "Nous n’avons pas trouvé cette page."
 
+msgid "Weight"
+msgstr "Poids"
+
 msgid "Welcome! Please choose your own password to continue."
 msgstr "Bienvenue! Veuillez choisir votre propre mot de passe pour continuer."
 
@@ -3170,11 +3398,17 @@ msgstr "À quoi elle sert, quand elle a été votée"
 msgid "What's the problem?"
 msgstr "Quel est le problème?"
 
+msgid "When"
+msgstr "Quand"
+
 msgid "When did it start? Where exactly? Best times to access the unit?"
 msgstr "Depuis quand? À quel endroit exactement? Quels sont les meilleurs moments pour accéder à l’unité?"
 
 msgid "When it's renewed, add the new policy here; earlier ones are kept. If one owner has filed the policy, the others don't need to."
 msgstr "Au renouvellement, ajoutez la nouvelle police ici; les précédentes sont conservées. Si un copropriétaire a déposé la police, les autres n’ont pas à le faire."
+
+msgid "Who votes"
+msgstr "Qui vote"
 
 msgid "Whole building / common area"
 msgstr "Tout l’immeuble / partie commune"
@@ -3188,14 +3422,26 @@ msgstr "Choisira son propre mot de passe à la prochaine connexion"
 msgid "Window washing"
 msgstr "Lavage des fenêtres"
 
+msgid "With ownership share, a unit that owns an eighth of the building counts for an eighth of the vote; if it has two owners, each counts for half."
+msgstr "Selon la quote-part, une unité qui possède le huitième de l’immeuble compte pour le huitième des voix; si elle a deux copropriétaires, chacun compte pour la moitié."
+
 msgid "Workbook"
 msgstr "Classeur"
 
 msgid "Year"
 msgstr "Année"
 
+msgid "Yes"
+msgstr "Oui"
+
+msgid "You can change your vote until the deadline. Only the board sees how you voted."
+msgstr "Vous pouvez modifier votre vote jusqu’à l’échéance. Seul le conseil voit comment vous avez voté."
+
 msgid "You cannot deactivate your own account."
 msgstr "Vous ne pouvez pas désactiver votre propre compte."
+
+msgid "You did not vote."
+msgstr "Vous n’avez pas voté."
 
 msgid "You don't have permission to view this page."
 msgstr "Vous n’avez pas la permission de voir cette page."
@@ -3205,6 +3451,10 @@ msgstr "Vous avez été déconnecté."
 
 msgid "You have no upcoming bookings."
 msgstr "Vous n’avez aucune réservation à venir."
+
+#, python-format
+msgid "You voted: %(choice)s"
+msgstr "Vous avez voté : %(choice)s"
 
 msgid "You're using the temporary administrator account. To make it your own: add yourself in"
 msgstr "Vous utilisez le compte administrateur temporaire. Pour en faire votre compte : ajoutez-vous dans"
@@ -3235,6 +3485,16 @@ msgstr "Votre locataire a demandé une réparation : %(title)s"
 msgid "Your tenant asked for these. Open one to approve or decline it."
 msgstr "Votre locataire a fait ces demandes. Ouvrez-en une pour l’approuver ou la refuser."
 
+msgid "Your vote"
+msgstr "Votre vote"
+
+#, python-format
+msgid "Your vote counts for %(weight)s of the total."
+msgstr "Votre voix compte pour %(weight)s du total."
+
+msgid "Your vote was changed."
+msgstr "Votre vote a été modifié."
+
 msgid "Zero — skipped"
 msgstr "Zéro — ignoré"
 
@@ -3260,6 +3520,9 @@ msgstr "auto"
 msgid "balances don't match the sheet"
 msgstr "les soldes ne correspondent pas à la feuille"
 
+msgid "board only"
+msgstr "conseil seulement"
+
 #, python-format
 msgid "by %(name)s"
 msgstr "par %(name)s"
@@ -3283,6 +3546,9 @@ msgstr "crédit"
 
 msgid "e-Transfer"
 msgstr "Virement Interac"
+
+msgid "e.g. Approve the 2027 roof replacement budget of $85,000?"
+msgstr "p. ex. Approuver le budget de 85 000 $ pour la réfection de la toiture en 2027?"
 
 msgid "e.g. Approved at the AGM of April 20"
 msgstr "p. ex. Approuvé à l’assemblée générale du 20 avril"
@@ -3355,11 +3621,20 @@ msgstr "de l’unité %(number)s."
 msgid "https://docs.google.com/spreadsheets/d/…"
 msgstr "https://docs.google.com/spreadsheets/d/…"
 
+msgid "live, board only"
+msgstr "en direct, conseil seulement"
+
 msgid "money back"
 msgstr "argent reçu"
 
 msgid "must change at next sign-in"
 msgstr "doit le changer à la prochaine connexion"
+
+msgid "not voted"
+msgstr "pas voté"
+
+msgid "not yet"
+msgstr "pas encore"
 
 msgid "of which late interest"
 msgstr "dont intérêts de retard"

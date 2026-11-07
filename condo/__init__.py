@@ -52,10 +52,10 @@ def create_app(test_config=None):
     i18n.init_app(app)
 
     from . import models  # noqa: F401  (register models)
-    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, fees, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units
+    from .views import amenities, announcements, auth, billing, dashboard, directory, documents, fees, importer, insurance, notifications, reimbursements, maintenance, owners, residents, sheet, units, votes
 
     for bp in (auth.bp, dashboard.bp, units.bp, residents.bp, billing.bp,
-               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy, notifications.bp, reimbursements.bp, fees.bp):
+               maintenance.bp, announcements.bp, amenities.bp, importer.bp, sheet.bp, owners.bp, directory.bp, documents.bp, insurance.bp, billing.legacy, notifications.bp, reimbursements.bp, fees.bp, votes.bp):
         app.register_blueprint(bp)
 
     from .cli import register_cli

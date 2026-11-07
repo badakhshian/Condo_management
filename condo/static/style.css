@@ -496,3 +496,18 @@ h2 .icon-btn svg { width: 16px; height: 16px; }
 .login-help { font-size: .88rem; margin: .9rem 0 0; }
 td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
 .btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; margin-right: 4px; }
+
+/* Votes */
+.badge.poll-draft { color: var(--muted); }
+.badge.poll-open { color: var(--ok); }
+.badge.poll-closed { color: var(--primary); }
+.option-input { margin-bottom: .45rem; }
+.unit-pick { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; margin-top: .4rem; padding-left: 1.6rem; }
+.choice-list { margin: .3rem 0 1rem 1.2rem; }
+.draft-card { border-left: 4px solid var(--gold); }
+.result-row { margin-bottom: .9rem; }
+.result-label { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: .25rem; }
+.progress.big { height: 12px; width: 100%; }
+.vote-choice { padding: .55rem .7rem; border: 1px solid var(--border); border-radius: 9px; margin-bottom: .45rem; }
+.vote-choice:has(input:checked) { border-color: var(--primary); background: var(--gold-soft); }
+.card .prose + .props { margin-top: .9rem; }

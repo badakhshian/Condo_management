@@ -1024,3 +1024,91 @@ class RoutineLog(db.Model):
 
     task = db.relationship("RoutineTask", back_populates="logs")
     done_by = db.relationship("User")
+
+
+# --- Votes: the board drafts a poll, publishes it to an audience, owners vote until the deadline ----------
+
+POLL_AUDIENCES = {"owners": _l("All owners"), "units": _l("Owners of selected units"), "board": _l("Board members")}
+POLL_WEIGHTINGS = {
+    "share": _l("By ownership share (a unit's owners split its share)"),
+    "unit": _l("One vote per unit (a unit's owners split it)"),
+    "person": _l("One vote per person"),
+}
+POLL_STATUS_LABELS = {"draft": _l("Draft"), "open": _l("Open"), "closed": _l("Closed")}
+
+
+class Poll(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    audience = db.Column(db.String(10), nullable=False, default="owners")
+    unit_ids = db.Column(db.String(500))  # for audience "units": comma-separated unit ids
+    weighting = db.Column(db.String(10), nullable=False, default="share")
+    deadline = db.Column(db.DateTime, nullable=False)  # UTC
+    status = db.Column(db.String(10), nullable=False, default="draft")  # draft, open, closed (early)
+    published_at = db.Column(db.DateTime)
+    closed_at = db.Column(db.DateTime)
+    reminded_at = db.Column(db.DateTime)
+    results_notified_at = db.Column(db.DateTime)
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    options = db.relationship("PollOption", back_populates="poll", cascade="all, delete-orphan",
+                              order_by="PollOption.position")
+    voters = db.relationship("PollVoter", back_populates="poll", cascade="all, delete-orphan")
+    created_by = db.relationship("User")
+
+    @property
+    def selected_unit_ids(self):
+        return [int(x) for x in (self.unit_ids or "").split(",") if x.strip().isdigit()]
+
+    @property
+    def state(self):
+        """draft, open, or closed (by the board or because the deadline passed)."""
+        if self.status == "draft":
+            return "draft"
+        if self.status == "closed" or utcnow() >= self.deadline:
+            return "closed"
+        return "open"
+
+    def voter_for(self, user):
+        return next((v for v in self.voters if v.user_id == getattr(user, "id", None)), None)
+
+    def results(self):
+        """[{option, weight, votes, pct_of_cast, pct_of_all}], plus totals. Weights are shares of the whole vote."""
+        total = sum(v.weight for v in self.voters) or 0
+        cast = sum(v.weight for v in self.voters if v.option_id)
+        rows = []
+        for o in self.options:
+            w = sum(v.weight for v in self.voters if v.option_id == o.id)
+            rows.append({"option": o, "weight": w, "votes": sum(1 for v in self.voters if v.option_id == o.id),
+                         "pct_of_cast": (w * 100 / cast) if cast else 0, "pct_of_all": (w * 100 / total) if total else 0})
+        return {"rows": rows, "total_weight": total, "cast_weight": cast,
+                "turnout": (cast * 100 / total) if total else 0,
+                "voted": sum(1 for v in self.voters if v.option_id), "eligible": len(self.voters)}
+
+
+class PollOption(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id", ondelete="CASCADE"), nullable=False, index=True)
+    text = db.Column(db.String(200), nullable=False)
+    position = db.Column(db.Integer, nullable=False, default=0)
+
+    poll = db.relationship("Poll", back_populates="options")
+
+
+class PollVoter(db.Model):
+    """Who may vote and how much their vote counts, fixed when the poll is published. Holds their choice."""
+    id = db.Column(db.Integer, primary_key=True)
+    poll_id = db.Column(db.Integer, db.ForeignKey("poll.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey("unit.id"))
+    weight = db.Column(db.Float, nullable=False, default=0)
+    option_id = db.Column(db.Integer, db.ForeignKey("poll_option.id", ondelete="SET NULL"))
+    voted_at = db.Column(db.DateTime)
+
+    poll = db.relationship("Poll", back_populates="voters")
+    user = db.relationship("User")
+    unit = db.relationship("Unit")
+    option = db.relationship("PollOption")
+    __table_args__ = (db.UniqueConstraint("poll_id", "user_id", name="uq_poll_voter"),)

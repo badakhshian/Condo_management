@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 04:48+0000\n"
+"POT-Creation-Date: 2026-11-07 05:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,6 +69,10 @@ msgstr ""
 
 #, python-format
 msgid "%(month_label)s, or they will be billed twice."
+msgstr ""
+
+#, python-format
+msgid "%(n)s voter(s)"
 msgstr ""
 
 #, python-format
@@ -191,11 +195,20 @@ msgid "%(user)sMy profile"
 msgstr ""
 
 #, python-format
+msgid ""
+"%(voted)s of %(eligible)s voters voted, representing %(turnout)s of the "
+"vote."
+msgstr ""
+
+#, python-format
 msgid "%(year)s by month"
 msgstr ""
 
 #, python-format
 msgid "%(year)s: %(monthly_total_cents)s a month"
+msgstr ""
+
+msgid "(Montreal time)"
 msgstr ""
 
 msgid "(contact)"
@@ -251,6 +264,9 @@ msgstr ""
 msgid "<span class=\"muted\">Vacant</span>"
 msgstr ""
 
+msgid "A published vote can't be changed."
+msgstr ""
+
 msgid "A short title is required."
 msgstr ""
 
@@ -269,6 +285,9 @@ msgid "A unit:"
 msgstr ""
 
 msgid "A valid email is required."
+msgstr ""
+
+msgid "Abstain"
 msgstr ""
 
 msgid "Access"
@@ -335,6 +354,9 @@ msgid "Add"
 msgstr ""
 
 msgid "Add a charge"
+msgstr ""
+
+msgid "Add a choice"
 msgstr ""
 
 msgid "Add a comment"
@@ -428,6 +450,9 @@ msgid "All"
 msgstr ""
 
 msgid "All notices →"
+msgstr ""
+
+msgid "All owners"
 msgstr ""
 
 msgid "All units"
@@ -598,6 +623,9 @@ msgstr ""
 msgid "Back to dashboard"
 msgstr ""
 
+msgid "Background, quotes considered, what happens if it passes…"
+msgstr ""
+
 msgid "Balance"
 msgstr ""
 
@@ -614,6 +642,9 @@ msgid "Balances as of (optional)"
 msgstr ""
 
 msgid "Balances tab"
+msgstr ""
+
+msgid "Ballots"
 msgstr ""
 
 msgid "Bedrooms"
@@ -644,6 +675,9 @@ msgid ""
 msgstr ""
 
 msgid "Board"
+msgstr ""
+
+msgid "Board members"
 msgstr ""
 
 msgid "Board of directors"
@@ -699,6 +733,9 @@ msgstr ""
 msgid "By ownership share"
 msgstr ""
 
+msgid "By ownership share (a unit's owners split its share)"
+msgstr ""
+
 msgid "CRON_SECRET isn't set on the server, so scheduled checks can't run yet."
 msgstr ""
 
@@ -723,6 +760,9 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
+msgid "Change my vote"
+msgstr ""
+
 msgid "Change password (optional)"
 msgstr ""
 
@@ -742,10 +782,22 @@ msgstr ""
 msgid "Charges"
 msgstr ""
 
+msgid ""
+"Check the question, the choices and the voters below. Publishing notifies"
+" them and voting opens until the deadline; a published vote can't be "
+"changed."
+msgstr ""
+
 msgid "Cheque"
 msgstr ""
 
 msgid "Cheque no. or transfer ID"
+msgstr ""
+
+msgid "Choice"
+msgstr ""
+
+msgid "Choices"
 msgstr ""
 
 msgid "Choose Owner or Tenant. Managing the building comes from a board position."
@@ -790,6 +842,9 @@ msgstr ""
 msgid "Choose annual total or monthly total."
 msgstr ""
 
+msgid "Choose at least one unit."
+msgstr ""
+
 msgid "Choose both the first and the last month of the season, or neither."
 msgstr ""
 
@@ -799,7 +854,13 @@ msgstr ""
 msgid "Choose how to split it."
 msgstr ""
 
+msgid "Choose how votes are counted."
+msgstr ""
+
 msgid "Choose how you'd like to be reimbursed."
+msgstr ""
+
+msgid "Choose one of the answers."
 msgstr ""
 
 msgid "Choose the Excel file to upload."
@@ -817,6 +878,9 @@ msgstr ""
 msgid "Choose who can see it."
 msgstr ""
 
+msgid "Choose who votes."
+msgstr ""
+
 msgid "Choose your own password (required)"
 msgstr ""
 
@@ -832,10 +896,19 @@ msgstr ""
 msgid "Close this request?"
 msgstr ""
 
+msgid "Close voting now"
+msgstr ""
+
+msgid "Close voting now?"
+msgstr ""
+
 msgid "Closed"
 msgstr ""
 
 msgid "Closes (hour)"
+msgstr ""
+
+msgid "Closes voting now and shows the results to the voters."
 msgstr ""
 
 msgid "Co-owner"
@@ -942,6 +1015,9 @@ msgstr ""
 msgid "Couldn't reach Google Sheets. Try again in a minute."
 msgstr ""
 
+msgid "Counted"
+msgstr ""
+
 msgid "Create login"
 msgstr ""
 
@@ -991,6 +1067,9 @@ msgstr ""
 msgid "Deadline"
 msgstr ""
 
+msgid "Deadline (Montreal time)"
+msgstr ""
+
 #, python-format
 msgid "Deadline moved to %(new)s."
 msgstr ""
@@ -1031,6 +1110,9 @@ msgstr ""
 msgid "Delete this document?"
 msgstr ""
 
+msgid "Delete this draft?"
+msgstr ""
+
 msgid "Delete this notice?"
 msgstr ""
 
@@ -1055,6 +1137,9 @@ msgid "Delete this special contribution?"
 msgstr ""
 
 msgid "Delete this unit?"
+msgstr ""
+
+msgid "Delete this vote and all its ballots? This cannot be undone."
 msgstr ""
 
 msgid "Describe the cost."
@@ -1105,6 +1190,24 @@ msgstr ""
 msgid "Download CSV"
 msgstr ""
 
+msgid "Draft"
+msgstr ""
+
+msgid ""
+"Draft a vote, check it, then publish it: only then are the voters "
+"notified. You see who voted for what; voters see the results after the "
+"deadline."
+msgstr ""
+
+msgid "Draft saved. Nobody has been told yet: check it, then publish it."
+msgstr ""
+
+msgid "Draft updated."
+msgstr ""
+
+msgid "Draft: nobody has been notified"
+msgstr ""
+
 msgid "Draft: not billed"
 msgstr ""
 
@@ -1135,6 +1238,9 @@ msgid "Edit %(name)s"
 msgstr ""
 
 msgid "Edit document"
+msgstr ""
+
+msgid "Edit draft vote"
 msgstr ""
 
 msgid "Edit in the Google Sheet’s Owners tab"
@@ -1182,6 +1288,9 @@ msgstr ""
 msgid "End date"
 msgstr ""
 
+msgid "End early"
+msgstr ""
+
 msgid "End time must be after start time."
 msgstr ""
 
@@ -1192,6 +1301,9 @@ msgid "Enter a valid amount."
 msgstr ""
 
 msgid "Enter the amount for at least one unit."
+msgstr ""
+
+msgid "Enter the deadline date and time."
 msgstr ""
 
 msgid "Enter the fees as"
@@ -1349,6 +1461,9 @@ msgstr ""
 msgid "Generate password"
 msgstr ""
 
+msgid "Give at least two choices."
+msgstr ""
+
 msgid "Give the contribution a title, e.g. “Window replacement 2027”."
 msgstr ""
 
@@ -1356,6 +1471,9 @@ msgid "Give the document a title."
 msgstr ""
 
 msgid "Give the task a name, e.g. “Snow removal”."
+msgstr ""
+
+msgid "Give the vote a question or title."
 msgstr ""
 
 #, python-format
@@ -1419,6 +1537,9 @@ msgid "How"
 msgstr ""
 
 msgid "How often"
+msgstr ""
+
+msgid "How votes are counted"
 msgstr ""
 
 msgid "How would you like to be reimbursed?"
@@ -1792,6 +1913,13 @@ msgstr ""
 msgid "New units created: %(units_created)s"
 msgstr ""
 
+msgid "New vote"
+msgstr ""
+
+#, python-format
+msgid "New vote: %(title)s"
+msgstr ""
+
 msgid "Next"
 msgstr ""
 
@@ -1799,6 +1927,9 @@ msgid "Next due"
 msgstr ""
 
 msgid "Next year"
+msgstr ""
+
+msgid "No"
 msgstr ""
 
 msgid "No active repairs."
@@ -1913,6 +2044,12 @@ msgstr ""
 msgid "No updates yet."
 msgstr ""
 
+msgid "No votes yet."
+msgstr ""
+
+msgid "Nobody can vote yet: the chosen owners need sign-in accounts."
+msgstr ""
+
 msgid "Nobody else eligible"
 msgstr ""
 
@@ -1947,6 +2084,9 @@ msgid ""
 msgstr ""
 
 msgid "Not paid yet"
+msgstr ""
+
+msgid "Not voted yet"
 msgstr ""
 
 msgid "Note"
@@ -2027,6 +2167,12 @@ msgid "One policy covers the tenants. None on file yet."
 msgstr ""
 
 msgid "One tenant (renter's) policy with liability coverage covers the household:"
+msgstr ""
+
+msgid "One vote per person"
+msgstr ""
+
+msgid "One vote per unit (a unit's owners split it)"
 msgstr ""
 
 msgid ""
@@ -2118,6 +2264,9 @@ msgid "Owners and managers"
 msgstr ""
 
 msgid "Owners are notified of a new deadline."
+msgstr ""
+
+msgid "Owners of selected units"
 msgstr ""
 
 #, python-format
@@ -2225,6 +2374,9 @@ msgid ""
 "accountant, who aren't owners or tenants. Give each one only the access "
 "they need. Owners' and tenants' logins are managed in the Owners and "
 "Tenants tabs."
+msgstr ""
+
+msgid "Percentages are weighted by how much each vote counts."
 msgstr ""
 
 msgid "Period"
@@ -2357,10 +2509,26 @@ msgid ""
 "renovation."
 msgstr ""
 
+msgid "Publish and notify voters"
+msgstr ""
+
+msgid "Publish this vote and notify the voters?"
+msgstr ""
+
+msgid "Published"
+msgstr ""
+
+#, python-format
+msgid "Published: %(n)s people can vote and have been notified."
+msgstr ""
+
 msgid "Purchase credit"
 msgstr ""
 
 msgid "Purchase credits"
+msgstr ""
+
+msgid "Question"
 msgstr ""
 
 msgid "Quote"
@@ -2483,6 +2651,10 @@ msgstr ""
 msgid "Reimbursements waiting for you"
 msgstr ""
 
+#, python-format
+msgid "Reminder: vote on “%(title)s” before %(when)s"
+msgstr ""
+
 msgid "Remove"
 msgstr ""
 
@@ -2594,6 +2766,17 @@ msgstr ""
 msgid "Resolved"
 msgstr ""
 
+msgid "Results"
+msgstr ""
+
+#, python-format
+msgid "Results are in: %(title)s"
+msgstr ""
+
+#, python-format
+msgid "Results are shown after the deadline, %(when)s."
+msgstr ""
+
 msgid "Role"
 msgstr ""
 
@@ -2628,6 +2811,9 @@ msgid "Save"
 msgstr ""
 
 msgid "Save condo fees"
+msgstr ""
+
+msgid "Save draft"
 msgstr ""
 
 msgid "Save insurance"
@@ -2751,6 +2937,11 @@ msgid "Snow removal"
 msgstr ""
 
 msgid ""
+"Some units have no ownership share. Set their share on the unit page, or "
+"count one vote per unit."
+msgstr ""
+
+msgid ""
 "Some units have no ownership share; split equally or enter amounts per "
 "unit instead."
 msgstr ""
@@ -2849,6 +3040,9 @@ msgstr ""
 msgid "Tenants"
 msgstr ""
 
+msgid "Thank you, your vote was recorded."
+msgstr ""
+
 msgid "That dataset was already loaded from this upload."
 msgstr ""
 
@@ -2906,6 +3100,12 @@ msgid "The board was reminded to renew on %(renewal_notified_at)s."
 msgstr ""
 
 msgid "The cost was added to Accounting."
+msgstr ""
+
+msgid "The deadline has already passed. Edit the draft and choose a later one."
+msgstr ""
+
+msgid "The deadline must be in the future."
 msgstr ""
 
 msgid "The end date is before the start date."
@@ -3019,6 +3219,9 @@ msgstr ""
 msgid ""
 "This entry comes from the Google Sheet. Change it there; the next sync "
 "updates the app."
+msgstr ""
+
+msgid "This is a draft: nobody is notified until you publish it."
 msgstr ""
 
 msgid ""
@@ -3246,6 +3449,40 @@ msgstr ""
 msgid "Visible to"
 msgstr ""
 
+msgid "Vote"
+msgstr ""
+
+#, python-format
+msgid "Vote before %(when)s."
+msgstr ""
+
+msgid "Vote deleted."
+msgstr ""
+
+msgid "Voted"
+msgstr ""
+
+msgid "Voter"
+msgstr ""
+
+#, python-format
+msgid "Voters if published now (%(n)s)"
+msgstr ""
+
+msgid "Votes"
+msgstr ""
+
+msgid ""
+"Votes you are invited to. Your choice is private to the board; everyone "
+"sees the results after the deadline."
+msgstr ""
+
+msgid "Voting closed. Voters can now see the results."
+msgstr ""
+
+msgid "Voting is closed."
+msgstr ""
+
 msgid "Waiting for me"
 msgstr ""
 
@@ -3273,6 +3510,9 @@ msgstr ""
 msgid "We couldn't find that page."
 msgstr ""
 
+msgid "Weight"
+msgstr ""
+
 msgid "Welcome! Please choose your own password to continue."
 msgstr ""
 
@@ -3292,12 +3532,18 @@ msgstr ""
 msgid "What's the problem?"
 msgstr ""
 
+msgid "When"
+msgstr ""
+
 msgid "When did it start? Where exactly? Best times to access the unit?"
 msgstr ""
 
 msgid ""
 "When it's renewed, add the new policy here; earlier ones are kept. If one"
 " owner has filed the policy, the others don't need to."
+msgstr ""
+
+msgid "Who votes"
 msgstr ""
 
 msgid "Whole building / common area"
@@ -3312,13 +3558,29 @@ msgstr ""
 msgid "Window washing"
 msgstr ""
 
+msgid ""
+"With ownership share, a unit that owns an eighth of the building counts "
+"for an eighth of the vote; if it has two owners, each counts for half."
+msgstr ""
+
 msgid "Workbook"
 msgstr ""
 
 msgid "Year"
 msgstr ""
 
+msgid "Yes"
+msgstr ""
+
+msgid ""
+"You can change your vote until the deadline. Only the board sees how you "
+"voted."
+msgstr ""
+
 msgid "You cannot deactivate your own account."
+msgstr ""
+
+msgid "You did not vote."
 msgstr ""
 
 msgid "You don't have permission to view this page."
@@ -3328,6 +3590,10 @@ msgid "You have been signed out."
 msgstr ""
 
 msgid "You have no upcoming bookings."
+msgstr ""
+
+#, python-format
+msgid "You voted: %(choice)s"
 msgstr ""
 
 msgid ""
@@ -3363,6 +3629,16 @@ msgstr ""
 msgid "Your tenant asked for these. Open one to approve or decline it."
 msgstr ""
 
+msgid "Your vote"
+msgstr ""
+
+#, python-format
+msgid "Your vote counts for %(weight)s of the total."
+msgstr ""
+
+msgid "Your vote was changed."
+msgstr ""
+
 msgid "Zero — skipped"
 msgstr ""
 
@@ -3388,6 +3664,9 @@ msgstr ""
 msgid "balances don't match the sheet"
 msgstr ""
 
+msgid "board only"
+msgstr ""
+
 #, python-format
 msgid "by %(name)s"
 msgstr ""
@@ -3410,6 +3689,9 @@ msgid "credit"
 msgstr ""
 
 msgid "e-Transfer"
+msgstr ""
+
+msgid "e.g. Approve the 2027 roof replacement budget of $85,000?"
 msgstr ""
 
 msgid "e.g. Approved at the AGM of April 20"
@@ -3483,10 +3765,19 @@ msgstr ""
 msgid "https://docs.google.com/spreadsheets/d/…"
 msgstr ""
 
+msgid "live, board only"
+msgstr ""
+
 msgid "money back"
 msgstr ""
 
 msgid "must change at next sign-in"
+msgstr ""
+
+msgid "not voted"
+msgstr ""
+
+msgid "not yet"
 msgstr ""
 
 msgid "of which late interest"

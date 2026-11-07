@@ -158,6 +158,8 @@ def cron():
         check_renewals()  # reminds the board two months before the condo-fee period ends
         from .maintenance import check_routine_reminders
         check_routine_reminders()  # routine maintenance due soon, contracts ending
+        from .votes import check_polls
+        check_polls()  # vote reminders a day before the deadline, results when it closes
     except Exception:  # never let the reminder stop the sheet sync
         db.session.rollback()
         current_app.logger.exception("Fee renewal check failed")

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_link %}
+{% block title %}{% trans %}Votes{% endtrans %}{% endblock %}
+{% block content %}
+<div class="head"><h1>{% trans %}Votes{% endtrans %}</h1>
+  {% if board %}{{ icon_link('plus', url_for('votes.new'), _('New vote'), cls='primary') }}{% endif %}</div>
+<p class="muted">{% if board %}{% trans %}Draft a vote, check it, then publish it: only then are the voters notified. You see who voted for what; voters see the results after the deadline.{% endtrans %}
+{% else %}{% trans %}Votes you are invited to. Your choice is private to the board; everyone sees the results after the deadline.{% endtrans %}{% endif %}</p>
+<div class="card">
+<table>
+  <thead><tr><th>{% trans %}Vote{% endtrans %}</th><th>{% trans %}Deadline{% endtrans %}</th><th>{% trans %}Status{% endtrans %}</th><th>{% if board %}{% trans %}Voted{% endtrans %}{% else %}{% trans %}Your vote{% endtrans %}{% endif %}</th></tr></thead>
+  <tbody>
+  {% for p in polls %}{% set st = p.state %}{% set me = p.voter_for(current_user) %}
+    <tr><td><a href="{{ url_for('votes.detail', poll_id=p.id) }}"><strong>{{ p.title }}</strong></a></td>
+      <td class="nowrap">{{ to_local(p.deadline)|fdatetime('medium') }}</td>
+      <td><span class="badge poll-{{ st }}">{{ labels[st] }}</span></td>
+      <td>{% if board and p.status != 'draft' %}{% set r = p.results() %}{{ r.voted }} / {{ r.eligible }}
+          {% if me %}<span class="muted">· {{ me.option.text if me.option else _('not yet') }}</span>{% endif %}
+        {% elif me %}{{ me.option.text if me.option else _('Not voted yet') }}{% else %}<span class="muted">—</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="4" class="muted">{{ _('No votes yet.') }}</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

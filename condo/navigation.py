@@ -11,7 +11,7 @@ from flask_login import current_user
 TOP_LEVEL = {
     "dashboard.index", "units.index", "directory.contacts", "directory.board", "directory.accounts",
     "directory.index", "billing.index", "maintenance.index", "announcements.index", "documents.index",
-    "amenities.index", "auth.login", "billing.my_account", "notifications.index", "reimbursements.index",
+    "amenities.index", "auth.login", "billing.my_account", "notifications.index", "reimbursements.index", "votes.index",
 }
 
 from .i18n import lazy_gettext as _l
@@ -65,6 +65,8 @@ def parent_for(endpoint, args):
         project = req.is_project if req else request.values.get("kind") == "project"
         return (_l("Projects"), url_for("maintenance.index", tab="projects")) if project else \
             (_l("Maintenance"), url_for("maintenance.index", tab="maintenance"))
+    if endpoint.startswith("votes."):
+        return _l("Votes"), url_for("votes.index")
     if endpoint.startswith("announcements."):
         return _l("Notices"), url_for("announcements.index")
     if endpoint.startswith("documents."):
@@ -114,7 +116,7 @@ def label_for(path):
         return _l("Maintenance") if "tab=maintenance" in path else _l("Routine") if "tab=routine" in path else _l("Projects")
     for prefix, label in (("/directory", _l("Directory")), ("/accounting", _l("Accounting")), ("/maintenance", _l("Maintenance")),
                           ("/documents", _l("Documents")), ("/reimbursements", _l("Reimbursements")), ("/units", _l("Units")),
-                          ("/notifications", _l("Notifications")), ("/sheet", _l("Google Sheet"))):
+                          ("/notifications", _l("Notifications")), ("/votes", _l("Votes")), ("/sheet", _l("Google Sheet"))):
         if bare.startswith(prefix):
             return label
     return _l("the previous page")

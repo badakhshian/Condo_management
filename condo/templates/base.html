@@ -47,9 +47,10 @@
   {% if current_user.role == 'owner' or nav_board %}{% set _ignored = nav_items.append(('reimburse', url_for('reimbursements.index'), _('Reimbursements'), _('Refunds'), ep.startswith('reimbursements'))) %}{% endif %}
 {% endif %}
 {% set _ignored = nav_items.append(('notices', url_for('announcements.index'), _('Notices'), _('Notices'), ep.startswith('announcements'))) %}
+{% if current_user.is_admin or current_user.role == 'owner' or nav_board %}{% set _ignored = nav_items.append(('vote', url_for('votes.index'), _('Votes'), _('Votes'), ep.startswith('votes'))) %}{% endif %}
 {% set _ignored = nav_items.append(('documents', url_for('documents.index'), _('Documents'), _('Documents'), ep.startswith('documents'))) %}
 {% if not current_user.is_staff %}{% set _ignored = nav_items.append(('amenities', url_for('amenities.index'), _('Amenities'), _('Amenities'), ep.startswith('amenities'))) %}{% endif %}
-{% set desktop_order = ['home', 'units', 'directory', 'accounting', 'reimburse', 'projects', 'notices', 'documents', 'amenities'] %}
+{% set desktop_order = ['home', 'units', 'directory', 'accounting', 'reimburse', 'projects', 'vote', 'notices', 'documents', 'amenities'] %}
 <nav class="rail" aria-label="{{ _('Main menu') }}">
   <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}">{{ condo_name|initials }}</a>
   {% for key in desktop_order %}{% for it in nav_items if it[0] == key %}

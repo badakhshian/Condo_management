@@ -136,3 +136,7 @@ def pct(value, digits=2, sign=False):
 def month_name(month):
     """Name of a month (1–12) in the current language: November / novembre."""
     return _babel_date(date(2000, int(month), 1), "MMMM", locale=current_language())
+
+
+def lazy_datetime(value, style="medium"):
+    return _Lazy(fdatetime, value, style)

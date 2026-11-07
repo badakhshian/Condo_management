@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% from "_icons.html" import icon_link, icon_post %}
+{% block title %}{{ poll.title }}{% endblock %}
+{% block content %}
+<div class="head"><h1>{{ poll.title }} <span class="badge poll-{{ state }}">{{ labels[state] }}</span></h1>
+  {% if board %}<div class="actions">
+    {% if poll.status == 'draft' %}{{ icon_link('pencil', url_for('votes.edit', poll_id=poll.id), _('Edit')) }}{% endif %}
+    {{ icon_post('trash', url_for('votes.delete', poll_id=poll.id), _('Delete'), cls='danger',
+        confirm=(_('Delete this draft?') if poll.status == 'draft' else _('Delete this vote and all its ballots? This cannot be undone.'))) }}
+  </div>{% endif %}</div>
+
+<div class="grid two wide-left">
+  <section>
+    <div class="card">
+      {% if poll.description %}<div class="prose">{{ poll.description }}</div>{% endif %}
+      <dl class="props">
+        <dt>{% trans %}Deadline{% endtrans %}</dt><dd><strong>{{ to_local(poll.deadline)|fdatetime('long') }}</strong> <span class="muted">{% trans %}(Montreal time){% endtrans %}</span></dd>
+        <dt>{% trans %}Who votes{% endtrans %}</dt><dd>{{ audiences[poll.audience] }}{% if poll.audience == 'units' %}: {{ unit_numbers|join(', ') }}{% endif %}</dd>
+        <dt>{% trans %}Counted{% endtrans %}</dt><dd>{{ weightings[poll.weighting] }}</dd>
+        {% if poll.published_at %}<dt>{% trans %}Published{% endtrans %}</dt><dd>{{ to_local(poll.published_at)|fdatetime('medium') }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if poll.status == 'draft' and board %}
+    <div class="card draft-card">
+      <h2>{% trans %}Draft: nobody has been notified{% endtrans %}</h2>
+      <p class="muted">{% trans %}Check the question, the choices and the voters below. Publishing notifies them and voting opens until the deadline; a published vote can't be changed.{% endtrans %}</p>
+      <ul class="choice-list">{% for o in poll.options %}<li>{{ o.text }}</li>{% endfor %}</ul>
+      <h3>{% trans n=preview|length %}Voters if published now ({{ n }}){% endtrans %}</h3>
+      {% if preview %}<table><thead><tr><th>{% trans %}Voter{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th class="num">{% trans %}Weight{% endtrans %}</th></tr></thead>
+        <tbody>{% for u, unit, w in preview %}<tr><td>{{ u.name }}</td><td>{{ unit.number if unit else '—' }}</td><td class="num">{{ (w * 100)|pct(2) }}</td></tr>{% endfor %}</tbody></table>
+      {% else %}<p class="flash flash-info">{% trans %}Nobody can vote yet: the chosen owners need sign-in accounts.{% endtrans %}</p>{% endif %}
+      <form method="post" action="{{ url_for('votes.publish', poll_id=poll.id) }}"
+            onsubmit="return confirm({{ _('Publish this vote and notify the voters?')|tojson|forceescape }})">{{ csrf() }}
+        <button class="btn primary">{% trans %}Publish and notify voters{% endtrans %}</button></form>
+    </div>
+    {% endif %}
+
+    {% if results %}
+    <div class="card">
+      <h2>{% trans %}Results{% endtrans %}{% if state == 'open' %} <span class="tag">{% trans %}live, board only{% endtrans %}</span>{% endif %}</h2>
+      {% for r in results.rows %}
+        <div class="result-row">
+          <div class="result-label"><strong>{{ r.option.text }}</strong> <span class="muted">{{ r.pct_of_cast|pct(1) }} · {% trans n=r.votes %}{{ n }} voter(s){% endtrans %}</span></div>
+          <div class="progress big"><span style="width: {{ r.pct_of_cast }}%"></span></div>
+        </div>
+      {% endfor %}
+      <p class="muted">{% trans voted=results.voted, eligible=results.eligible, turnout=results.turnout|pct(1) %}{{ voted }} of {{ eligible }} voters voted, representing {{ turnout }} of the vote.{% endtrans %}
+        {% if poll.weighting != 'person' %}{% trans %}Percentages are weighted by how much each vote counts.{% endtrans %}{% endif %}</p>
+    </div>
+    {% elif poll.status != 'draft' %}
+    <div class="card"><p class="muted">{% trans when=to_local(poll.deadline)|fdatetime('long') %}Results are shown after the deadline, {{ when }}.{% endtrans %}</p></div>
+    {% endif %}
+
+    {% if board and poll.status != 'draft' %}
+    <div class="card">
+      <h2>{% trans %}Ballots{% endtrans %} <span class="tag">{% trans %}board only{% endtrans %}</span></h2>
+      <table><thead><tr><th>{% trans %}Voter{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th class="num">{% trans %}Weight{% endtrans %}</th><th>{% trans %}Choice{% endtrans %}</th><th>{% trans %}When{% endtrans %}</th></tr></thead>
+        <tbody>{% for v in poll.voters|sort(attribute='unit.number') %}
+          <tr><td>{{ v.user.name }}</td><td>{{ v.unit.number if v.unit else '—' }}</td><td class="num">{{ (v.weight * 100)|pct(2) }}</td>
+            <td>{% if v.option %}<strong>{{ v.option.text }}</strong>{% else %}<span class="muted">{% trans %}not voted{% endtrans %}</span>{% endif %}</td>
+            <td class="muted nowrap">{{ to_local(v.voted_at)|fdatetime('medium') if v.voted_at else '' }}</td></tr>
+        {% endfor %}</tbody></table>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside>
+    {% if me and poll.status != 'draft' %}
+    <div class="card">
+      <h2>{% trans %}Your vote{% endtrans %}</h2>
+      <p class="muted">{% trans weight=(me.weight * 100)|pct(2) %}Your vote counts for {{ weight }} of the total.{% endtrans %}</p>
+      {% if state == 'open' %}
+      <form method="post" action="{{ url_for('votes.vote', poll_id=poll.id) }}">{{ csrf() }}
+        {% for o in poll.options %}<label class="check vote-choice"><input type="radio" name="option_id" value="{{ o.id }}" required {{ 'checked' if me.option_id == o.id }}> {{ o.text }}</label>{% endfor %}
+        <button class="btn primary">{{ _('Change my vote') if me.option_id else _('Vote') }}</button>
+        <p class="muted">{% trans %}You can change your vote until the deadline. Only the board sees how you voted.{% endtrans %}</p>
+      </form>
+      {% else %}
+        <p>{% if me.option %}{% trans choice=me.option.text %}You voted: {{ choice }}{% endtrans %}{% else %}{% trans %}You did not vote.{% endtrans %}{% endif %}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if board and state == 'open' %}
+    <div class="card">
+      <h2>{% trans %}End early{% endtrans %}</h2>
+      <p class="muted">{% trans %}Closes voting now and shows the results to the voters.{% endtrans %}</p>
+      <form method="post" action="{{ url_for('votes.close', poll_id=poll.id) }}" onsubmit="return confirm({{ _('Close voting now?')|tojson|forceescape }})">{{ csrf() }}
+        <button class="btn">{% trans %}Close voting now{% endtrans %}</button></form>
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
