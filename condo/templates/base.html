@@ -39,12 +39,12 @@
 <nav class="rail" aria-label="Main menu">
   <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}">{{ condo_name|initials }}</a>
   {% for key in desktop_order %}{% for it in nav_items if it[0] == key %}
-  <a href="{{ it[1] }}" class="rail-item{{ ' active' if it[4] }}{{ ' pin' if nav_items.index(it) < 4 }}"{% if it[4] %} aria-current="page"{% endif %}>{{ icon(it[0]) }}<span class="label">{{ it[2] }}</span><span class="short">{{ it[3] }}</span></a>
+  <a href="{{ it[1] }}" class="rail-item{{ ' active' if it[4] }}{{ ' pin' if nav_items.index(it) < 4 }}" title="{{ it[2] }}" aria-label="{{ it[2] }}"{% if it[4] %} aria-current="page"{% endif %}>{{ icon(it[0]) }}<span class="label">{{ it[2] }}</span><span class="short">{{ it[3] }}</span></a>
   {% endfor %}{% endfor %}
   <div class="rail-spacer"></div>
-  <a href="{{ url_for('notifications.index') }}" class="rail-item pin bell{{ ' active' if ep.startswith('notifications') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">{{ icon('bell') }}{% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}<span class="label">Alerts</span><span class="short">Alerts</span></a>
+  <a href="{{ url_for('notifications.index') }}" title="Notifications" class="rail-item pin bell{{ ' active' if ep.startswith('notifications') }}" aria-label="Notifications{{ ' (' ~ unread ~ ' unread)' if unread }}">{{ icon('bell') }}{% if unread %}<span class="bell-count">{{ unread if unread < 100 else '99+' }}</span>{% endif %}<span class="label">Alerts</span><span class="short">Alerts</span></a>
   <details class="rail-menu">
-    <summary class="rail-item pin" aria-label="More"><span class="rail-avatar">{{ current_user.name|initials }}</span>{{ icon('more') }}<span class="short">More</span></summary>
+    <summary class="rail-item pin" aria-label="Account and more" title="My account"><span class="rail-avatar">{{ current_user.name|initials }}</span>{{ icon('more') }}<span class="short">More</span></summary>
     <div class="rail-pop">
       <div class="rail-pop-who"><strong>{{ current_user.name }}</strong><span class="tag">{{ current_user.role_label }}</span></div>
       {% for it in nav_items if nav_items.index(it) >= 4 %}<a href="{{ it[1] }}" class="pop-only{{ ' active' if it[4] }}">{{ icon(it[0]) }}{{ it[2] }}</a>{% endfor %}
