@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{% trans title=spec.title %}{{ title }} · Directory{% endtrans %}{% endblock %}
 {% from "_macros.html" import insurance_badge %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% block content %}
 {% include "directory/_tabs.html" %}
 <div class="head">
@@ -19,24 +20,32 @@
 {% if units_without %}<div class="flash flash-info">{% trans units_without=units_without|map(attribute='number')|join(', ') %}No owner recorded yet for unit(s) {{ units_without }}.{% endtrans %}</div>{% endif %}
 <div class="card">
 <table>
-  <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th>{% trans %}Mailing address{% endtrans %}</th><th>{% trans %}Insurance{% endtrans %}</th><th></th></tr></thead>
+  <thead><tr>{% if current_user.is_admin %}<th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th>{% endif %}<th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th>{% trans %}Mailing address{% endtrans %}</th><th>{% trans %}Insurance{% endtrans %}</th><th></th></tr></thead>
   <tbody>{% for o in people %}
-    <tr><td><a href="{{ url_for('units.detail', unit_id=o.unit_id) }}">{{ o.unit.number }}</a></td>
+    <tr>{% if current_user.is_admin %}<td class="row-actions"><div class="row-actions-box">
+        {% if o.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet’s Owners tab') }}">{% trans %}from sheet{% endtrans %}</span>
+        {% else %}{{ icon_link('pencil', url_for('owners.edit', owner_id=o.id, next='directory', back=here()), _('Edit')) }}{% endif %}
+        {% set login = logins.get(o.email.lower()) if logins is not none and o.email and o.role != 'contact' else none %}
+        {% if login %}
+          {% if login.id != current_user.id %}{{ icon_link('key', url_for('residents.set_password', user_id=login.id, back=here()), _('Set password')) }}{% else %}<span class="icon-btn blank"></span>{% endif %}
+          {{ icon_link('login', url_for('residents.edit', user_id=login.id, back=here()), _('Login') ~ ': ' ~ _('Sign-in email, role and unit')) }}
+        {% elif logins is not none and o.email and o.role != 'contact' %}
+          <span class="icon-btn blank"></span>{{ icon_link('user-plus', url_for('residents.new', back=here(), name=o.name, email=o.email, phone=o.phone or '', unit_id=o.unit_id, role='tenant' if o.role == 'tenant' else 'owner'), _('Create login')) }}
+        {% elif logins is not none %}<span class="icon-btn blank"></span><span class="icon-btn blank"></span>
+        {% endif %}
+        {% if o.origin != 'sheet' %}{{ icon_post('trash', url_for('owners.delete', owner_id=o.id, back=here()), _('Remove'), confirm=_('Remove %(name)s from unit %(number)s? Their insurance records are removed too.', name=o.name, number=o.unit.number), cls='danger') }}{% endif %}
+      </div></td>{% endif %}
+      <td><a href="{{ url_for('units.detail', unit_id=o.unit_id) }}">{{ o.unit.number }}</a></td>
       <td><strong>{{ o.name }}</strong>{% if group == 'owners' %} <span class="tag">{{ o.role_label }}</span>{% endif %}{% if o.is_primary %} <span class="badge status-open">{% trans %}Primary{% endtrans %}</span>{% endif %}
+        {% set acct = logins.get(o.email.lower()) if logins is not none and o.email else none %}
+        {% if acct and not acct.active %} <span class="badge status-closed">{% trans %}Login off{% endtrans %}</span>{% elif acct and acct.must_change_password %} <span class="tag">{% trans %}temporary password{% endtrans %}</span>{% endif %}
         {% if o.notes %}<div class="excerpt">{{ o.notes }}</div>{% endif %}</td>
       <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
       <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
       <td>{% if o.mailing_address %}{{ o.mailing_address|one_line }}{% else %}<span class="muted">{% trans %}In unit{% endtrans %}</span>{% endif %}</td>
       <td>{% if o.needs_insurance %}{{ insurance_badge(o.insurance_state) }}{% if o.current_policy %}<div class="excerpt">{% trans valid_until=o.current_policy.valid_until|fdate('iso') %}until {{ valid_until }}{% endtrans %}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
-      <td class="actions nowrap">{% if not current_user.is_admin %}{% elif o.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet’s Owners tab') }}">{% trans %}from sheet{% endtrans %}</span>{% else %}<a class="btn small" href="{{ url_for('owners.edit', owner_id=o.id, next='directory', back=here()) }}">{% trans %}Edit{% endtrans %}</a>{% endif %}
-        {% if logins is not none and o.email and o.role != 'contact' %}{% set login = logins.get(o.email.lower()) %}
-          {% if login %}
-            <a class="btn small" href="{{ url_for('residents.set_password', user_id=login.id, back=here()) }}" {{ 'hidden' if login.id == current_user.id }}>{% trans %}Set password{% endtrans %}</a>
-            <a class="btn small" href="{{ url_for('residents.edit', user_id=login.id, back=here()) }}" title="{{ _('Sign-in email, role and unit') }}">{% trans %}Login{% endtrans %}</a>
-            {% if not login.active %}<span class="badge status-closed">{% trans %}Login off{% endtrans %}</span>{% elif login.must_change_password %}<span class="tag">{% trans %}temporary password{% endtrans %}</span>{% endif %}
-          {% else %}<a class="btn small" href="{{ url_for('residents.new', back=here(), name=o.name, email=o.email, phone=o.phone or '', unit_id=o.unit_id, role='tenant' if o.role == 'tenant' else 'owner') }}">{% trans %}Create login{% endtrans %}</a>{% endif %}
-        {% endif %}</td></tr>
-  {% else %}<tr><td colspan="7" class="muted">{{ _('No matches.') if q or role else _('Nobody listed yet.') }}</td></tr>{% endfor %}</tbody>
+    </tr>
+  {% else %}<tr><td colspan="8" class="muted">{{ _('No matches.') if q or role else _('Nobody listed yet.') }}</td></tr>{% endfor %}</tbody>
 </table>
 </div>
 {% endblock %}

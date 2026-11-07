@@ -458,3 +458,18 @@ body.with-rail { padding-left: 108px; }
 .sheet-row td { white-space: pre-wrap; }
 .card h3 { font-size: .95rem; margin: 1rem 0 .3rem; }
 td.date-link a { font-weight: 600; }
+
+/* Icon-only row actions (Directory) */
+.row-actions { white-space: nowrap; width: 1%; }
+.row-actions > *, .row-actions form { margin-right: 4px; vertical-align: middle; }
+.icon-btn { display: inline-grid; place-items: center; width: 34px; height: 34px; padding: 0; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; background: var(--gold-soft); }
+.icon-btn.danger { color: var(--danger); }
+.icon-btn.danger:hover { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.icon-btn.blank { visibility: hidden; }
+.row-actions-box { display: grid; grid-auto-flow: column; grid-auto-columns: 34px; gap: 6px; align-items: center; }
+.row-actions-box > *, .row-actions-box form { margin: 0; }
+.row-actions-box .tag { grid-column: span 2; }
