@@ -8,7 +8,7 @@ from ..extensions import db
 from ..models import (CHARGE_KINDS, COST_CATEGORIES, PAYMENT_METHOD_LABELS, PAYMENT_METHODS, SYSTEM_CHARGE_KINDS, Charge, Expense, Payment,
                       Setting, Unit, guess_cost_category)
 from ..utils import admin_required, can_access_unit, permission_required, parse_date, parse_money
-from ..i18n import gettext as _
+from ..i18n import fdate, gettext as _
 
 # Shown as "Accounting"; the blueprint keeps its old name so existing links keep working.
 bp = Blueprint("billing", __name__, url_prefix="/accounting")
@@ -41,7 +41,7 @@ def resolve_period(args, today=None):
     else:
         start = date(year, month, 1)
         end = date(year, month, calendar.monthrange(year, month)[1])
-        label = f"{calendar.month_name[month]} {year}"
+        label = fdate(start, "monthyear").capitalize()
         py, pm = (year, month - 1) if month > 1 else (year - 1, 12)
         ny, nm = (year, month + 1) if month < 12 else (year + 1, 1)
         prev, nxt = {"view": "month", "year": py, "month": pm}, {"view": "month", "year": ny, "month": nm}
@@ -148,7 +148,7 @@ def index():
             ms, me = date(period["year"], m, 1), date(period["year"], m, calendar.monthrange(period["year"], m)[1])
             inc = sum(p.amount_cents for p in payments if ms <= p.paid_on <= me)
             out = sum(x.cost_cents for x in costs if ms <= x.spent_on <= me)
-            months.append({"month": m, "name": calendar.month_name[m], "payments": inc, "costs": out, "net": inc - out})
+            months.append({"month": m, "name": fdate(ms, "monthname").capitalize(), "payments": inc, "costs": out, "net": inc - out})
 
     units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all()
     rows = []
@@ -186,7 +186,7 @@ def _unit_view(unit, period, scope):
             ms, me = date(period["year"], m, 1), date(period["year"], m, calendar.monthrange(period["year"], m)[1])
             b = sum(c.amount_cents for c in charges if ms <= c.due_date <= me and c.kind != "opening")
             pd = sum(p.amount_cents for p in payments if ms <= p.paid_on <= me)
-            months.append({"month": m, "name": calendar.month_name[m], "billed": b, "paid": pd})
+            months.append({"month": m, "name": fdate(ms, "monthname").capitalize(), "billed": b, "paid": pd})
     all_units = db.session.scalars(db.select(Unit).order_by(Unit.number)).all() if scope == "all" else []
     from .fees import unit_summary
     return render_template("billing/unit_view.html", fees=unit_summary(unit, period["year"]), period=period, unit=unit, scope=scope, all_units=all_units,
@@ -219,6 +219,7 @@ def new_cost():
                                    amount_cents=amount if refund else -amount,
                                    approved_by=request.form.get("approved_by", "").strip()[:255] or None,
                                    source=request.form.get("source", "").strip()[:255] or None,
+                                   recorded_by_id=current_user.id,
                                    notes=request.form.get("notes", "").strip() or None))
             db.session.commit()
             flash(_("Refund recorded.") if refund else _("Cost recorded."), "success")
@@ -384,6 +385,34 @@ def delete_payment(payment_id):
     db.session.commit()
     flash(_("Payment removed."), "success")
     return redirect(url_for("billing.ledger", unit_id=unit_id))
+
+
+def _sheet_info():
+    return {"sheet": Setting.get("sheet") or {}, "last_sync": Setting.get("sheet_last_sync")}
+
+
+@bp.route("/payments/<int:payment_id>")
+@login_required
+def payment_detail(payment_id):
+    """Everything about one payment, including where the entry came from."""
+    payment = db.session.get(Payment, payment_id) or abort(404)
+    if not (can_access_unit(payment.unit_id) or current_user.can("accounting")):
+        abort(403)
+    from ..models import Reimbursement
+    reimbursement = db.session.scalar(db.select(Reimbursement).where(Reimbursement.payment_id == payment.id))
+    return render_template("billing/payment_detail.html", p=payment, reimbursement=reimbursement,
+                           methods=PAYMENT_METHOD_LABELS, **_sheet_info())
+
+
+@bp.route("/costs/<int:cost_id>")
+@login_required
+def cost_detail(cost_id):
+    cost = db.session.get(Expense, cost_id) or abort(404)
+    if accounting_scope() != "all":
+        abort(403)
+    from ..models import Reimbursement
+    reimbursement = db.session.scalar(db.select(Reimbursement).where(Reimbursement.expense_id == cost.id))
+    return render_template("billing/cost_detail.html", x=cost, reimbursement=reimbursement, **_sheet_info())
 
 
 @bp.route("/unit/<int:unit_id>")

@@ -16,7 +16,7 @@
   <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Charge{% endtrans %}</th><th class="num">{% trans %}Payment{% endtrans %}</th><th class="num">{% trans %}Balance{% endtrans %}</th>{% if current_user.can('accounting_edit') %}<th></th>{% endif %}</tr></thead>
   <tbody>
   {% for r in rows %}
-    <tr><td>{{ r.date|fdate('iso') }}</td><td>{{ r.description }}</td>
+    <tr><td class="nowrap{{ ' date-link' if r.type == 'payment' }}">{% if r.type == 'payment' %}<a href="{{ url_for('billing.payment_detail', payment_id=r.id, back=here()) }}" title="{{ _('See all the details') }}">{{ r.date|fdate('iso') }}</a>{% else %}{{ r.date|fdate('iso') }}{% endif %}</td><td>{{ r.description|truncate(60) }}</td>
       <td class="num">{{ r.charge|money if r.charge else '' }}</td>
       <td class="num">{{ r.payment|money if r.payment else '' }}</td>
       <td class="num">{{ balance(r.balance) }}</td>

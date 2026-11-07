@@ -227,7 +227,7 @@ def settle(reimb_id):
     else:
         expense = Expense(spent_on=when, category=r.category, amount_cents=-r.amount_cents,
                           description=f"Reimbursed to unit {r.unit.number}: {r.description}"[:255],
-                          approved_by=r.decided_by, source=reference or r.vendor)
+                          approved_by=r.decided_by, source=reference or r.vendor, recorded_by_id=current_user.id)
         db.session.add(expense)
         db.session.flush()
         r.expense_id = expense.id

@@ -8,8 +8,8 @@ from datetime import date, datetime
 
 from flask import request
 from flask_babel import Babel, force_locale, get_locale
-from flask_babel import format_date as _format_date
-from flask_babel import format_datetime as _format_datetime
+from babel.dates import format_date as _babel_date
+from babel.dates import format_datetime as _babel_datetime
 from flask_babel import gettext, ngettext  # noqa: F401  (re-exported for views)
 from flask_babel.speaklater import LazyString
 from markupsafe import escape
@@ -87,7 +87,7 @@ def fdate(value, style="medium"):
     if isinstance(value, datetime):
         value = value.date()
     pattern = _PATTERNS.get(style, {}).get(current_language()) or style
-    return _format_date(value, pattern)
+    return _babel_date(value, pattern, locale=current_language())
 
 
 def fdatetime(value, style="medium"):
@@ -95,7 +95,7 @@ def fdatetime(value, style="medium"):
         return ""
     lang = current_language()
     pattern = _PATTERNS.get(style, {}).get(lang) or style
-    return _format_datetime(value, f"{pattern}, {_TIME[lang]}" if lang == "en" else f"{pattern} {_TIME[lang]}")
+    return _babel_datetime(value, f"{pattern}, {_TIME[lang]}" if lang == "en" else f"{pattern} {_TIME[lang]}", locale=lang)
 
 
 def money(cents):

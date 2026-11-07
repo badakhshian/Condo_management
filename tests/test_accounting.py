@@ -170,7 +170,7 @@ def test_purchase_credit_is_also_a_cost_and_opening_not_billed(admin_client):
     db.session.commit()
     page = admin_client.get("/accounting/?view=month&year=2026&month=10").data.decode()
     costs_panel = page.split("<h2>Costs")[1].split("</section>")[0]
-    assert "Leaf blower for condo yard" in costs_panel and "Paid by owner of unit 102" in costs_panel
+    assert "Leaf blower for condo yard" in costs_panel
     assert "$114.31" in costs_panel and "Maintenance $114.31" in costs_panel
     # Net = cash actually received (211.26): payments 325.57 − owner-paid cost 114.31.
     assert "$211.26</span>Net" in page
@@ -189,3 +189,54 @@ def test_payment_form_defaults_and_note(admin_client):
     assert resp.status_code == 302
     p = db.session.scalar(db.select(Payment).where(Payment.notes == "November condo fee"))
     assert p.amount_cents == 34103 and p.label == "November condo fee"
+
+
+def test_panels_are_short_and_dates_open_the_full_details(admin_client):
+    from condo import sheet_sync
+    from condo.models import Reimbursement, User
+    u = unit("101")
+    long_note = ("Fee payment — JULIO QUIROZ — memo: 167 Terry Fox Novembre 2026; Interac reference 8812; "
+                 "sent from the joint account")
+    sheet_payment = Payment(unit=u, amount_cents=29500, paid_on=date(2026, 11, 6), method="bank transfer",
+                            origin="sheet", notes=long_note[:255],
+                            source_data={"tab": "Transactions", "row": 42, "date": "2026-11-06", "type": "Fee payment",
+                                         "unit": "101", "amount_cents": 29500, "owner": "JULIO QUIROZ",
+                                         "approved": None, "source": "Interac e-Transfer from JULIO QUIROZ",
+                                         "notes": "memo: 167 Terry Fox Novembre 2026"})
+    admin = db.session.scalar(db.select(User).where(User.email == "admin@test.com"))
+    manual = Payment(unit=u, amount_cents=10000, paid_on=date(2026, 11, 3), method="check", reference="1043",
+                     notes="November fee", recorded_by_id=admin.id)
+    cost = Expense(spent_on=date(2026, 11, 2), description="Snow removal — first visit of the season, driveway and walk",
+                   amount_cents=-45000, category="maintenance", source="Déneigement Laval", approved_by="Board vote",
+                   recorded_by_id=admin.id)
+    db.session.add_all([sheet_payment, manual, cost])
+    db.session.commit()
+
+    page = admin_client.get("/accounting/?view=month&year=2026&month=11").data.decode()
+    payments_panel = page.split("<h2>Payments")[1].split("</section>")[0]
+    assert "JULIO" not in payments_panel and "Fee payment" in payments_panel
+    assert f"/accounting/payments/{sheet_payment.id}?back=" in payments_panel
+    assert "/accounting/unit/" not in payments_panel  # the unit is plain text now
+    costs_panel = page.split("<h2>Costs")[1].split("</section>")[0]
+    assert f"/accounting/costs/{cost.id}?back=" in costs_panel and "Board vote" not in costs_panel
+
+    detail = admin_client.get(f"/accounting/payments/{sheet_payment.id}").data.decode()
+    assert "JULIO QUIROZ" in detail and "row 42" in detail and "Interac e-Transfer from JULIO QUIROZ" in detail
+    assert "Google Sheet" in detail
+    detail = admin_client.get(f"/accounting/payments/{manual.id}").data.decode()
+    assert "Entered in the app" in detail and "By Admin on" in detail and "1043" in detail
+    detail = admin_client.get(f"/accounting/costs/{cost.id}").data.decode()
+    assert "Déneigement Laval" in detail and "Board vote" in detail and "By Admin on" in detail
+
+
+def test_payment_details_follow_unit_access(app, client):
+    from .conftest import login
+    p1 = Payment(unit=unit("101"), amount_cents=100, paid_on=date(2026, 1, 1), method="cash")
+    p2 = Payment(unit=unit("102"), amount_cents=100, paid_on=date(2026, 1, 1), method="cash")
+    c = Expense(spent_on=date(2026, 1, 1), description="Bulbs", amount_cents=-500)
+    db.session.add_all([p1, p2, c])
+    db.session.commit()
+    login(client, "alice@test.com")  # owner of 101
+    assert client.get(f"/accounting/payments/{p1.id}").status_code == 200
+    assert client.get(f"/accounting/payments/{p2.id}").status_code == 403
+    assert client.get(f"/accounting/costs/{c.id}").status_code == 403

@@ -264,15 +264,30 @@ class Payment(db.Model):
     origin = db.Column(db.String(20))  # 'sheet' = synced from the Google Sheet; None = entered in the app
     special_id = db.Column(db.Integer, db.ForeignKey("special_contribution.id"))  # paying a special contribution
     recorded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    source_data = db.Column(db.JSON)  # the full Google Sheet row it came from (tab, row number and every column)
     created_at = db.Column(db.DateTime, default=utcnow)
 
     unit = db.relationship("Unit", back_populates="payments")
     recorded_by = db.relationship("User")
+    special = db.relationship("SpecialContribution", foreign_keys=[special_id])
+
+    @property
+    def summary(self):
+        """A short description for lists; the payment's page shows everything."""
+        if self.origin == "sheet" and self.notes:
+            return self.notes.split(" — ", 1)[0]
+        if self.notes:
+            return self.notes.split(" — ", 1)[0] if self.method == "purchase credit" else self.notes
+        return str(PAYMENT_METHOD_SHORT.get(self.method, PAYMENT_METHOD_LABELS.get(self.method, self.method)))
 
     @property
     def label(self):
         text = self.notes or str(_l("Payment (%(method)s)", method=PAYMENT_METHOD_LABELS.get(self.method, self.method)))
         return text + (f" #{self.reference}" if self.reference else "")
+
+
+PAYMENT_METHOD_SHORT = {"bank transfer": _l("e-Transfer"), "check": _l("Cheque"), "card": _l("Card"), "cash": _l("Cash"),
+                        "purchase credit": _l("Purchase credit"), "other": _l("Payment")}
 
 
 REQUEST_STATUSES = {"awaiting_owner": _l("Awaiting owner approval"), "open": _l("Open"),
@@ -440,7 +455,11 @@ class Expense(db.Model):
     source = db.Column(db.String(255))
     notes = db.Column(db.Text)
     origin = db.Column(db.String(20))
+    recorded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    source_data = db.Column(db.JSON)  # the full Google Sheet row it came from
     created_at = db.Column(db.DateTime, default=utcnow)
+
+    recorded_by = db.relationship("User")
 
     @property
     def sort_id(self):

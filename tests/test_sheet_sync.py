@@ -79,6 +79,10 @@ def test_apply_rebuilds_sheet_entries_and_keeps_manual_ones(app):
     assert credit.amount_cents == 3000 and "Leaf blower" in credit.notes
     expense = db.session.scalar(db.select(Expense))
     assert expense.amount_cents == -195458 and expense.description == "Parking heaters"
+    # The full sheet row is kept so the entry's page can show where it came from.
+    assert credit.source_data["tab"] == "Transactions" and credit.source_data["row"] >= 2
+    assert credit.source_data["unit"] and credit.source_data["amount_cents"] == 3000
+    assert expense.source_data["type"] and expense.source_data["row"] >= 2
 
     # Re-sync: same result, nothing duplicated, manual payment still there.
     sheet_sync.apply(sheet_sync.parse(make_sheet()))

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import post_button %}
+{% block title %}{% if x.cost_cents < 0 %}{% trans %}Refund{% endtrans %}{% else %}{% trans %}Cost{% endtrans %}{% endif %} · {{ x.spent_on|fdate }}{% endblock %}
+{% block content %}
+<div class="head"><h1>{% if x.cost_cents < 0 %}{% trans %}Refund{% endtrans %} <span class="credit">{{ (-x.cost_cents)|money }}</span>{% else %}{% trans %}Cost{% endtrans %} <span class="owed">{{ x.cost_cents|money }}</span>{% endif %}</h1>
+  {% if current_user.can('accounting_edit') and x.origin != 'sheet' %}
+    {{ post_button(url_for('billing.delete_cost', cost_id=x.id), _('Remove'), confirm=_('Remove this cost?')) }}
+  {% endif %}</div>
+<div class="grid two wide-left">
+  <section class="card">
+    <h2>{% trans %}Details{% endtrans %}</h2>
+    <dl class="props">
+      <dt>{% trans %}Date{% endtrans %}</dt><dd>{{ x.spent_on|fdate('long') }}</dd>
+      <dt>{% trans %}Amount{% endtrans %}</dt><dd><strong>{{ x.cost_cents|money }}</strong>{% if x.cost_cents < 0 %} <span class="muted">({% trans %}money back{% endtrans %})</span>{% endif %}</dd>
+      <dt>{% trans %}Category{% endtrans %}</dt><dd><span class="tag">{{ x.category_label }}</span></dd>
+      <dt>{% trans %}Description{% endtrans %}</dt><dd class="prose">{{ x.description }}</dd>
+      {% if x.notes %}<dt>{% trans %}Notes{% endtrans %}</dt><dd class="prose">{{ x.notes }}</dd>{% endif %}
+      {% if x.source %}<dt>{% trans %}Paid to / reference{% endtrans %}</dt><dd class="prose">{{ x.source }}</dd>{% endif %}
+      {% if x.approved_by %}<dt>{% trans %}Approved by{% endtrans %}</dt><dd>{{ x.approved_by }}</dd>{% endif %}
+    </dl>
+  </section>
+  <aside>{% with item=x %}{% include "billing/_source.html" %}{% endwith %}</aside>
+</div>
+{% endblock %}

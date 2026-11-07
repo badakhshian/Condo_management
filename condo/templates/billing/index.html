@@ -51,9 +51,9 @@
     {% if payments %}<table>
       <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
       <tbody>{% for p in payments %}
-        <tr><td class="nowrap">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</td>
-          <td><a href="{{ url_for('billing.ledger', unit_id=p.unit_id) }}">{{ p.unit.number }}</a></td>
-          <td class="muted">{{ p.label|truncate(70) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
+        <tr><td class="nowrap date-link"><a href="{{ url_for('billing.payment_detail', payment_id=p.id, back=here()) }}" title="{{ _('See all the details') }}">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</a></td>
+          <td>{{ p.unit.number }}</td>
+          <td class="muted">{{ p.summary|truncate(40) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
           <td class="num">{{ p.amount_cents|money }}</td></tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">{% trans label=period.label %}No payments in {{ label }}.{% endtrans %}</p>{% endif %}
@@ -67,12 +67,10 @@
     {% if costs %}<table>
       <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th></th></tr></thead>
       <tbody>{% for x in costs %}
-        <tr><td class="nowrap">{{ x.spent_on|fdate('short' if period.view == 'month' else 'iso') }}</td>
-          <td>{{ x.description|truncate(80) }} <span class="tag">{{ x.category_label }}</span>
-            {% if x.paid_by %}<div class="excerpt">{{ x.paid_by }}</div>{% endif %}
-            {% if x.approved_by %}<div class="excerpt">{% trans approved_by=x.approved_by|truncate(60) %}Approved: {{ approved_by }}{% endtrans %}</div>{% endif %}</td>
+        <tr><td class="nowrap date-link"><a href="{{ url_for('billing.payment_detail', payment_id=x.payment.id, back=here()) if x.origin == 'credit' else url_for('billing.cost_detail', cost_id=x.id, back=here()) }}" title="{{ _('See all the details') }}">{{ x.spent_on|fdate('short' if period.view == 'month' else 'iso') }}</a></td>
+          <td>{{ x.description|truncate(40) }} <span class="tag">{{ x.category_label }}</span></td>
           <td class="num">{{ x.cost_cents|money }}</td>
-          <td>{% if x.origin == 'credit' %}<span class="tag" title="{{ _('Recorded as a purchase credit on the unit') }}">{% trans %}credit{% endtrans %}</span>{% elif x.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet') }}">{% trans %}sheet{% endtrans %}</span>{% elif current_user.can('accounting_edit') %}{{ post_button(url_for('billing.delete_cost', cost_id=x.id), '×', cls='link-btn danger', confirm=_('Remove this cost?')) }}{% endif %}</td></tr>
+          <td>{% if x.origin == 'credit' %}<span class="tag" title="{{ _('Recorded as a purchase credit on the unit') }}">{% trans %}credit{% endtrans %}</span>{% elif x.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet') }}">{% trans %}sheet{% endtrans %}</span>{% endif %}</td></tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">{% trans label=period.label %}No costs in {{ label }}.{% endtrans %}</p>{% endif %}
   </section>

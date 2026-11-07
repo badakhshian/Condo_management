@@ -1,0 +1,44 @@
+{# Where an accounting entry came from. Needs: item (payment or cost), reimbursement, sheet, last_sync. #}
+<section class="card">
+  <h2>{% trans %}Source{% endtrans %}</h2>
+  {% if item.origin == 'sheet' %}
+    <p class="source-line"><span class="tag">{% trans %}Google Sheet{% endtrans %}</span>
+      {% if item.source_data and item.source_data.row %}{% trans tab=item.source_data.tab, row=item.source_data.row %}Synced from the Google Sheet, “{{ tab }}” tab, row {{ row }}.{% endtrans %}
+      {% else %}{% trans %}Synced from the Google Sheet’s Transactions tab.{% endtrans %}{% endif %}</p>
+    <dl class="props">
+      <dt>{% trans %}Added by the sync on{% endtrans %}</dt><dd>{{ item.created_at|fdatetime('medium') }} UTC</dd>
+      {% if last_sync and last_sync.at %}<dt>{% trans %}Last sync{% endtrans %}</dt><dd>{{ last_sync.at.replace('T', ' ') }} UTC</dd>{% endif %}
+    </dl>
+    {% if item.source_data %}
+    <h3>{% trans %}The sheet row{% endtrans %}</h3>
+    <table class="sheet-row">
+      <tbody>
+        <tr><th>{% trans %}Date{% endtrans %}</th><td>{{ item.source_data.date }}</td></tr>
+        <tr><th>{% trans %}Type{% endtrans %}</th><td>{{ item.source_data.type or '—' }}</td></tr>
+        {% if item.source_data.unit %}<tr><th>{% trans %}Unit{% endtrans %}</th><td>{{ item.source_data.unit }}</td></tr>{% endif %}
+        <tr><th>{% trans %}Amount{% endtrans %}</th><td>{{ item.source_data.amount_cents|money }}</td></tr>
+        {% if item.source_data.owner %}<tr><th>{% trans %}Owner{% endtrans %}</th><td>{{ item.source_data.owner }}</td></tr>{% endif %}
+        {% if item.source_data.approved %}<tr><th>{% trans %}Approved by{% endtrans %}</th><td>{{ item.source_data.approved }}</td></tr>{% endif %}
+        {% if item.source_data.source %}<tr><th>{% trans %}Source / paid by{% endtrans %}</th><td class="prose">{{ item.source_data.source }}</td></tr>{% endif %}
+        {% if item.source_data.notes %}<tr><th>{% trans %}Notes{% endtrans %}</th><td class="prose">{{ item.source_data.notes }}</td></tr>{% endif %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">{% trans %}The full sheet row is added at the next sync.{% endtrans %}</p>{% endif %}
+    {% if current_user.can('accounting_edit') %}
+      <p class="muted">{% trans %}To change this entry, edit it in the sheet; the next sync updates the app.{% endtrans %}
+      {% if sheet.get('url') %}<a href="{{ sheet.url }}" target="_blank" rel="noopener">{% trans %}Open the Google Sheet{% endtrans %} ↗</a>{% endif %}</p>
+    {% endif %}
+  {% elif reimbursement %}
+    <p class="source-line"><span class="tag">{% trans %}Reimbursement{% endtrans %}</span>
+      <a href="{{ url_for('reimbursements.detail', reimb_id=reimbursement.id) }}">{% trans id=reimbursement.id %}Reimbursement #{{ id }}{% endtrans %}</a></p>
+    <dl class="props">
+      <dt>{% trans %}Requested by{% endtrans %}</dt><dd>{{ reimbursement.requested_by.name }} · {{ reimbursement.created_at|fdate }}</dd>
+      {% if reimbursement.decided_by %}<dt>{% trans %}Approved by{% endtrans %}</dt><dd>{{ reimbursement.decided_by }}{% if reimbursement.decided_at %} · {{ reimbursement.decided_at|fdate }}{% endif %}</dd>{% endif %}
+      {% if reimbursement.settled_by %}<dt>{% trans %}Recorded by{% endtrans %}</dt><dd>{{ reimbursement.settled_by }}{% if reimbursement.settled_at %} · {{ reimbursement.settled_at|fdatetime('medium') }} UTC{% endif %}</dd>{% endif %}
+    </dl>
+  {% else %}
+    <p class="source-line"><span class="tag">{% trans %}Entered in the app{% endtrans %}</span>
+      {% if item.recorded_by %}{% trans name=item.recorded_by.name, when=item.created_at|fdatetime('medium') %}By {{ name }} on {{ when }} UTC.{% endtrans %}
+      {% else %}{% trans when=item.created_at|fdatetime('medium') %}On {{ when }} UTC.{% endtrans %}{% endif %}</p>
+  {% endif %}
+</section>

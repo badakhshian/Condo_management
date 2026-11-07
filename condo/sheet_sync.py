@@ -376,12 +376,16 @@ def apply(plan):
     for e in plan["entries"]:
         when = date.fromisoformat(e["date"])
         note = " — ".join(x for x in (e["kind"], e["notes"]) if x)
+        row = {"tab": "Transactions", "row": e.get("row"), "date": e["date"], "type": e["kind"], "unit": e["unit"],
+               "amount_cents": e["amount_cents"], "owner": e.get("owner") or None, "approved": e.get("approved") or None,
+               "source": e.get("source") or None, "notes": e.get("notes") or None}
         if e["category"] == "expense":
             db.session.add(Expense(spent_on=when, amount_cents=e["amount_cents"], origin=ORIGIN,
                                    category=guess_cost_category(f"{e['notes']} {e['kind']}"),
                                    description=_truncate(e["notes"] or e["kind"], 255),
                                    approved_by=_truncate(e["approved"], 255) or None,
-                                   source=_truncate(e["source"], 255) or None))
+                                   source=_truncate(e["source"], 255) or None, source_data=row,
+                                   notes=e["notes"] if e["notes"] and len(e["notes"]) > 255 else None))
             continue
         unit = existing[e["unit"]]
         if e["category"] in ("opening", "dues"):
@@ -399,7 +403,7 @@ def apply(plan):
             method = "purchase credit" if e["category"] == "credit" else (
                 "bank transfer" if "interac" in e["source"].lower() else "other")
             db.session.add(Payment(unit=unit, amount_cents=e["amount_cents"], paid_on=when, method=method,
-                                   origin=ORIGIN, notes=_truncate(note, 255)))
+                                   origin=ORIGIN, notes=_truncate(note, 255), source_data=row))
     db.session.flush()
 
     mismatches = []

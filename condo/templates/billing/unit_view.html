@@ -62,8 +62,8 @@
     {% if payments %}<table>
       <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
       <tbody>{% for p in payments %}
-        <tr><td class="nowrap">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</td>
-          <td class="muted">{{ p.label|truncate(80) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
+        <tr><td class="nowrap date-link"><a href="{{ url_for('billing.payment_detail', payment_id=p.id, back=here()) }}" title="{{ _('See all the details') }}">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</a></td>
+          <td class="muted">{{ p.summary|truncate(50) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
           <td class="num">{{ p.amount_cents|money }}</td></tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">{% trans label=period.label %}No payments in {{ label }}.{% endtrans %}</p>{% endif %}

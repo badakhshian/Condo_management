@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 01:16+0000\n"
+"POT-Creation-Date: 2026-11-07 01:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -396,6 +396,9 @@ msgstr ""
 msgid "Added"
 msgstr ""
 
+msgid "Added by the sync on"
+msgstr ""
+
 #, python-format
 msgid ""
 "Adds a %(amount_cents)s credit to unit %(number)s's account (shown in "
@@ -518,10 +521,6 @@ msgid "Approved reimbursement to record: unit %(number)s, %(amount)s"
 msgstr ""
 
 msgid "Approved. Accounting has been notified."
-msgstr ""
-
-#, python-format
-msgid "Approved: %(approved_by)s"
 msgstr ""
 
 msgid "Approved: owner to do the repair"
@@ -675,6 +674,10 @@ msgid "Building insurance"
 msgstr ""
 
 msgid "Building insurance needs the policy's start and end dates."
+msgstr ""
+
+#, python-format
+msgid "By %(name)s on %(when)s UTC."
 msgstr ""
 
 msgid "By ownership share"
@@ -873,6 +876,9 @@ msgid "Copy"
 msgstr ""
 
 msgid "Copy address from"
+msgstr ""
+
+msgid "Cost"
 msgstr ""
 
 msgid "Cost (money paid out)"
@@ -1115,6 +1121,9 @@ msgstr ""
 msgid ""
 "Enter the period and the total, then save: each unit’s part is calculated"
 " from its ownership share."
+msgstr ""
+
+msgid "Entered in the app"
 msgstr ""
 
 msgid "Equally between units"
@@ -1842,6 +1851,10 @@ msgstr ""
 msgid "On"
 msgstr ""
 
+#, python-format
+msgid "On %(when)s UTC."
+msgstr ""
+
 msgid ""
 "One home-insurance policy, including civil liability, covers the unit's "
 "owners together:"
@@ -1873,6 +1886,9 @@ msgid "Open %(open)s–%(close)s · max %(max_hours)sh"
 msgstr ""
 
 msgid "Open requests"
+msgstr ""
+
+msgid "Open the Google Sheet"
 msgstr ""
 
 msgid "Opening balance"
@@ -2025,6 +2041,10 @@ msgid "Payment recorded for unit %(number)s."
 msgstr ""
 
 msgid "Payment removed."
+msgstr ""
+
+#, python-format
+msgid "Payment · Unit %(number)s"
 msgstr ""
 
 msgid "Payments"
@@ -2220,6 +2240,9 @@ msgstr ""
 msgid "Recorded as “%(owner_name)s”, but no contact details yet."
 msgstr ""
 
+msgid "Recorded by"
+msgstr ""
+
 msgid "Recorded by accounting"
 msgstr ""
 
@@ -2238,6 +2261,9 @@ msgstr ""
 msgid "Reference"
 msgstr ""
 
+msgid "Refund"
+msgstr ""
+
 msgid "Refund (money back)"
 msgstr ""
 
@@ -2248,6 +2274,9 @@ msgid "Refunds"
 msgstr ""
 
 msgid "Reimburse by"
+msgstr ""
+
+msgid "Reimbursement"
 msgstr ""
 
 #, python-format
@@ -2430,6 +2459,9 @@ msgstr ""
 msgid "Security"
 msgstr ""
 
+msgid "See all the details"
+msgstr ""
+
 msgid "Select a unit, or mark this as a common-area issue."
 msgstr ""
 
@@ -2502,6 +2534,12 @@ msgstr ""
 msgid "Something went wrong."
 msgstr ""
 
+msgid "Source"
+msgstr ""
+
+msgid "Source / paid by"
+msgstr ""
+
 msgid "Special contribution"
 msgstr ""
 
@@ -2551,6 +2589,13 @@ msgid "Submitted"
 msgstr ""
 
 msgid "Sync preview"
+msgstr ""
+
+#, python-format
+msgid "Synced from the Google Sheet, “%(tab)s” tab, row %(row)s."
+msgstr ""
+
+msgid "Synced from the Google Sheet’s Transactions tab."
 msgstr ""
 
 msgid "Syndicate documents"
@@ -2639,6 +2684,9 @@ msgstr ""
 msgid "The fixed unit amounts add up to more than the total."
 msgstr ""
 
+msgid "The full sheet row is added at the next sync."
+msgstr ""
+
 #, python-format
 msgid "The household is already covered by %(name)s's policy, so this is"
 msgstr ""
@@ -2673,6 +2721,9 @@ msgid ""
 msgstr ""
 
 msgid "The sheet must be shared as"
+msgstr ""
+
+msgid "The sheet row"
 msgstr ""
 
 msgid ""
@@ -2769,6 +2820,9 @@ msgid "Title and message are both required."
 msgstr ""
 
 msgid "To"
+msgstr ""
+
+msgid "To change this entry, edit it in the sheet; the next sync updates the app."
 msgstr ""
 
 msgid "Total"
@@ -3105,6 +3159,9 @@ msgstr ""
 msgid "credit"
 msgstr ""
 
+msgid "e-Transfer"
+msgstr ""
+
 msgid "e.g. Approved at the AGM of April 20"
 msgstr ""
 
@@ -3165,6 +3222,9 @@ msgid "from unit %(number)s."
 msgstr ""
 
 msgid "https://docs.google.com/spreadsheets/d/…"
+msgstr ""
+
+msgid "money back"
 msgstr ""
 
 msgid "must change at next sign-in"

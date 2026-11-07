@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import post_button %}
+{% block title %}{% trans number=p.unit.number %}Payment · Unit {{ number }}{% endtrans %}{% endblock %}
+{% block content %}
+<div class="head"><h1>{% trans %}Payment{% endtrans %} <span class="credit">{{ p.amount_cents|money }}</span></h1>
+  {% if current_user.can('accounting_edit') and p.origin != 'sheet' %}
+    {{ post_button(url_for('billing.delete_payment', payment_id=p.id), _('Remove'), confirm=_('Remove this entry?')) }}
+  {% endif %}</div>
+<div class="grid two wide-left">
+  <section class="card">
+    <h2>{% trans %}Details{% endtrans %}</h2>
+    <dl class="props">
+      <dt>{% trans %}Date paid{% endtrans %}</dt><dd>{{ p.paid_on|fdate('long') }}</dd>
+      <dt>{% trans %}Unit{% endtrans %}</dt><dd><a href="{{ url_for('billing.ledger', unit_id=p.unit_id) }}">{{ p.unit.number }}</a>{% if p.unit.owner_display %} <span class="muted">· {{ p.unit.owner_display }}</span>{% endif %}</dd>
+      <dt>{% trans %}Amount{% endtrans %}</dt><dd><strong>{{ p.amount_cents|money }}</strong></dd>
+      <dt>{% trans %}Method{% endtrans %}</dt><dd>{{ methods.get(p.method, p.method) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</dd>
+      {% if p.reference %}<dt>{% trans %}Reference{% endtrans %}</dt><dd>{{ p.reference }}</dd>{% endif %}
+      {% if p.special %}<dt>{% trans %}For the special contribution{% endtrans %}</dt><dd>{% if current_user.can('accounting') or current_user.is_admin %}<a href="{{ url_for('fees.special', special_id=p.special.id) }}">{{ p.special.title }}</a>{% else %}{{ p.special.title }}{% endif %}</dd>{% endif %}
+      <dt>{% trans %}Description{% endtrans %}</dt><dd class="prose">{{ p.notes or p.summary }}</dd>
+    </dl>
+  </section>
+  <aside>{% with item=p %}{% include "billing/_source.html" %}{% endwith %}</aside>
+</div>
+{% endblock %}
