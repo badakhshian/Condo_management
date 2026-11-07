@@ -2,6 +2,11 @@
 {% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import balance, csrf, post_button %}
 {% block title %}{% trans label=period.label %}Accounting · {{ label }}{% endtrans %}{% endblock %}
+{% set can_edit = current_user.can('accounting_edit') %}
+{% macro del_payment(p) %}{{ icon_post('trash', url_for('billing.delete_payment', payment_id=p.id, back=here()), _('Delete'), cls='danger small',
+  confirm=(_('Delete this payment? It comes from the Google Sheet, so also delete the row there or it comes back at the next sync.') if p.origin == 'sheet' else _('Delete this payment?'))) }}{% endmacro %}
+{% macro del_cost(x) %}{{ icon_post('trash', url_for('billing.delete_cost', cost_id=x.id, back=here()), _('Delete'), cls='danger small',
+  confirm=(_('Delete this cost? It comes from the Google Sheet, so also delete the row there or it comes back at the next sync.') if x.origin == 'sheet' else _('Delete this cost?'))) }}{% endmacro %}
 {% block content %}
 <div class="head"><h1>{% trans %}Accounting{% endtrans %}</h1>
   <div class="actions">
@@ -50,12 +55,13 @@
       <span class="credit">{{ paid_total|money }}</span>
       {% if current_user.can('accounting_edit') %}{{ icon_link('plus', url_for('billing.new_payment'), _('Add payment'), cls='primary') }}{% endif %}</div>
     {% if payments %}<table>
-      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
+      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th>{% if can_edit %}<th class="row-del"></th>{% endif %}</tr></thead>
       <tbody>{% for p in payments %}
         <tr><td class="nowrap date-link"><a href="{{ url_for('billing.payment_detail', payment_id=p.id, back=here()) }}" title="{{ _('See all the details') }}">{{ p.paid_on|fdate('short' if period.view == 'month' else 'iso') }}</a></td>
           <td>{{ p.unit.number }}</td>
           <td class="muted">{{ p.summary|truncate(40) }}{% if p.method == 'purchase credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
-          <td class="num">{{ p.amount_cents|money }}</td></tr>
+          <td class="num">{{ p.amount_cents|money }}</td>
+          {% if can_edit %}<td class="row-del">{{ del_payment(p) }}</td>{% endif %}</tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">{% trans label=period.label %}No payments in {{ label }}.{% endtrans %}</p>{% endif %}
   </section>
@@ -66,12 +72,12 @@
       {% if current_user.can('accounting_edit') %}{{ icon_link('plus', url_for('billing.new_cost'), _('Add cost'), cls='primary') }}{% endif %}</div>
     {% if categories %}<div class="cat-chips">{% for label, amount in categories %}<span class="tag">{{ label }} {{ amount|money }}</span>{% endfor %}</div>{% endif %}
     {% if costs %}<table>
-      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th></th></tr></thead>
+      <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th>{% if can_edit %}<th class="row-del"></th>{% endif %}</tr></thead>
       <tbody>{% for x in costs %}
         <tr><td class="nowrap date-link"><a href="{{ url_for('billing.payment_detail', payment_id=x.payment.id, back=here()) if x.origin == 'credit' else url_for('billing.cost_detail', cost_id=x.id, back=here()) }}" title="{{ _('See all the details') }}">{{ x.spent_on|fdate('short' if period.view == 'month' else 'iso') }}</a></td>
-          <td>{{ x.description|truncate(40) }} <span class="tag">{{ x.category_label }}</span></td>
+          <td class="muted">{{ x.summary|truncate(40) }}{% if x.origin == 'credit' %} <span class="tag">{% trans %}credit{% endtrans %}</span>{% endif %}</td>
           <td class="num">{{ x.cost_cents|money }}</td>
-          <td>{% if x.origin == 'credit' %}<span class="tag" title="{{ _('Recorded as a purchase credit on the unit') }}">{% trans %}credit{% endtrans %}</span>{% elif x.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet') }}">{% trans %}sheet{% endtrans %}</span>{% endif %}</td></tr>
+          {% if can_edit %}<td class="row-del">{{ del_payment(x.payment) if x.origin == 'credit' else del_cost(x) }}</td>{% endif %}</tr>
       {% endfor %}</tbody>
     </table>{% else %}<p class="muted">{% trans label=period.label %}No costs in {{ label }}.{% endtrans %}</p>{% endif %}
   </section>

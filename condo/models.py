@@ -473,6 +473,11 @@ class Expense(db.Model):
         return -self.amount_cents
 
     @property
+    def summary(self):
+        """A short description for lists; the cost's page shows everything."""
+        return self.description.split(" — ", 1)[0]
+
+    @property
     def category_key(self):
         return self.category if self.category in COST_CATEGORIES else guess_cost_category(
             f"{self.description} {self.notes or ''}")

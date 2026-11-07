@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:50+0000\n"
+"POT-Creation-Date: 2026-11-07 02:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -901,11 +901,11 @@ msgstr "Dépense"
 msgid "Cost (money paid out)"
 msgstr "Dépense (argent versé)"
 
+msgid "Cost deleted."
+msgstr "Dépense supprimée."
+
 msgid "Cost recorded."
 msgstr "Dépense enregistrée."
-
-msgid "Cost removed."
-msgstr "Dépense supprimée."
 
 msgid "Costs"
 msgstr "Dépenses"
@@ -995,11 +995,23 @@ msgstr "Refusé. Le copropriétaire a été informé de la raison."
 msgid "Delete"
 msgstr "Supprimer"
 
+msgid "Delete this cost?"
+msgstr "Supprimer cette dépense?"
+
+msgid "Delete this cost? It comes from the Google Sheet, so also delete the row there or it comes back at the next sync."
+msgstr "Supprimer cette dépense? Elle vient de la feuille Google : supprimez aussi la ligne dans la feuille, sinon elle reviendra à la prochaine synchronisation."
+
 msgid "Delete this document?"
 msgstr "Supprimer ce document?"
 
 msgid "Delete this notice?"
 msgstr "Supprimer cet avis?"
+
+msgid "Delete this payment?"
+msgstr "Supprimer ce paiement?"
+
+msgid "Delete this payment? It comes from the Google Sheet, so also delete the row there or it comes back at the next sync."
+msgstr "Supprimer ce paiement? Il vient de la feuille Google : supprimez aussi la ligne dans la feuille, sinon il reviendra à la prochaine synchronisation."
 
 msgid "Delete this project? Its updates and quote are deleted too."
 msgstr "Supprimer ce projet? Son suivi et sa soumission seront aussi supprimés."
@@ -1091,9 +1103,6 @@ msgstr "Modifier %(name)s"
 
 msgid "Edit document"
 msgstr "Modifier le document"
-
-msgid "Edit in the Google Sheet"
-msgstr "Modifier dans la feuille Google"
 
 msgid "Edit in the Google Sheet’s Owners tab"
 msgstr "Modifier dans l’onglet Owners de la feuille Google"
@@ -1424,6 +1433,9 @@ msgstr "Courriel ou mot de passe invalide."
 
 msgid "Is this bigger planned work for the building?"
 msgstr "S’agit-il de travaux planifiés plus importants pour l’immeuble?"
+
+msgid "It came from the Google Sheet: delete the row there too, or it comes back at the next sync."
+msgstr "Elle venait de la feuille Google : supprimez aussi la ligne dans la feuille, sinon elle reviendra à la prochaine synchronisation."
 
 msgid "It won't be shown again."
 msgstr "Il ne sera plus affiché."
@@ -2114,12 +2126,12 @@ msgstr "Paiement"
 msgid "Payment (%(method)s)"
 msgstr "Paiement (%(method)s)"
 
+msgid "Payment deleted."
+msgstr "Paiement supprimé."
+
 #, python-format
 msgid "Payment recorded for unit %(number)s."
 msgstr "Paiement enregistré pour l’unité %(number)s."
-
-msgid "Payment removed."
-msgstr "Paiement supprimé."
 
 #, python-format
 msgid "Payment · Unit %(number)s"
@@ -2312,9 +2324,6 @@ msgstr "Enregistrer le remboursement"
 msgid "Record payment"
 msgstr "Enregistrer le paiement"
 
-msgid "Recorded as a purchase credit on the unit"
-msgstr "Enregistré comme crédit d’achat sur l’unité"
-
 #, python-format
 msgid "Recorded as “%(owner_name)s”, but no contact details yet."
 msgstr "Inscrit sous « %(owner_name)s », mais sans coordonnées pour l’instant."
@@ -2415,9 +2424,6 @@ msgstr "Retirer le locataire"
 #, python-format
 msgid "Remove these %(n)s old entries and load the sheet’s own figures instead?"
 msgstr "Supprimer ces %(n)s anciennes entrées et charger plutôt les chiffres de la feuille?"
-
-msgid "Remove this cost?"
-msgstr "Supprimer cette dépense?"
 
 msgid "Remove this entry?"
 msgstr "Supprimer cette entrée?"
@@ -2894,9 +2900,6 @@ msgstr "Cet équipement n’est pas offert à la réservation pour le moment."
 msgid "This contribution has been billed; it can't be deleted."
 msgstr "Cette cotisation a été facturée; elle ne peut pas être supprimée."
 
-msgid "This cost comes from the Google Sheet. Change it there; the next sync updates the app."
-msgstr "Cette dépense vient de la feuille Google. Modifiez-la là; la prochaine synchronisation mettra l’application à jour."
-
 msgid "This entry comes from the Google Sheet. Change it there; the next sync updates the app."
 msgstr "Cette entrée vient de la feuille Google. Modifiez-la là; la prochaine synchronisation mettra l’application à jour."
 
@@ -3354,9 +3357,6 @@ msgstr "facultative"
 #, python-format
 msgid "owed %(owed)s · credit %(credit)s"
 msgstr "dû %(owed)s · crédit %(credit)s"
-
-msgid "sheet"
-msgstr "feuille"
 
 msgid "so owners and tenants can see it."
 msgstr "pour que les copropriétaires et les locataires puissent la consulter."

@@ -70,11 +70,12 @@ def test_add_and_remove_manual_cost(admin_client):
     assert db.session.get(Expense, cost.id) is None
 
 
-def test_sheet_costs_cannot_be_removed(admin_client):
+def test_sheet_costs_can_be_deleted_with_a_warning(admin_client):
     seed()
     sheet_cost = db.session.scalar(db.select(Expense).where(Expense.origin == "sheet"))
-    admin_client.post(f"/accounting/costs/{sheet_cost.id}/delete")
-    assert db.session.get(Expense, sheet_cost.id) is not None
+    page = admin_client.post(f"/accounting/costs/{sheet_cost.id}/delete", follow_redirects=True).data.decode()
+    assert db.session.get(Expense, sheet_cost.id) is None
+    assert "delete the row there too" in page
 
 
 def test_cost_validation(admin_client):
@@ -240,3 +241,39 @@ def test_payment_details_follow_unit_access(app, client):
     assert client.get(f"/accounting/payments/{p1.id}").status_code == 200
     assert client.get(f"/accounting/payments/{p2.id}").status_code == 403
     assert client.get(f"/accounting/costs/{c.id}").status_code == 403
+
+
+
+def test_every_row_has_delete_and_costs_are_short(admin_client):
+    from condo.models import Reimbursement, User
+    seed()
+    u = unit("101")
+    admin = db.session.scalar(db.select(User).where(User.email == "admin@test.com"))
+    credit = Payment(unit=u, amount_cents=1034, paid_on=date(2026, 11, 4), method="purchase credit",
+                     notes="Purchase (reimbursement) — Compost bags for the building, Canadian Tire")
+    db.session.add(credit)
+    db.session.add(Expense(spent_on=date(2026, 11, 5), category="repairs", origin="sheet", amount_cents=-195458,
+                           description="Hydra Electric invoice 41126274 — parking heaters November"))
+    db.session.commit()
+    page = admin_client.get("/accounting/?view=month&year=2026&month=11").data.decode()
+    payments_panel = page.split("<h2>Payments")[1].split("</section>")[0]
+    costs_panel = page.split("<h2>Costs")[1].split("</section>")[0]
+    assert payments_panel.count("/delete") == 2 and costs_panel.count("/delete") == 3
+    assert "Hydra Electric invoice 41126274" in costs_panel and "parking heaters November" not in costs_panel
+    assert ">sheet<" not in costs_panel and "Repairs &amp; projects</span></td>" not in costs_panel
+
+    # A reimbursement recorded as a credit goes back to "approved" if the credit is deleted.
+    r = Reimbursement(unit=u, requested_by_id=admin.id, description="Compost bags", amount_cents=1034,
+                      settle_method="credit", status="settled", payment_id=credit.id, settled_by="Admin",
+                      spent_on=date(2026, 11, 4))
+    db.session.add(r)
+    db.session.commit()
+    resp = admin_client.post(f"/accounting/payments/{credit.id}/delete?back=/accounting/payments/{credit.id}")
+    assert resp.headers["Location"].endswith("/accounting/")
+    assert db.session.get(Payment, credit.id) is None and r.status == "approved" and r.payment_id is None
+
+
+def test_only_bookkeepers_see_delete(alice_client):
+    seed()
+    page = alice_client.get("/accounting/").data.decode()
+    assert "/delete" not in page

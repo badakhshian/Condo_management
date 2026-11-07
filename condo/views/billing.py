@@ -66,6 +66,8 @@ class OwnerPaidCost:
             self.category_key = "maintenance"
         self.category_label = COST_CATEGORIES[self.category_key]
         self.paid_by = f"Paid by owner of unit {payment.unit.number}, credited to their account"
+        self.summary = self.description.split(",", 1)[0]
+        self.id = payment.id
 
 
 def _sum(column, *where):
@@ -235,13 +237,36 @@ def new_cost():
 @permission_required("accounting_edit")
 def delete_cost(cost_id):
     cost = db.session.get(Expense, cost_id) or abort(404)
-    if cost.origin == "sheet":
-        flash(_("This cost comes from the Google Sheet. Change it there; the next sync updates the app."), "error")
-    else:
-        db.session.delete(cost)
-        db.session.commit()
-        flash(_("Cost removed."), "success")
-    return redirect(request.referrer or url_for("billing.index"))
+    _unlink(expense_id=cost.id)
+    from_sheet = cost.origin == "sheet"
+    db.session.delete(cost)
+    db.session.commit()
+    flash(_("Cost deleted.") + (" " + _("It came from the Google Sheet: delete the row there too, or it comes back at the next sync.")
+                                if from_sheet else ""), "success" if not from_sheet else "info")
+    return redirect(_back_after_delete())
+
+
+def _back_after_delete():
+    from ..navigation import safe_back
+    back = safe_back()
+    if back and ("/payments/" in back or "/costs/" in back):  # the entry's own page no longer exists
+        back = None
+    return back or url_for("billing.index")
+
+
+def _unlink(payment_id=None, expense_id=None):
+    """Something recorded from a reimbursement or a routine visit was deleted: undo the link.
+    A reimbursement goes back to 'approved', so accounting can record it again."""
+    from ..models import Reimbursement, RoutineLog
+    for r in db.session.scalars(db.select(Reimbursement).where(
+            (Reimbursement.payment_id == payment_id) if payment_id else (Reimbursement.expense_id == expense_id))):
+        r.payment_id = None if payment_id else r.payment_id
+        r.expense_id = None if expense_id else r.expense_id
+        if r.status == "settled":
+            r.status, r.settled_by, r.settled_at = "approved", None, None
+    if expense_id:
+        for log in db.session.scalars(db.select(RoutineLog).where(RoutineLog.expense_id == expense_id)):
+            log.expense_id = None
 
 
 @bp.route("/generate", methods=["POST"])
@@ -377,14 +402,13 @@ def delete_charge(charge_id):
 @permission_required("accounting_edit")
 def delete_payment(payment_id):
     payment = db.session.get(Payment, payment_id) or abort(404)
-    unit_id = payment.unit_id
-    if payment.origin == "sheet":
-        flash(_("This entry comes from the Google Sheet. Change it there; the next sync updates the app."), "error")
-        return redirect(url_for("billing.ledger", unit_id=unit_id))
+    _unlink(payment_id=payment.id)
+    from_sheet = payment.origin == "sheet"
     db.session.delete(payment)
     db.session.commit()
-    flash(_("Payment removed."), "success")
-    return redirect(url_for("billing.ledger", unit_id=unit_id))
+    flash(_("Payment deleted.") + (" " + _("It came from the Google Sheet: delete the row there too, or it comes back at the next sync.")
+                                   if from_sheet else ""), "success" if not from_sheet else "info")
+    return redirect(_back_after_delete())
 
 
 def _sheet_info():

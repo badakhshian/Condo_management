@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:50+0000\n"
+"POT-Creation-Date: 2026-11-07 02:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -923,10 +923,10 @@ msgstr ""
 msgid "Cost (money paid out)"
 msgstr ""
 
-msgid "Cost recorded."
+msgid "Cost deleted."
 msgstr ""
 
-msgid "Cost removed."
+msgid "Cost recorded."
 msgstr ""
 
 msgid "Costs"
@@ -1017,10 +1017,26 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
+msgid "Delete this cost?"
+msgstr ""
+
+msgid ""
+"Delete this cost? It comes from the Google Sheet, so also delete the row "
+"there or it comes back at the next sync."
+msgstr ""
+
 msgid "Delete this document?"
 msgstr ""
 
 msgid "Delete this notice?"
+msgstr ""
+
+msgid "Delete this payment?"
+msgstr ""
+
+msgid ""
+"Delete this payment? It comes from the Google Sheet, so also delete the "
+"row there or it comes back at the next sync."
 msgstr ""
 
 msgid "Delete this project? Its updates and quote are deleted too."
@@ -1116,9 +1132,6 @@ msgid "Edit %(name)s"
 msgstr ""
 
 msgid "Edit document"
-msgstr ""
-
-msgid "Edit in the Google Sheet"
 msgstr ""
 
 msgid "Edit in the Google Sheet’s Owners tab"
@@ -1462,6 +1475,11 @@ msgid "Invalid email or password."
 msgstr ""
 
 msgid "Is this bigger planned work for the building?"
+msgstr ""
+
+msgid ""
+"It came from the Google Sheet: delete the row there too, or it comes back"
+" at the next sync."
 msgstr ""
 
 msgid "It won't be shown again."
@@ -2176,11 +2194,11 @@ msgstr ""
 msgid "Payment (%(method)s)"
 msgstr ""
 
-#, python-format
-msgid "Payment recorded for unit %(number)s."
+msgid "Payment deleted."
 msgstr ""
 
-msgid "Payment removed."
+#, python-format
+msgid "Payment recorded for unit %(number)s."
 msgstr ""
 
 #, python-format
@@ -2380,9 +2398,6 @@ msgstr ""
 msgid "Record payment"
 msgstr ""
 
-msgid "Recorded as a purchase credit on the unit"
-msgstr ""
-
 #, python-format
 msgid "Recorded as “%(owner_name)s”, but no contact details yet."
 msgstr ""
@@ -2484,9 +2499,6 @@ msgstr ""
 
 #, python-format
 msgid "Remove these %(n)s old entries and load the sheet’s own figures instead?"
-msgstr ""
-
-msgid "Remove this cost?"
 msgstr ""
 
 msgid "Remove this entry?"
@@ -2990,11 +3002,6 @@ msgid "This contribution has been billed; it can't be deleted."
 msgstr ""
 
 msgid ""
-"This cost comes from the Google Sheet. Change it there; the next sync "
-"updates the app."
-msgstr ""
-
-msgid ""
 "This entry comes from the Google Sheet. Change it there; the next sync "
 "updates the app."
 msgstr ""
@@ -3475,9 +3482,6 @@ msgstr ""
 
 #, python-format
 msgid "owed %(owed)s · credit %(credit)s"
-msgstr ""
-
-msgid "sheet"
 msgstr ""
 
 msgid "so owners and tenants can see it."

@@ -162,12 +162,15 @@ def test_cron_records_fetch_errors(app, client, monkeypatch):
     assert "refused" in Setting.get("sheet_last_error")["message"]
 
 
-def test_sheet_entries_cannot_be_removed_in_app(admin_client):
+def test_sheet_entries_can_be_deleted_but_come_back_at_the_next_sync(admin_client):
     sheet_sync.apply(sheet_sync.parse(make_sheet()))
     pay = db.session.scalar(db.select(Payment).where(Payment.origin == "sheet"))
-    admin_client.post(f"/accounting/payments/{pay.id}/delete")
-    assert db.session.get(Payment, pay.id) is not None
+    pay_id, amount = pay.id, pay.amount_cents
     assert b"from sheet" in admin_client.get(f"/accounting/unit/{pay.unit_id}").data
+    admin_client.post(f"/accounting/payments/{pay_id}/delete")
+    assert db.session.get(Payment, pay_id) is None
+    sheet_sync.apply(sheet_sync.parse(make_sheet()))
+    assert db.session.scalar(db.select(Payment).where(Payment.origin == "sheet", Payment.amount_cents == amount))
 
 
 def add_owners_tab(data, rows):
