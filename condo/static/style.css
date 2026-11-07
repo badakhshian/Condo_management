@@ -1,11 +1,14 @@
 :root {
-  --bg: #f5f6f8; --surface: #fff; --text: #1d2330; --muted: #6b7385; --border: #e2e5eb;
-  --primary: #2453c7; --primary-ink: #fff; --danger: #c0392b; --ok: #1e8a4c; --warn: #b7791f;
-  --radius: 10px; --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 1px 8px rgba(20, 30, 50, .04);
+  /* DMBT theme: the bag's orange with matte gold. */
+  --brand: #E8612C; --brand-deep: #C94F1D; --gold: #C9A961; --gold-light: #EBD9A3; --gold-soft: #F6EDD6; --gold-ink: #6E5320;
+  --bg: #FAF7F2; --surface: #fff; --text: #2A211B; --muted: #7A6D61; --border: #ECE3D6;
+  --primary: #C94F1D; --primary-ink: #fff; --danger: #B42318; --ok: #1E7A45; --warn: #A8781C;
+  --radius: 10px; --shadow: 0 1px 2px rgba(60, 35, 15, .06), 0 1px 8px rgba(60, 35, 15, .05);
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #12151b; --surface: #1b2029; --text: #e6e9ef; --muted: #98a0b3; --border: #2c3340;
-          --primary: #6d93ff; --primary-ink: #0d1220; --danger: #ff7a6b; --ok: #4cc785; --warn: #e6b04a; }
+  :root { --brand: #D9581F; --brand-deep: #B8461A; --gold: #D4B676; --gold-light: #EBD9A3; --gold-soft: #3A2F1E; --gold-ink: #EBD9A3;
+          --bg: #16120E; --surface: #211B16; --text: #F3ECE2; --muted: #B3A595; --border: #362C23;
+          --primary: #F2834F; --primary-ink: #1E120A; --danger: #FF7A6B; --ok: #4CC785; --warn: #E6B04A; }
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
@@ -114,7 +117,7 @@ form .btn.primary + a { margin-left: .8rem; }
 .card > :first-child { margin-top: 0; }
 .card > :last-child { margin-bottom: 0; }
 .grid > aside.card { align-self: start; }
-.banner { background: var(--warn); color: #1d1300; text-align: center; padding: .45rem 1rem; font-size: .9rem; }
+.banner { background: var(--gold-soft); color: var(--gold-ink); border-bottom: 1px solid var(--gold); text-align: center; padding: .45rem 1rem; font-size: .9rem; }
 .tabs a .count { font-size: .75rem; opacity: .7; margin-left: .25rem; }
 .ins-valid { color: var(--ok); }
 .ins-expiring { color: var(--warn); }
@@ -305,3 +308,33 @@ form .btn.primary + a { margin-left: 0; }
 .segmented input:focus-visible + span { outline: 2px solid var(--primary); }
 .renewal-note { font-size: .88rem; margin: .2rem 0 .6rem; }
 @media (max-width: 520px) { .fee-setup .row { grid-template-columns: 1fr; } }
+
+
+/* ---- DMBT theme: orange header, matte-gold accents ---- */
+.topbar { background: linear-gradient(100deg, var(--brand) 0%, var(--brand-deep) 100%); border-bottom: 3px solid var(--gold); }
+.topbar .brand { color: var(--gold-light); font-weight: 800; letter-spacing: .01em; font-size: 1.05rem; }
+.topbar .brand:hover { text-decoration: none; color: #fff; }
+.topbar nav a { color: #FFF4E8; font-weight: 600; }
+.topbar nav a:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+.topbar nav a.active { background: var(--gold-light); color: #4A3510; }
+.topbar .user, .topbar .user a, .topbar .user button.link { color: #FFF4E8; }
+.topbar .user a:hover, .topbar .user button.link:hover { color: var(--gold-light); }
+.topbar .user .tag { background: rgba(0, 0, 0, .14); border-color: var(--gold); color: var(--gold-light); }
+.topbar .bell svg { stroke: #FFF4E8; }
+.topbar .bell-count { box-shadow: 0 0 0 2px var(--brand); }
+.btn.primary:hover { background: var(--brand-deep); filter: brightness(.95); }
+h1 { color: var(--text); }
+.card h2 { color: var(--text); }
+.tabs a.active { background: var(--primary); }
+.section-tabs a.active { border-bottom-color: var(--gold); }
+.section-tabs .count, .tabs a .count { background: var(--gold-soft); color: var(--gold-ink); }
+.stat { border-top: 3px solid var(--gold); }
+.building-insurance { border-left-color: var(--gold); }
+.tag { border-color: color-mix(in srgb, var(--gold) 55%, var(--border)); }
+.back-link { color: var(--muted); }
+.segmented input:checked + span { color: var(--primary); }
+.progress span { background: var(--gold); }
+.flash-info { background: var(--gold-soft); border-color: var(--gold); color: var(--gold-ink); }
+.login { overflow: hidden; padding-top: 0 !important; }
+.login h1 { margin: 0 -1.25rem 1rem; padding: 1.1rem 1.25rem; color: var(--gold-light);
+  background: linear-gradient(100deg, var(--brand) 0%, var(--brand-deep) 100%); border-bottom: 3px solid var(--gold); }
