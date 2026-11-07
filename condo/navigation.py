@@ -55,6 +55,10 @@ def parent_for(endpoint, args):
         return _l("Fees & contributions"), url_for("fees.index")
     if endpoint.startswith("reimbursements."):
         return _l("Reimbursements"), url_for("reimbursements.index")
+    if endpoint.startswith("maintenance.routine_") and endpoint != "maintenance.routine_new":
+        return _l("Routine"), url_for("maintenance.index", tab="routine")
+    if endpoint == "maintenance.routine_new":
+        return _l("Routine"), url_for("maintenance.index", tab="routine")
     if endpoint.startswith("maintenance."):
         from .models import MaintenanceRequest
         req = db.session.get(MaintenanceRequest, args["request_id"]) if "request_id" in args else None
@@ -107,7 +111,7 @@ def label_for(path):
         req = db.session.get(MaintenanceRequest, int(m.group(1)))
         return (_l("the project") if req.is_project else _l("the request")) if req else _l("Projects & Maintenance")
     if bare.startswith("/maintenance"):
-        return _l("Maintenance") if "tab=maintenance" in path else _l("Projects")
+        return _l("Maintenance") if "tab=maintenance" in path else _l("Routine") if "tab=routine" in path else _l("Projects")
     for prefix, label in (("/directory", _l("Directory")), ("/accounting", _l("Accounting")), ("/maintenance", _l("Maintenance")),
                           ("/documents", _l("Documents")), ("/reimbursements", _l("Reimbursements")), ("/units", _l("Units")),
                           ("/notifications", _l("Notifications")), ("/sheet", _l("Google Sheet"))):

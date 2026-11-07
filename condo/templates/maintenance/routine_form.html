@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ _('Edit routine task') if task.id else _('New routine task') }}{% endblock %}
+{% block content %}
+<h1>{{ _('Edit routine task') if task.id else _('New routine task') }}</h1>
+<form method="post" class="card narrow">
+  {{ csrf() }}
+  <label>{% trans %}Task{% endtrans %} <input name="title" required maxlength="200" value="{{ form.get('title', '') }}" placeholder="{{ _('e.g. Snow removal') }}"></label>
+  <label>{% trans %}Details{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><textarea name="description" rows="3" placeholder="{{ _('What is included, access instructions…') }}">{{ form.get('description', '') }}</textarea></label>
+  <div class="row">
+    <label>{% trans %}How often{% endtrans %} <select name="frequency">{% for k, (months, label) in frequencies.items() %}<option value="{{ k }}" {{ 'selected' if form.get('frequency') == k }}>{{ label }}</option>{% endfor %}</select></label>
+    <label>{% trans %}Next due{% endtrans %} <input type="date" name="next_due" required value="{{ form.get('next_due', '') }}"></label>
+  </div>
+  <fieldset>
+    <legend>{% trans %}Season{% endtrans %} <span class="muted">{% trans %}(optional, e.g. snow removal from November to April){% endtrans %}</span></legend>
+    <div class="row">
+      {% for field, label in (('season_from', _('From')), ('season_to', _('To'))) %}
+      <label>{{ label }} <select name="{{ field }}"><option value="">—</option>{% for m in range(1, 13) %}<option value="{{ m }}" {{ 'selected' if form.get(field)|string == m|string }}>{{ _month(m) }}</option>{% endfor %}</select></label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <label>{% trans %}Category{% endtrans %} <select name="category">{% for c in categories %}<option value="{{ c }}" {{ 'selected' if form.get('category') == c }}>{{ CATEGORY_LABELS.get(c, c) }}</option>{% endfor %}</select></label>
+  <div class="row">
+    <label>{% trans %}Contractor{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><input name="vendor" maxlength="200" value="{{ form.get('vendor', '') }}" placeholder="{{ _('e.g. Déneigement Laval') }}"></label>
+    <label>{% trans %}Contractor contact{% endtrans %} <input name="vendor_contact" maxlength="200" value="{{ form.get('vendor_contact', '') }}" placeholder="{{ _('Phone or email') }}"></label>
+  </div>
+  <div class="row">
+    <label>{% trans %}Estimated cost{% endtrans %} <span class="money-input"><input name="estimated" inputmode="decimal" placeholder="0.00" value="{{ form.get('estimated', '') }}"></span></label>
+    <label>{% trans %}Contract ends{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><input type="date" name="contract_ends" value="{{ form.get('contract_ends', '') }}"></label>
+  </div>
+  {% if task.id %}<label class="check"><input type="checkbox" name="active" value="1" {{ 'checked' if form.get('active') }}> {% trans %}Active (uncheck to pause it without losing its history){% endtrans %}</label>
+  {% else %}<input type="hidden" name="active" value="1">{% endif %}
+  <div class="form-actions"><button class="btn primary">{% trans %}Save{% endtrans %}</button>
+    <a href="{{ url_for('maintenance.routine_detail', task_id=task.id) if task.id else url_for('maintenance.index', tab='routine') }}">{% trans %}Cancel{% endtrans %}</a></div>
+</form>
+{% endblock %}

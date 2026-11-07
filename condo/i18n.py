@@ -57,7 +57,7 @@ def init_app(app):
     app.jinja_env.add_extension("jinja2.ext.i18n")
     app.jinja_env.policies["ext.i18n.trimmed"] = True
     app.jinja_env.filters.update(fdate=fdate, fdatetime=fdatetime, pct=pct)
-    app.jinja_env.globals.update(lang=current_language, LANGUAGES=LANGUAGES)
+    app.jinja_env.globals.update(lang=current_language, LANGUAGES=LANGUAGES, _month=month_name)
 
 
 def current_language():
@@ -131,3 +131,8 @@ def pct(value, digits=2, sign=False):
     """A percentage in the current language: 11.61% / 11,61 %."""
     text = f"{value:{'+' if sign else ''}.{digits}f}"
     return text.replace(".", ",") + "\u00a0%" if current_language() == "fr" else text + "%"
+
+
+def month_name(month):
+    """Name of a month (1–12) in the current language: November / novembre."""
+    return _babel_date(date(2000, int(month), 1), "MMMM", locale=current_language())

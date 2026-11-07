@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% trans %}Routine maintenance{% endtrans %}{% endblock %}
+{% block content %}
+<div class="head"><h1>{% trans %}Projects &amp; Maintenance{% endtrans %}</h1>
+  {% if can_manage %}<a class="btn primary" href="{{ url_for('maintenance.routine_new') }}">{% trans %}New routine task{% endtrans %}</a>{% endif %}</div>
+{% include "maintenance/_tabs.html" %}
+<p class="muted">{% trans %}Upkeep that comes back on a schedule, such as snow removal, gutter cleaning or inspections. Mark a visit as done and the next due date moves forward; the board is reminded two weeks before each one is due and two months before a contract ends.{% endtrans %}</p>
+<nav class="tabs">
+  <a href="{{ url_for('maintenance.index', tab='routine') }}" class="{{ 'active' if show != 'all' }}">{% trans %}Active{% endtrans %}</a>
+  <a href="{{ url_for('maintenance.index', tab='routine', show='all') }}" class="{{ 'active' if show == 'all' }}">{% trans %}All{% endtrans %}</a>
+</nav>
+<div class="card">
+<table>
+  <thead><tr><th>{% trans %}Task{% endtrans %}</th><th>{% trans %}How often{% endtrans %}</th><th>{% trans %}Next due{% endtrans %}</th><th>{% trans %}Last done{% endtrans %}</th><th>{% trans %}Contractor{% endtrans %}</th></tr></thead>
+  <tbody>
+  {% for t in tasks %}{% set st = t.state(today) %}
+    <tr class="{{ 'inactive' if not t.active }}"><td><a href="{{ url_for('maintenance.routine_detail', task_id=t.id) }}"><strong>{{ t.title }}</strong></a> <span class="muted">· {{ CATEGORY_LABELS.get(t.category, t.category) }}</span></td>
+      <td>{{ t.frequency_label }}{% if t.season_from %}<div class="excerpt">{% trans start=_month(t.season_from), end=_month(t.season_to) %}Season: {{ start }} to {{ end }}{% endtrans %}</div>{% endif %}</td>
+      <td class="nowrap">{{ t.next_due|fdate }} <span class="badge rt-{{ st }}">{{ states[st] }}</span></td>
+      <td class="nowrap">{% if t.last_done %}{{ t.last_done.done_on|fdate }}{% else %}<span class="muted">—</span>{% endif %}</td>
+      <td>{{ t.vendor or '—' }}{% if t.contract_ending(today) %} <span class="badge rt-due_soon" title="{{ t.contract_ends|fdate('long') }}">{% trans %}Contract ending{% endtrans %}</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="5" class="muted">{% trans %}No routine maintenance yet.{% endtrans %}</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% if suggestions %}
+<section class="card">
+  <h2>{% trans %}Start with common tasks{% endtrans %}</h2>
+  <p class="muted">{% trans %}Click one to fill in the form; adjust the dates and contractor, then save.{% endtrans %}</p>
+  <div class="suggest-chips">{% for sg in suggestions %}<a class="btn small" href="{{ url_for('maintenance.routine_new', title=sg.title, frequency=sg.frequency, category=sg.category, month=sg.month, season_from=sg.season_from or '', season_to=sg.season_to or '') }}">+ {{ sg.title }}</a>{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

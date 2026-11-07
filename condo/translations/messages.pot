@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 01:42+0000\n"
+"POT-Creation-Date: 2026-11-07 01:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -164,6 +164,10 @@ msgid "%(staff)s · your access is set by the board."
 msgstr ""
 
 #, python-format
+msgid "%(start)s to %(end)s"
+msgstr ""
+
+#, python-format
 msgid ""
 "%(t)s UTC · %(opening)s opening balances, %(dues)s monthly fees, "
 "%(payment)s payments, %(credit)s purchase credits, %(expense)s building "
@@ -205,6 +209,9 @@ msgid "(meeting date, adoption date…)"
 msgstr ""
 
 msgid "(optional)"
+msgstr ""
+
+msgid "(optional, e.g. snow removal from November to April)"
 msgstr ""
 
 msgid "(required to decline)"
@@ -324,6 +331,9 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
+msgid "Active (uncheck to pause it without losing its history)"
+msgstr ""
+
 msgid "Active maintenance"
 msgstr ""
 
@@ -430,6 +440,9 @@ msgid "Already billed."
 msgstr ""
 
 msgid "Already loaded"
+msgstr ""
+
+msgid "Also record the cost in Accounting"
 msgstr ""
 
 #, python-format
@@ -676,6 +689,9 @@ msgstr ""
 msgid "Building insurance needs the policy's start and end dates."
 msgstr ""
 
+msgid "By"
+msgstr ""
+
 #, python-format
 msgid "By %(name)s on %(when)s UTC."
 msgstr ""
@@ -774,6 +790,12 @@ msgstr ""
 msgid "Choose annual total or monthly total."
 msgstr ""
 
+msgid "Choose both the first and the last month of the season, or neither."
+msgstr ""
+
+msgid "Choose how often it repeats."
+msgstr ""
+
 msgid "Choose how to split it."
 msgstr ""
 
@@ -799,6 +821,9 @@ msgid "Choose your own password (required)"
 msgstr ""
 
 msgid "Choose…"
+msgstr ""
+
+msgid "Click one to fill in the form; adjust the dates and contractor, then save."
 msgstr ""
 
 msgid "Close request"
@@ -863,7 +888,24 @@ msgstr ""
 msgid "Contact the management office to link your account to a unit."
 msgstr ""
 
+msgid "Contract ending"
+msgstr ""
+
+msgid "Contract ends"
+msgstr ""
+
+#, python-format
+msgid "Contract ends %(when)s: %(title)s — time to renew or find a new contractor"
+msgstr ""
+
 msgid "Contractor"
+msgstr ""
+
+msgid "Contractor contact"
+msgstr ""
+
+#, python-format
+msgid "Contractor: %(vendor)s"
 msgstr ""
 
 msgid "Contribution"
@@ -937,6 +979,9 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+msgid "Date done"
+msgstr ""
+
 msgid "Date paid"
 msgstr ""
 
@@ -979,6 +1024,9 @@ msgid "Delete this document?"
 msgstr ""
 
 msgid "Delete this notice?"
+msgstr ""
+
+msgid "Delete this routine task and its history?"
 msgstr ""
 
 msgid "Delete this special contribution?"
@@ -1029,13 +1077,22 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+msgid "Done on"
+msgstr ""
+
 msgid "Download CSV"
 msgstr ""
 
 msgid "Draft: not billed"
 msgstr ""
 
+msgid "Dryer vent cleaning"
+msgstr ""
+
 msgid "Due date"
+msgstr ""
+
+msgid "Due soon"
 msgstr ""
 
 msgid ""
@@ -1065,6 +1122,9 @@ msgid "Edit in the Google Sheet’s Owners tab"
 msgstr ""
 
 msgid "Edit notice"
+msgstr ""
+
+msgid "Edit routine task"
 msgstr ""
 
 msgid "Edit this in the Google Sheet"
@@ -1129,6 +1189,25 @@ msgstr ""
 msgid "Equally between units"
 msgstr ""
 
+msgid "Estimated cost"
+msgstr ""
+
+#, python-format
+msgid "Estimated cost: %(e)s"
+msgstr ""
+
+msgid "Every 2 years"
+msgstr ""
+
+msgid "Every 3 months"
+msgstr ""
+
+msgid "Every 5 years"
+msgstr ""
+
+msgid "Every month"
+msgstr ""
+
 msgid "Every owner and tenant on file has valid insurance."
 msgstr ""
 
@@ -1136,6 +1215,9 @@ msgid "Every unit's balance matches the sheet."
 msgstr ""
 
 msgid "Every unit's balance now matches the sheet."
+msgstr ""
+
+msgid "Every year"
 msgstr ""
 
 msgid "Everyone signed in"
@@ -1183,6 +1265,9 @@ msgid "Files must be PDF, an image (JPG, PNG, HEIC, WebP), Word, Excel or text."
 msgstr ""
 
 msgid "Fine"
+msgstr ""
+
+msgid "Fire alarm and extinguisher inspection"
 msgstr ""
 
 msgid "Fixed annual amount"
@@ -1242,6 +1327,9 @@ msgstr ""
 msgid "Give the document a title."
 msgstr ""
 
+msgid "Give the task a name, e.g. “Snow removal”."
+msgstr ""
+
 #, python-format
 msgid "Give this password to %(name)s privately."
 msgstr ""
@@ -1272,13 +1360,22 @@ msgid ""
 "\"Anyone with the link\" (Viewer)."
 msgstr ""
 
+msgid "Gutter cleaning"
+msgstr ""
+
 msgid "HVAC"
+msgstr ""
+
+msgid "Heating / HVAC servicing"
 msgstr ""
 
 msgid "Held by"
 msgstr ""
 
 msgid "High"
+msgstr ""
+
+msgid "History"
 msgstr ""
 
 msgid "Home"
@@ -1291,6 +1388,9 @@ msgid "Hours must be whole numbers."
 msgstr ""
 
 msgid "How"
+msgstr ""
+
+msgid "How often"
 msgstr ""
 
 msgid "How would you like to be reimbursed?"
@@ -1384,11 +1484,17 @@ msgstr ""
 msgid "Last check: %(t)s UTC"
 msgstr ""
 
+msgid "Last done"
+msgstr ""
+
 msgid "Last sync"
 msgstr ""
 
 #, python-format
 msgid "Last updated %(updated_at)s."
+msgstr ""
+
+msgid "Lawn care and landscaping"
 msgstr ""
 
 msgid "Leave empty if they live in the unit"
@@ -1478,6 +1584,13 @@ msgid "March"
 msgstr ""
 
 msgid "Mark all as read"
+msgstr ""
+
+msgid "Mark as done"
+msgstr ""
+
+#, python-format
+msgid "Marked as done. Next due %(when)s."
 msgstr ""
 
 msgid "Max hours"
@@ -1633,6 +1746,9 @@ msgstr ""
 msgid "New request"
 msgstr ""
 
+msgid "New routine task"
+msgstr ""
+
 msgid "New special contribution"
 msgstr ""
 
@@ -1647,6 +1763,9 @@ msgid "New units created: %(units_created)s"
 msgstr ""
 
 msgid "Next"
+msgstr ""
+
+msgid "Next due"
 msgstr ""
 
 msgid "Next year"
@@ -1729,6 +1848,9 @@ msgstr ""
 msgid "No requests."
 msgstr ""
 
+msgid "No routine maintenance yet."
+msgstr ""
+
 msgid "No special contributions."
 msgstr ""
 
@@ -1775,6 +1897,9 @@ msgid "Not applied yet: units still use their current monthly fee."
 msgstr ""
 
 msgid "Not billed yet, so it can still be deleted."
+msgstr ""
+
+msgid "Not done yet."
 msgstr ""
 
 msgid "Not fixed after all?"
@@ -2023,6 +2148,12 @@ msgstr ""
 msgid "Past deadline"
 msgstr ""
 
+msgid "Paused"
+msgstr ""
+
+msgid "Paused. Edit the task to make it active again."
+msgstr ""
+
 msgid "Pay back"
 msgstr ""
 
@@ -2068,6 +2199,9 @@ msgid "Periods on file:"
 msgstr ""
 
 msgid "Phone"
+msgstr ""
+
+msgid "Phone or email"
 msgstr ""
 
 msgid "Pin to top"
@@ -2416,6 +2550,29 @@ msgstr ""
 msgid "Role"
 msgstr ""
 
+msgid "Roof inspection"
+msgstr ""
+
+msgid "Routine"
+msgstr ""
+
+msgid "Routine maintenance"
+msgstr ""
+
+#, python-format
+msgid "Routine maintenance due %(when)s: %(title)s"
+msgstr ""
+
+#, python-format
+msgid "Routine task added: %(title)s."
+msgstr ""
+
+msgid "Routine task deleted."
+msgstr ""
+
+msgid "Routine task updated."
+msgstr ""
+
 #, python-format
 msgid "Same address as %(same_address_as)s"
 msgstr ""
@@ -2441,6 +2598,9 @@ msgstr ""
 msgid "Say what was paid for."
 msgstr ""
 
+msgid "Scheduled"
+msgstr ""
+
 msgid "Scope of the work, contractors consulted, how it will be paid for…"
 msgstr ""
 
@@ -2451,6 +2611,13 @@ msgid "Search name, email, phone or company"
 msgstr ""
 
 msgid "Search name, email, phone, address or unit"
+msgstr ""
+
+msgid "Season"
+msgstr ""
+
+#, python-format
+msgid "Season: %(start)s to %(end)s"
 msgstr ""
 
 msgid "Secretary"
@@ -2526,6 +2693,9 @@ msgstr ""
 msgid "Sign-in email, role and unit"
 msgstr ""
 
+msgid "Snow removal"
+msgstr ""
+
 msgid ""
 "Some units have no ownership share; split equally or enter amounts per "
 "unit instead."
@@ -2565,6 +2735,9 @@ msgstr ""
 msgid "Start date"
 msgstr ""
 
+msgid "Start with common tasks"
+msgstr ""
+
 msgid "Statement"
 msgstr ""
 
@@ -2602,6 +2775,9 @@ msgid "Syndicate documents"
 msgstr ""
 
 msgid "Target date"
+msgstr ""
+
+msgid "Task"
 msgstr ""
 
 msgid "Tell the owner why, e.g. ask for another quote."
@@ -2675,6 +2851,9 @@ msgstr ""
 msgid "The board was reminded to renew on %(renewal_notified_at)s."
 msgstr ""
 
+msgid "The cost was added to Accounting."
+msgstr ""
+
 msgid "The end date is before the start date."
 msgstr ""
 
@@ -2692,6 +2871,9 @@ msgid "The household is already covered by %(name)s's policy, so this is"
 msgstr ""
 
 msgid "The new password is saved."
+msgstr ""
+
+msgid "The next due date moves forward by the task’s schedule."
 msgstr ""
 
 #, python-format
@@ -2863,6 +3045,9 @@ msgstr ""
 msgid "Turn on automatic sync"
 msgstr ""
 
+msgid "Twice a year"
+msgstr ""
+
 msgid "Type"
 msgstr ""
 
@@ -2937,6 +3122,13 @@ msgid "Update"
 msgstr ""
 
 msgid "Updates"
+msgstr ""
+
+msgid ""
+"Upkeep that comes back on a schedule, such as snow removal, gutter "
+"cleaning or inspections. Mark a visit as done and the next due date moves"
+" forward; the board is reminded two weeks before each one is due and two "
+"months before a contract ends."
 msgstr ""
 
 msgid "Upload"
@@ -3039,6 +3231,9 @@ msgstr ""
 msgid "What did you pay for?"
 msgstr ""
 
+msgid "What is included, access instructions…"
+msgstr ""
+
 msgid "What it’s for, when it was voted"
 msgstr ""
 
@@ -3060,6 +3255,9 @@ msgid "Will be added"
 msgstr ""
 
 msgid "Will choose their own password at next sign-in"
+msgstr ""
+
+msgid "Window washing"
 msgstr ""
 
 msgid "Workbook"
@@ -3174,6 +3372,12 @@ msgstr ""
 msgid "e.g. Desjardins"
 msgstr ""
 
+msgid "e.g. Déneigement Laval"
+msgstr ""
+
+msgid "e.g. Invoice #2231, all gutters cleared"
+msgstr ""
+
 msgid "e.g. Leaking faucet in bathroom"
 msgstr ""
 
@@ -3190,6 +3394,9 @@ msgid "e.g. Roof replacement"
 msgstr ""
 
 msgid "e.g. Roof replacement assessment"
+msgstr ""
+
+msgid "e.g. Snow removal"
 msgstr ""
 
 msgid "e.g. Snow removal — December"

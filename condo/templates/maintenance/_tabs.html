@@ -1,0 +1,5 @@
+<nav class="section-tabs">
+  {% for key, label in tabs.items() %}
+    <a href="{{ url_for('maintenance.index', tab=key) }}" class="{{ 'active' if tab == key }}">{{ label }}{% if counts[key] %} <span class="count">{{ counts[key] }}</span>{% endif %}</a>
+  {% endfor %}
+</nav>

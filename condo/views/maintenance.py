@@ -16,7 +16,7 @@ def is_board(user=None):
     return user.is_admin or bool(board_positions_of(user))
 
 
-TABS = {"projects": _l("Projects"), "maintenance": _l("Maintenance")}
+TABS = {"projects": _l("Projects"), "routine": _l("Routine"), "maintenance": _l("Maintenance")}
 KIND_OF_TAB = {"projects": "project", "maintenance": "maintenance"}
 
 
@@ -48,13 +48,7 @@ def _tell_unit_side(req, title, body=None):
                 kind="maintenance")
 
 
-@bp.route("/")
-@login_required
-def index():
-    tab = request.args.get("tab", "projects")
-    if tab not in TABS:
-        tab = "projects"
-    status = request.args.get("status", "active")
+def _visible_requests():
     base = db.select(MaintenanceRequest)
     if not sees_all():
         conds = [MaintenanceRequest.submitted_by_id == current_user.id,
@@ -62,9 +56,30 @@ def index():
         if current_user.unit_id:
             conds.append(MaintenanceRequest.unit_id == current_user.unit_id)
         base = base.where(db.or_(*conds))
+    return base
+
+
+def tab_counts():
+    """Active items per tab (for routine: tasks overdue or due within two weeks)."""
+    base = _visible_requests()
     counts = {key: db.session.scalar(db.select(db.func.count()).select_from(
         base.where(MaintenanceRequest.kind == kind, MaintenanceRequest.status.in_(ACTIVE_STATUSES)).subquery()))
         for key, kind in KIND_OF_TAB.items()}
+    counts["routine"] = routine_attention_count()
+    return counts
+
+
+@bp.route("/")
+@login_required
+def index():
+    tab = request.args.get("tab", "projects")
+    if tab not in TABS:
+        tab = "projects"
+    if tab == "routine":
+        return routine_index()
+    status = request.args.get("status", "active")
+    base = _visible_requests()
+    counts = tab_counts()
     stmt = base.where(MaintenanceRequest.kind == KIND_OF_TAB[tab]).order_by(MaintenanceRequest.created_at.desc())
     if status == "active":
         stmt = stmt.where(MaintenanceRequest.status.in_(ACTIVE_STATUSES))
@@ -418,3 +433,234 @@ def update_status(request_id):
     db.session.commit()
     flash(_("Request updated."), "success")
     return redirect(url_for("maintenance.detail", request_id=req.id))
+
+
+# --- Routine maintenance ------------------------------------------------------------------------------
+
+from datetime import date as _date, timedelta as _timedelta  # noqa: E402
+
+from ..models import (CATEGORY_LABELS, ROUTINE_FREQUENCIES, ROUTINE_STATE_LABELS, Expense, RoutineLog,  # noqa: E402
+                      RoutineTask)
+from ..i18n import fdate, lazy_date  # noqa: E402
+
+# Common upkeep for a Quebec condo, offered as one-click starting points.
+ROUTINE_SUGGESTIONS = [
+    {"title": _l("Snow removal"), "frequency": "yearly", "season_from": 11, "season_to": 4, "month": 11, "category": "Common area"},
+    {"title": _l("Gutter cleaning"), "frequency": "twice_yearly", "month": 5, "category": "Common area"},
+    {"title": _l("Fire alarm and extinguisher inspection"), "frequency": "yearly", "month": 3, "category": "Security"},
+    {"title": _l("Dryer vent cleaning"), "frequency": "yearly", "month": 9, "category": "Other"},
+    {"title": _l("Heating / HVAC servicing"), "frequency": "yearly", "month": 10, "category": "HVAC"},
+    {"title": _l("Roof inspection"), "frequency": "yearly", "month": 5, "category": "Common area"},
+    {"title": _l("Lawn care and landscaping"), "frequency": "yearly", "season_from": 5, "season_to": 10, "month": 5, "category": "Common area"},
+    {"title": _l("Window washing"), "frequency": "yearly", "month": 6, "category": "Common area"},
+]
+
+
+def can_manage_routine(user=None):
+    return sees_all(user)
+
+
+def routine_attention_count(today=None):
+    today = today or _date.today()
+    return db.session.scalar(db.select(db.func.count(RoutineTask.id)).where(
+        RoutineTask.active.is_(True), RoutineTask.next_due <= today + _timedelta(days=14))) or 0
+
+
+def check_routine_reminders(today=None):
+    """Tell the board once when a routine task is due within two weeks, and when a contract ends within 60 days."""
+    from ..models import CONTRACT_NOTICE_DAYS, ROUTINE_DUE_SOON_DAYS
+    today = today or _date.today()
+    sent = 0
+    for t in db.session.scalars(db.select(RoutineTask).where(RoutineTask.active.is_(True))):
+        url = url_for("maintenance.routine_detail", task_id=t.id)
+        if t.next_due <= today + _timedelta(days=ROUTINE_DUE_SOON_DAYS) and t.reminded_due != t.next_due:
+            notify.send(notify.board(), _l("Routine maintenance due %(when)s: %(title)s", when=lazy_date(t.next_due),
+                                           title=t.title), url=url, kind="maintenance", include_actor=True,
+                        body=_l("Contractor: %(vendor)s", vendor=t.vendor) if t.vendor else None)
+            t.reminded_due = t.next_due
+            sent += 1
+        if t.contract_ends and t.contract_ends <= today + _timedelta(days=CONTRACT_NOTICE_DAYS) \
+                and t.contract_ends >= today - _timedelta(days=31) and t.reminded_contract != t.contract_ends:
+            notify.send(notify.board(), _l("Contract ends %(when)s: %(title)s — time to renew or find a new contractor",
+                                           when=lazy_date(t.contract_ends), title=t.title),
+                        url=url, kind="maintenance", include_actor=True)
+            t.reminded_contract = t.contract_ends
+            sent += 1
+    if sent:
+        db.session.commit()
+    return sent
+
+
+def routine_index():
+    if can_manage_routine():
+        check_routine_reminders()
+    show = request.args.get("show", "active")
+    stmt = db.select(RoutineTask).order_by(RoutineTask.active.desc(), RoutineTask.next_due)
+    if show != "all":
+        stmt = stmt.where(RoutineTask.active.is_(True))
+    tasks = db.session.scalars(stmt).all()
+    counts = tab_counts()
+    return render_template("maintenance/routine_index.html", tasks=tasks, tab="routine", tabs=TABS, counts=counts,
+                           show=show, can_manage=can_manage_routine(), states=ROUTINE_STATE_LABELS,
+                           suggestions=ROUTINE_SUGGESTIONS if can_manage_routine() and not db.session.scalar(
+                               db.select(db.func.count(RoutineTask.id))) else [],
+                           today=_date.today(), can_add_projects=can_add_projects())
+
+
+def _routine(task_id):
+    return db.session.get(RoutineTask, task_id) or abort(404)
+
+
+def _routine_form(task, form):
+    errors = []
+    title = form.get("title", "").strip()
+    if not title:
+        errors.append(_("Give the task a name, e.g. “Snow removal”."))
+    frequency = form.get("frequency", "yearly")
+    if frequency not in ROUTINE_FREQUENCIES:
+        errors.append(_("Choose how often it repeats."))
+    category = form.get("category", "Other")
+    if category not in REQUEST_CATEGORIES:
+        category = "Other"
+    try:
+        next_due = parse_date(form.get("next_due"), _("Next due"))
+    except ValueError as e:
+        errors.append(str(e))
+        next_due = None
+    contract_ends = None
+    if form.get("contract_ends", "").strip():
+        try:
+            contract_ends = parse_date(form.get("contract_ends"), _("Contract ends"))
+        except ValueError as e:
+            errors.append(str(e))
+    estimated = None
+    if form.get("estimated", "").strip():
+        try:
+            estimated = parse_money(form.get("estimated"))
+        except ValueError as e:
+            errors.append(_("Estimated cost: %(e)s", e=e))
+    months = []
+    for field in ("season_from", "season_to"):
+        raw = form.get(field, "")
+        months.append(int(raw) if raw.isdigit() and 1 <= int(raw) <= 12 else None)
+    if bool(months[0]) != bool(months[1]):
+        errors.append(_("Choose both the first and the last month of the season, or neither."))
+    if errors:
+        return errors
+    task.title, task.frequency, task.category, task.next_due = title[:200], frequency, category, next_due
+    task.description = form.get("description", "").strip() or None
+    task.season_from, task.season_to = months
+    task.vendor = form.get("vendor", "").strip()[:200] or None
+    task.vendor_contact = form.get("vendor_contact", "").strip()[:200] or None
+    task.estimated_cents, task.contract_ends = estimated, contract_ends
+    task.active = bool(form.get("active", "1" if task.id is None else ""))
+    return []
+
+
+def _render_routine_form(task, form, status=200):
+    return render_template("maintenance/routine_form.html", task=task, form=form, frequencies=ROUTINE_FREQUENCIES,
+                           categories=REQUEST_CATEGORIES), status
+
+
+@bp.route("/routine/new", methods=["GET", "POST"])
+@login_required
+def routine_new():
+    if not can_manage_routine():
+        abort(403)
+    task = RoutineTask()
+    if request.method == "POST":
+        errors = _routine_form(task, request.form)
+        if not errors:
+            task.created_by_id = current_user.id
+            db.session.add(task)
+            db.session.commit()
+            flash(_("Routine task added: %(title)s.", title=task.title), "success")
+            return redirect(url_for("maintenance.routine_detail", task_id=task.id))
+        for e in errors:
+            flash(e, "error")
+        return _render_routine_form(task, request.form, 400)
+    today = _date.today()
+    month = request.args.get("month", "")
+    due = today
+    if month.isdigit() and 1 <= int(month) <= 12:
+        due = _date(today.year if int(month) >= today.month else today.year + 1, int(month), 1)
+    form = {"title": request.args.get("title", ""), "frequency": request.args.get("frequency", "yearly"),
+            "category": request.args.get("category", "Other"), "next_due": due.isoformat(),
+            "season_from": request.args.get("season_from", ""), "season_to": request.args.get("season_to", ""),
+            "active": True}
+    return _render_routine_form(task, form)
+
+
+@bp.route("/routine/<int:task_id>")
+@login_required
+def routine_detail(task_id):
+    task = _routine(task_id)
+    return render_template("maintenance/routine_detail.html", task=task, states=ROUTINE_STATE_LABELS,
+                           can_manage=can_manage_routine(), today=_date.today())
+
+
+@bp.route("/routine/<int:task_id>/edit", methods=["GET", "POST"])
+@login_required
+def routine_edit(task_id):
+    if not can_manage_routine():
+        abort(403)
+    task = _routine(task_id)
+    if request.method == "POST":
+        errors = _routine_form(task, request.form)
+        if not errors:
+            db.session.commit()
+            flash(_("Routine task updated."), "success")
+            return redirect(url_for("maintenance.routine_detail", task_id=task.id))
+        db.session.rollback()
+        for e in errors:
+            flash(e, "error")
+        return _render_routine_form(task, request.form, 400)
+    form = {"title": task.title, "description": task.description or "", "frequency": task.frequency,
+            "category": task.category, "next_due": task.next_due.isoformat(),
+            "season_from": str(task.season_from or ""), "season_to": str(task.season_to or ""),
+            "vendor": task.vendor or "", "vendor_contact": task.vendor_contact or "",
+            "estimated": f"{task.estimated_cents / 100:.2f}" if task.estimated_cents else "",
+            "contract_ends": task.contract_ends.isoformat() if task.contract_ends else "", "active": task.active}
+    return _render_routine_form(task, form)
+
+
+@bp.route("/routine/<int:task_id>/done", methods=["POST"])
+@login_required
+def routine_done(task_id):
+    """Log a visit, move the next due date, and optionally record the cost in Accounting."""
+    if not can_manage_routine():
+        abort(403)
+    task = _routine(task_id)
+    try:
+        done_on = parse_date(request.form.get("done_on"), _("Date done"))
+        cost = parse_money(request.form.get("cost")) if request.form.get("cost", "").strip() else None
+    except ValueError as e:
+        flash(str(e), "error")
+        return redirect(url_for("maintenance.routine_detail", task_id=task.id))
+    note = request.form.get("note", "").strip() or None
+    log = RoutineLog(task=task, done_on=done_on, cost_cents=cost, note=note, done_by_id=current_user.id)
+    if cost and request.form.get("record_cost") and current_user.can("accounting_edit"):
+        expense = Expense(spent_on=done_on, category="maintenance", amount_cents=-cost,
+                          description=(f"{task.title}" + (f" — {task.vendor}" if task.vendor else ""))[:255],
+                          source=task.vendor, notes=note, recorded_by_id=current_user.id)
+        db.session.add(expense)
+        db.session.flush()
+        log.expense_id = expense.id
+    db.session.add(log)
+    task.advance(done_on)
+    db.session.commit()
+    flash(_("Marked as done. Next due %(when)s.", when=fdate(task.next_due, "long"))
+          + (" " + _("The cost was added to Accounting.") if log.expense_id else ""), "success")
+    return redirect(url_for("maintenance.routine_detail", task_id=task.id))
+
+
+@bp.route("/routine/<int:task_id>/delete", methods=["POST"])
+@login_required
+def routine_delete(task_id):
+    if not can_manage_routine():
+        abort(403)
+    task = _routine(task_id)
+    db.session.delete(task)
+    db.session.commit()
+    flash(_("Routine task deleted."), "success")
+    return redirect(url_for("maintenance.index", tab="routine"))

@@ -473,3 +473,10 @@ td.date-link a { font-weight: 600; }
 .row-actions-box { display: grid; grid-auto-flow: column; grid-auto-columns: 34px; gap: 6px; align-items: center; }
 .row-actions-box > *, .row-actions-box form { margin: 0; }
 .row-actions-box .tag { grid-column: span 2; }
+
+/* Routine maintenance */
+.badge.rt-overdue { color: var(--danger); }
+.badge.rt-due_soon { color: var(--warn); }
+.badge.rt-scheduled { color: var(--ok); }
+.badge.rt-paused { color: var(--muted); }
+.suggest-chips { display: flex; flex-wrap: wrap; gap: .5rem; }

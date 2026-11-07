@@ -928,3 +928,94 @@ class SpecialShare(db.Model):
 
     special = db.relationship("SpecialContribution", back_populates="shares")
     unit = db.relationship("Unit")
+
+
+# --- Routine maintenance: work that comes back on a schedule (snow removal, gutters, inspections) -------
+
+ROUTINE_FREQUENCIES = {  # months between visits
+    "monthly": (1, _l("Every month")),
+    "quarterly": (3, _l("Every 3 months")),
+    "twice_yearly": (6, _l("Twice a year")),
+    "yearly": (12, _l("Every year")),
+    "every_2_years": (24, _l("Every 2 years")),
+    "every_5_years": (60, _l("Every 5 years")),
+}
+ROUTINE_DUE_SOON_DAYS = 14
+CONTRACT_NOTICE_DAYS = 60
+
+
+class RoutineTask(db.Model):
+    """Recurring building upkeep. Marking it done logs the visit and moves the next due date."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(40), nullable=False, default="Other")
+    frequency = db.Column(db.String(20), nullable=False, default="yearly")
+    next_due = db.Column(db.Date, nullable=False)
+    season_from = db.Column(db.Integer)  # month the season starts, e.g. 11 for snow removal (optional)
+    season_to = db.Column(db.Integer)    # month it ends, e.g. 4
+    vendor = db.Column(db.String(200))
+    vendor_contact = db.Column(db.String(200))
+    estimated_cents = db.Column(db.Integer)
+    contract_ends = db.Column(db.Date)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+    reminded_due = db.Column(db.Date)          # the due date the board was last reminded about
+    reminded_contract = db.Column(db.Date)     # the contract end date the board was last reminded about
+    created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    logs = db.relationship("RoutineLog", back_populates="task", cascade="all, delete-orphan",
+                           order_by="RoutineLog.done_on.desc()")
+
+    @property
+    def interval_months(self):
+        return ROUTINE_FREQUENCIES.get(self.frequency, (12, None))[0]
+
+    @property
+    def frequency_label(self):
+        return ROUTINE_FREQUENCIES.get(self.frequency, (12, self.frequency))[1]
+
+    @property
+    def last_done(self):
+        return self.logs[0] if self.logs else None
+
+    def state(self, today=None):
+        from datetime import date, timedelta
+        today = today or date.today()
+        if not self.active:
+            return "paused"
+        if self.next_due < today:
+            return "overdue"
+        if self.next_due <= today + timedelta(days=ROUTINE_DUE_SOON_DAYS):
+            return "due_soon"
+        return "scheduled"
+
+    def contract_ending(self, today=None):
+        from datetime import date, timedelta
+        today = today or date.today()
+        return bool(self.contract_ends and today <= self.contract_ends <= today + timedelta(days=CONTRACT_NOTICE_DAYS))
+
+    def advance(self, done_on):
+        """Next due date after a visit on `done_on`: step from the scheduled date until it's after the visit."""
+        nxt = self.next_due
+        while nxt <= done_on:
+            nxt = add_months(nxt, self.interval_months)
+        self.next_due = nxt
+
+
+ROUTINE_STATE_LABELS = {"overdue": _l("Overdue"), "due_soon": _l("Due soon"), "scheduled": _l("Scheduled"),
+                        "paused": _l("Paused")}
+
+
+class RoutineLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey("routine_task.id", ondelete="CASCADE"), nullable=False, index=True)
+    done_on = db.Column(db.Date, nullable=False)
+    cost_cents = db.Column(db.Integer)
+    note = db.Column(db.Text)
+    expense_id = db.Column(db.Integer, db.ForeignKey("expense.id"))
+    done_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(db.DateTime, default=utcnow)
+
+    task = db.relationship("RoutineTask", back_populates="logs")
+    done_by = db.relationship("User")

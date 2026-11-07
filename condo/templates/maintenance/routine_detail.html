@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, post_button %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+{% set st = task.state(today) %}
+<div class="head"><h1>{{ task.title }} <span class="badge rt-{{ st }}">{{ states[st] }}</span></h1>
+  {% if can_manage %}<div class="actions"><a class="btn" href="{{ url_for('maintenance.routine_edit', task_id=task.id) }}">{% trans %}Edit{% endtrans %}</a>
+    {{ post_button(url_for('maintenance.routine_delete', task_id=task.id), _('Delete'), confirm=_('Delete this routine task and its history?')) }}</div>{% endif %}</div>
+<div class="grid two wide-left">
+  <section>
+    <div class="card">
+      <dl class="props">
+        <dt>{% trans %}How often{% endtrans %}</dt><dd>{{ task.frequency_label }}</dd>
+        {% if task.season_from %}<dt>{% trans %}Season{% endtrans %}</dt><dd>{% trans start=_month(task.season_from), end=_month(task.season_to) %}{{ start }} to {{ end }}{% endtrans %}</dd>{% endif %}
+        <dt>{% trans %}Next due{% endtrans %}</dt><dd><strong>{{ task.next_due|fdate('long') }}</strong></dd>
+        <dt>{% trans %}Category{% endtrans %}</dt><dd>{{ CATEGORY_LABELS.get(task.category, task.category) }}</dd>
+        {% if task.vendor %}<dt>{% trans %}Contractor{% endtrans %}</dt><dd>{{ task.vendor }}{% if task.vendor_contact %} <span class="muted">· {{ task.vendor_contact }}</span>{% endif %}</dd>{% endif %}
+        {% if task.estimated_cents %}<dt>{% trans %}Estimated cost{% endtrans %}</dt><dd>{{ task.estimated_cents|money }}</dd>{% endif %}
+        {% if task.contract_ends %}<dt>{% trans %}Contract ends{% endtrans %}</dt><dd>{{ task.contract_ends|fdate('long') }}{% if task.contract_ending(today) %} <span class="badge rt-due_soon">{% trans %}Contract ending{% endtrans %}</span>{% endif %}</dd>{% endif %}
+      </dl>
+      {% if task.description %}<div class="prose">{{ task.description }}</div>{% endif %}
+    </div>
+    <div class="card">
+      <h2>{% trans %}History{% endtrans %}</h2>
+      {% if task.logs %}<table>
+        <thead><tr><th>{% trans %}Done on{% endtrans %}</th><th class="num">{% trans %}Cost{% endtrans %}</th><th>{% trans %}Note{% endtrans %}</th><th>{% trans %}By{% endtrans %}</th></tr></thead>
+        <tbody>{% for l in task.logs %}
+          <tr><td class="nowrap">{{ l.done_on|fdate }}</td>
+            <td class="num">{% if l.cost_cents %}{% if l.expense_id and current_user.can('accounting') %}<a href="{{ url_for('billing.cost_detail', cost_id=l.expense_id, back=here()) }}">{{ l.cost_cents|money }}</a>{% else %}{{ l.cost_cents|money }}{% endif %}{% else %}—{% endif %}</td>
+            <td class="muted">{{ l.note or '' }}</td><td class="muted">{{ l.done_by.name if l.done_by else '' }}</td></tr>
+        {% endfor %}</tbody>
+      </table>{% else %}<p class="muted">{% trans %}Not done yet.{% endtrans %}</p>{% endif %}
+    </div>
+  </section>
+  <aside>
+    {% if can_manage and task.active %}
+    <form method="post" action="{{ url_for('maintenance.routine_done', task_id=task.id) }}" class="card">
+      {{ csrf() }}
+      <h2>{% trans %}Mark as done{% endtrans %}</h2>
+      <label>{% trans %}Date done{% endtrans %} <input type="date" name="done_on" required value="{{ today.isoformat() }}"></label>
+      <label>{% trans %}Cost{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><span class="money-input"><input name="cost" inputmode="decimal" placeholder="{{ '%.2f'|format(task.estimated_cents / 100) if task.estimated_cents else '0.00' }}"></span></label>
+      {% if current_user.can('accounting_edit') %}<label class="check"><input type="checkbox" name="record_cost" value="1" checked> {% trans %}Also record the cost in Accounting{% endtrans %}</label>{% endif %}
+      <label>{% trans %}Note{% endtrans %} <span class="muted">{% trans %}(optional){% endtrans %}</span><textarea name="note" rows="2" placeholder="{{ _('e.g. Invoice #2231, all gutters cleared') }}"></textarea></label>
+      <button class="btn primary">{% trans %}Mark as done{% endtrans %}</button>
+      <p class="muted">{% trans %}The next due date moves forward by the task’s schedule.{% endtrans %}</p>
+    </form>
+    {% elif not task.active %}<div class="card"><p class="muted">{% trans %}Paused. Edit the task to make it active again.{% endtrans %}</p></div>{% endif %}
+  </aside>
+</div>
+{% endblock %}
