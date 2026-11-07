@@ -346,7 +346,7 @@ body.with-rail { padding-left: 128px; }
   box-shadow: 0 10px 30px rgba(120, 50, 15, .25), inset 0 0 0 1px rgba(235, 217, 163, .4); }
 /* The see-through orange sits on a layer behind the items, so the account pop-up isn't trapped inside the pill. */
 .rail::before { content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(180deg, rgba(232, 97, 44, .78), rgba(201, 79, 29, .78));
+  background: linear-gradient(180deg, rgba(232, 97, 44, .5), rgba(201, 79, 29, .5));
   -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
 .rail::-webkit-scrollbar { display: none; }
 .rail-mark { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--gold-light); color: #4A3510; font-weight: 800;
@@ -354,7 +354,9 @@ body.with-rail { padding-left: 128px; }
 .rail-mark:hover { text-decoration: none; filter: brightness(1.04); }
 .rail-item { position: relative; flex: none; width: 76px; padding: 7px 4px 6px; border-radius: 22px; color: #FFF6EA; display: flex;
   flex-direction: column; align-items: center; gap: 3px; font-size: .68rem; font-weight: 600; text-align: center; line-height: 1.15;
-  cursor: pointer; text-shadow: 0 1px 1px rgba(90, 30, 5, .25); }
+  cursor: pointer; text-shadow: 0 1px 2px rgba(110, 35, 5, .55), 0 0 6px rgba(150, 50, 10, .35); }
+.rail-item svg { filter: drop-shadow(0 1px 1.5px rgba(110, 35, 5, .45)); }
+.rail-item.active svg { filter: none; }
 .rail-item:hover { background: rgba(255, 255, 255, .16); text-decoration: none; color: #fff; }
 .rail-item.active { background: var(--gold-light); color: #4A3510; text-shadow: none; box-shadow: 0 2px 6px rgba(0, 0, 0, .15); }
 .rail svg { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -387,7 +389,7 @@ body.with-rail { padding-left: 128px; }
 .page-top a:hover { text-decoration: none; }
 body.with-rail .banner { margin: 10px 24px 0; border-radius: 10px; border: 1px solid var(--gold); }
 @media (prefers-color-scheme: dark) {
-  .rail::before { background: linear-gradient(180deg, rgba(217, 88, 31, .72), rgba(184, 70, 26, .72)); }
+  .rail::before { background: linear-gradient(180deg, rgba(217, 88, 31, .5), rgba(184, 70, 26, .5)); }
 }
 
 /* Phone: the same pill floats along the bottom with the five most-used items and More. */
