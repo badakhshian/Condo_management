@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import balance, status_badge, insurance_badge, household_insurance %}
 {% block title %}{% trans %}Dashboard{% endtrans %}{% endblock %}
 {% block content %}
@@ -51,7 +52,7 @@
     {% include "announcements/_list.html" %}
   </section>
   <section class="card">
-    <h2>{% trans %}My maintenance requests{% endtrans %} <a class="btn small primary" href="{{ url_for('maintenance.new') }}">{% trans %}New request{% endtrans %}</a></h2>
+    <h2>{% trans %}My maintenance requests{% endtrans %} {{ icon_link('plus', url_for('maintenance.new'), _('New request'), cls='primary') }}</h2>
     {% if my_requests %}<ul class="list">
       {% for r in my_requests %}<li><a href="{{ url_for('maintenance.detail', request_id=r.id) }}">{{ r.title }}</a>
         {{ status_badge(r.status, STATUS_LABELS) }}</li>{% endfor %}

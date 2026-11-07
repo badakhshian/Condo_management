@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import csrf %}
 {% block title %}{% trans %}Board · Directory{% endtrans %}{% endblock %}
 {% block content %}
@@ -19,7 +20,7 @@
               {% if o.email %}<span class="excerpt"><a href="mailto:{{ o.email }}">{{ o.email }}</a>{% if o.phone %} · <a href="{{ o.phone|tel }}">{{ o.phone|phone }}</a>{% endif %}</span>{% endif %}</span>
             <form method="post" action="{{ url_for('directory.unassign') }}" class="inline" onsubmit="return confirm({{ _('Remove %(name)s as %(position)s?', name=o.name, position=label)|tojson|forceescape }})">
               {{ csrf() }}<input type="hidden" name="position" value="{{ key }}"><input type="hidden" name="owner_id" value="{{ o.id }}">
-              <button class="link-btn danger">{% trans %}Remove{% endtrans %}</button></form>
+              <button class="icon-btn danger" title="{{ _('Remove from the position') }}" aria-label="{{ _('Remove from the position') }}">{{ icon('trash') }}</button></form>
           </div>
         {% else %}<span class="muted">{% trans %}Vacant{% endtrans %}</span>{% endfor %}</td>
       <td>{% set options = eligible[key]|rejectattr('id', 'in', people|map(attribute='id')|list)|list %}

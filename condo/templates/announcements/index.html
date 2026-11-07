@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import post_button %}
 {% block title %}{% trans %}Notices{% endtrans %}{% endblock %}
 {% block content %}
@@ -10,8 +11,8 @@
   <p class="muted">{{ a.created_at|fdate('long') }}{% if a.author %} · {{ a.author.name }}{% endif %}</p>
   <div class="prose">{{ a.body }}</div>
   {% if current_user.can('notices') %}<div class="actions">
-    <a class="btn small" href="{{ url_for('announcements.edit', item_id=a.id) }}">{% trans %}Edit{% endtrans %}</a>
-    {{ post_button(url_for('announcements.delete', item_id=a.id), _('Delete'), confirm=_('Delete this notice?')) }}
+    {{ icon_link('pencil', url_for('announcements.edit', item_id=a.id), _('Edit')) }}
+    {{ icon_post('trash', url_for('announcements.delete', item_id=a.id), _('Delete'), confirm=_('Delete this notice?'), cls='danger') }}
   </div>{% endif %}
 </article>
 {% else %}<p class="muted">{% trans %}No notices have been posted.{% endtrans %}</p>{% endfor %}

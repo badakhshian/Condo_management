@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import post_button %}
 {% block title %}{% if x.cost_cents < 0 %}{% trans %}Refund{% endtrans %}{% else %}{% trans %}Cost{% endtrans %}{% endif %} · {{ x.spent_on|fdate }}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% if x.cost_cents < 0 %}{% trans %}Refund{% endtrans %} <span class="credit">{{ (-x.cost_cents)|money }}</span>{% else %}{% trans %}Cost{% endtrans %} <span class="owed">{{ x.cost_cents|money }}</span>{% endif %}</h1>
   {% if current_user.can('accounting_edit') and x.origin != 'sheet' %}
-    {{ post_button(url_for('billing.delete_cost', cost_id=x.id), _('Remove'), confirm=_('Remove this cost?')) }}
+    {{ icon_post('trash', url_for('billing.delete_cost', cost_id=x.id), _('Delete'), confirm=_('Remove this cost?'), cls='danger') }}
   {% endif %}</div>
 <div class="grid two wide-left">
   <section class="card">

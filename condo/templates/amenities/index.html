@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import post_button %}
 {% block title %}{% trans %}Amenities{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>{% trans %}Amenities{% endtrans %}</h1>{% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('amenities.new') }}">{% trans %}Add amenity{% endtrans %}</a>{% endif %}</div>
+<div class="head"><h1>{% trans %}Amenities{% endtrans %}</h1>{% if current_user.is_admin %}{{ icon_link('plus', url_for('amenities.new'), _('Add amenity'), cls='primary') }}{% endif %}</div>
 <div class="grid three">
 {% for a in amenities %}
   <a class="card tile{{ ' inactive' if not a.active }}" href="{{ url_for('amenities.detail', amenity_id=a.id) }}">

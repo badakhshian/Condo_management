@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import balance %}
 {% block title %}{% trans number=unit.number, label=period.label %}Accounting · Unit {{ number }} · {{ label }}{% endtrans %}{% endblock %}
 {% block content %}
@@ -6,7 +7,7 @@
   <div class="actions">
     <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">{% trans %}Full statement{% endtrans %}</a>
     {% if current_user.can('accounting_edit') %}
-    <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">{% trans %}Add charge{% endtrans %}</a>
+    {{ icon_link('plus', url_for('billing.new_charge', unit_id=unit.id), _('Add charge')) }}
     <a class="btn primary" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">{% trans %}Record payment{% endtrans %}</a>
     {% endif %}
   </div></div>

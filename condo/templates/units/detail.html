@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import balance, post_button, insurance_badge, person, household_insurance %}
 {% block title %}{% trans number=unit.number %}Unit {{ number }}{% endtrans %}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans number=unit.number %}Unit {{ number }}{% endtrans %}</h1>
   <div class="actions">
-    <a class="btn" href="{{ url_for('units.edit', unit_id=unit.id) }}">{% trans %}Edit{% endtrans %}</a>
-    {{ post_button(url_for('units.delete', unit_id=unit.id), _('Delete'), confirm=_('Delete this unit?')) }}
+    {{ icon_link('pencil', url_for('units.edit', unit_id=unit.id), _('Edit')) }}
+    {{ icon_post('trash', url_for('units.delete', unit_id=unit.id), _('Delete'), confirm=_('Delete this unit?'), cls='danger') }}
   </div></div>
 <div class="unit-grid">
   <section class="card">
@@ -30,7 +31,7 @@
     <div class="actions">
       <a class="btn" href="{{ url_for('billing.ledger', unit_id=unit.id) }}">{% trans %}Statement{% endtrans %}</a>
       <a class="btn" href="{{ url_for('billing.new_payment', unit_id=unit.id) }}">{% trans %}Record payment{% endtrans %}</a>
-      <a class="btn" href="{{ url_for('billing.new_charge', unit_id=unit.id) }}">{% trans %}Add charge{% endtrans %}</a>
+      {{ icon_link('plus', url_for('billing.new_charge', unit_id=unit.id), _('Add charge')) }}
     </div>
   </section>
   {% for group, people, title in [('owners', unit.owner_contacts, _('Owners')), ('tenants', unit.tenants, _('Tenants'))] %}
@@ -38,7 +39,7 @@
     <div class="card-head">
       <h2>{{ title }} {% if people %}<span class="muted count">{{ people|length }}</span>{% endif %}</h2>
       {% set gi = unit.group_insurance(group) %}{% if gi %}{{ insurance_badge(gi) }}{% endif %}
-      <a class="btn small" href="{{ url_for('owners.new', unit_id=unit.id, role='tenant' if group == 'tenants' else 'owner', back=here()) }}">+ {{ _('Tenant') if group == 'tenants' else _('Owner') }}</a>
+      {{ icon_link('plus', url_for('owners.new', unit_id=unit.id, role='tenant' if group == 'tenants' else 'owner', back=here()), _('Add tenant') if group == 'tenants' else _('Add owner')) }}
     </div>
     {% for o in people %}
       {% set prev = people[loop.index0 - 1] if not loop.first else none %}

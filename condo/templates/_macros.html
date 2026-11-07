@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
 
 {% macro status_badge(status, labels) %}<span class="badge status-{{ status }}">{{ labels.get(status, status) }}</span>{% endmacro %}
@@ -29,7 +30,7 @@
       </div>
       <div class="person-actions">
         {% if o.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet’s Owners tab') }}">{% trans %}from sheet{% endtrans %}</span>
-        {% else %}<a class="link-btn" href="{{ url_for('owners.edit', owner_id=o.id, back=here()) }}">{% trans %}Edit{% endtrans %}</a>{% endif %}
+        {% else %}{{ icon_link('pencil', url_for('owners.edit', owner_id=o.id, back=here()), _('Edit')) }}{% endif %}
       </div>
     </div>
     {% if o.email or o.phone %}<div class="person-line">
@@ -59,7 +60,7 @@
   {% endif %}
   <div class="person-line">
     {% if p and p.file %}<a href="{{ url_for('insurance.download', policy_id=p.id) }}" target="_blank" rel="noopener">{% trans %}View certificate{% endtrans %}</a>{% endif %}
-    <a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, back=here()) }}">{{ _('Add renewal') if p else _('Add insurance') }}</a>
+    {{ icon_link('plus', url_for('insurance.new', unit_id=unit.id, group=group, back=here()), _('Add renewal') if p else _('Add insurance'), cls='small') }}
     {% if p and unit.members(group)|length > 1 %}<a class="link-btn" href="{{ url_for('insurance.new', unit_id=unit.id, group=group, separate=1, back=here()) }}">{% trans %}Add another person's own policy{% endtrans %}</a>{% endif %}
   </div>
   {% for x in unit.extra_policies(group) %}

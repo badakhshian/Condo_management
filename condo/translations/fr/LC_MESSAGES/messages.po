@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:06+0000\n"
+"POT-Creation-Date: 2026-11-07 02:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -211,15 +211,6 @@ msgstr "(facultatif, p. ex. déneigement de novembre à avril)"
 msgid "(required to decline)"
 msgstr "(obligatoire pour refuser)"
 
-msgid "+ Cost"
-msgstr "+ Dépense"
-
-msgid "+ Payment"
-msgstr "+ Paiement"
-
-msgid "+ Special contribution"
-msgstr "+ Cotisation spéciale"
-
 #, python-format
 msgid ", %(owners)s owner contacts"
 msgstr ", %(owners)s contacts de copropriétaires"
@@ -342,6 +333,9 @@ msgstr "Ajouter un commentaire"
 msgid "Add a cost"
 msgstr "Ajouter une dépense"
 
+msgid "Add a special contribution"
+msgstr "Ajouter une cotisation spéciale"
+
 msgid "Add a tenant"
 msgstr "Ajouter un locataire"
 
@@ -368,6 +362,9 @@ msgstr "Ajouter une assurance"
 
 msgid "Add owner"
 msgstr "Ajouter un copropriétaire"
+
+msgid "Add payment"
+msgstr "Ajouter un paiement"
 
 msgid "Add project"
 msgstr "Ajouter le projet"
@@ -2399,6 +2396,9 @@ msgstr "Retirer %(name)s du poste de %(position)s?"
 #, python-format
 msgid "Remove %(name)s from unit %(number)s? Their insurance records are removed too."
 msgstr "Retirer %(name)s de l’unité %(number)s? Ses dossiers d’assurance seront aussi supprimés."
+
+msgid "Remove from the position"
+msgstr "Retirer du poste"
 
 msgid "Remove person"
 msgstr "Retirer la personne"

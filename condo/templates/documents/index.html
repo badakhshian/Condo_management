@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import post_button, insurance_badge %}
 {% block title %}{% trans %}Documents{% endtrans %}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans %}Documents{% endtrans %}</h1>
-  {% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('documents.new') }}">{% trans %}Upload document{% endtrans %}</a>{% endif %}</div>
+  {% if current_user.is_admin %}{{ icon_link('plus', url_for('documents.new'), _('Upload document'), cls='primary') }}{% endif %}</div>
 
 <section class="card building-insurance">
   <h2>{% trans %}Building insurance{% endtrans %}</h2>
@@ -19,7 +20,7 @@
 {% for key, label in categories.items() %}{% set docs = grouped[key] %}
   {% if docs or (current_user.is_admin and key != 'other') %}
   <section class="card">
-    <h2>{{ label }}{% if current_user.is_admin %} <a class="btn small" href="{{ url_for('documents.new', category=key) }}">{% trans %}Add{% endtrans %}</a>{% endif %}</h2>
+    <h2>{{ label }}{% if current_user.is_admin %} {{ icon_link('plus', url_for('documents.new', category=key), _('Add')) }}{% endif %}</h2>
     {% if docs %}
     <table>
       <thead><tr><th>{% trans %}Document{% endtrans %}</th><th>{{ _('Policy period') if key == 'insurance' else _('Date') }}</th><th>{% trans %}File{% endtrans %}</th>{% if current_user.is_admin %}<th>{% trans %}Visible to{% endtrans %}</th><th></th>{% endif %}</tr></thead>
@@ -32,8 +33,8 @@
             {% elif d.document_date %}{{ d.document_date|fdate('iso') }}{% else %}<span class="muted">—</span>{% endif %}</td>
           <td class="muted">{{ d.file.filename }} · {{ human_size(d.file.size) }}</td>
           {% if current_user.is_admin %}<td><span class="tag">{{ visibility[d.visibility] }}</span></td>
-          <td class="actions"><a class="btn small" href="{{ url_for('documents.edit', doc_id=d.id) }}">{% trans %}Edit{% endtrans %}</a>
-            {{ post_button(url_for('documents.delete', doc_id=d.id), _('Delete'), cls='btn small ghost', confirm=_('Delete this document?')) }}</td>{% endif %}</tr>
+          <td class="actions">{{ icon_link('pencil', url_for('documents.edit', doc_id=d.id), _('Edit')) }}
+            {{ icon_post('trash', url_for('documents.delete', doc_id=d.id), _('Delete'), confirm=_('Delete this document?'), cls='danger') }}</td>{% endif %}</tr>
       {% endfor %}</tbody>
     </table>
     {% else %}<p class="muted">{% trans %}Nothing uploaded yet.{% endtrans %}</p>{% endif %}

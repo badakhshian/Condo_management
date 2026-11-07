@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 02:06+0000\n"
+"POT-Creation-Date: 2026-11-07 02:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -217,15 +217,6 @@ msgstr ""
 msgid "(required to decline)"
 msgstr ""
 
-msgid "+ Cost"
-msgstr ""
-
-msgid "+ Payment"
-msgstr ""
-
-msgid "+ Special contribution"
-msgstr ""
-
 #, python-format
 msgid ", %(owners)s owner contacts"
 msgstr ""
@@ -352,6 +343,9 @@ msgstr ""
 msgid "Add a cost"
 msgstr ""
 
+msgid "Add a special contribution"
+msgstr ""
+
 msgid "Add a tenant"
 msgstr ""
 
@@ -377,6 +371,9 @@ msgid "Add insurance"
 msgstr ""
 
 msgid "Add owner"
+msgstr ""
+
+msgid "Add payment"
 msgstr ""
 
 msgid "Add project"
@@ -2465,6 +2462,9 @@ msgstr ""
 msgid ""
 "Remove %(name)s from unit %(number)s? Their insurance records are removed"
 " too."
+msgstr ""
+
+msgid "Remove from the position"
 msgstr ""
 
 msgid "Remove person"

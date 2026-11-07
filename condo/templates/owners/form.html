@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import csrf %}
 {% block title %}{{ _('Edit %(name)s', name=owner.name) if owner else (_('Add a tenant') if form.get('role') == 'tenant' else _('Add an owner')) }}{% if unit %} {% trans number=unit.number %}· Unit {{ number }}{% endtrans %}{% endif %}{% endblock %}
 {% block content %}
@@ -38,7 +39,7 @@
       onsubmit="return confirm({{ _('Remove %(name)s from unit %(number)s? Their insurance records are removed too.', name=owner.name, number=unit.number)|tojson|forceescape }})">
   {{ csrf() }}
   <div class="inline-form"><span>{% trans %}Remove{% endtrans %} <strong>{{ owner.name }}</strong> {% trans number=unit.number %}from unit {{ number }}.{% endtrans %}</span>
-    <button class="btn danger small">{{ _('Remove tenant') if owner.role == 'tenant' else _('Remove person') }}</button></div>
+    {% set _rm = _('Remove tenant') if owner.role == 'tenant' else _('Remove person') %}<button class="icon-btn danger" title="{{ _rm }}" aria-label="{{ _rm }}">{{ icon('trash') }}</button></div>
 </form>
 {% endif %}
 <script>

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import csrf, post_button %}
 {% block title %}{{ amenity.name }}{% endblock %}
 {% block content %}
-<div class="head"><h1>{{ amenity.name }}</h1>{% if current_user.is_admin %}<a class="btn" href="{{ url_for('amenities.edit', amenity_id=amenity.id) }}">{% trans %}Edit{% endtrans %}</a>{% endif %}</div>
+<div class="head"><h1>{{ amenity.name }}</h1>{% if current_user.is_admin %}{{ icon_link('pencil', url_for('amenities.edit', amenity_id=amenity.id), _('Edit')) }}{% endif %}</div>
 <p>{{ amenity.description or '' }}</p>
 <p class="muted">{% trans open='%02d:00'|format(amenity.open_hour), close='%02d:00'|format(amenity.close_hour), max_hours=amenity.max_hours %}Open {{ open }}–{{ close }} · bookings up to {{ max_hours }} hour(s){% endtrans %}</p>
 <div class="grid two">

@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import csrf, post_button %}
 {% block title %}{{ task.title }}{% endblock %}
 {% block content %}
 {% set st = task.state(today) %}
 <div class="head"><h1>{{ task.title }} <span class="badge rt-{{ st }}">{{ states[st] }}</span></h1>
-  {% if can_manage %}<div class="actions"><a class="btn" href="{{ url_for('maintenance.routine_edit', task_id=task.id) }}">{% trans %}Edit{% endtrans %}</a>
-    {{ post_button(url_for('maintenance.routine_delete', task_id=task.id), _('Delete'), confirm=_('Delete this routine task and its history?')) }}</div>{% endif %}</div>
+  {% if can_manage %}<div class="actions">{{ icon_link('pencil', url_for('maintenance.routine_edit', task_id=task.id), _('Edit')) }}
+    {{ icon_post('trash', url_for('maintenance.routine_delete', task_id=task.id), _('Delete'), confirm=_('Delete this routine task and its history?'), cls='danger') }}</div>{% endif %}</div>
 <div class="grid two wide-left">
   <section>
     <div class="card">

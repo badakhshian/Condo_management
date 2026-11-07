@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import balance %}
 {% block title %}{% trans %}Units{% endtrans %}{% endblock %}
 {% block content %}
-<div class="head"><h1>{% trans %}Units{% endtrans %}</h1><div class="actions"><a class="btn" href="{{ url_for('importer.upload') }}">{% trans %}Import from Excel{% endtrans %}</a><a class="btn primary" href="{{ url_for('units.new') }}">{% trans %}Add unit{% endtrans %}</a></div></div>
+<div class="head"><h1>{% trans %}Units{% endtrans %}</h1><div class="actions"><a class="btn" href="{{ url_for('importer.upload') }}">{% trans %}Import from Excel{% endtrans %}</a>{{ icon_link('plus', url_for('units.new'), _('Add unit'), cls='primary') }}</div></div>
 <div class="card">
 <table>
   <thead><tr><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Owner{% endtrans %}</th><th class="num">{% trans %}Share{% endtrans %}</th><th>{% trans %}Floor{% endtrans %}</th><th>{% trans %}Beds{% endtrans %}</th><th>{% trans %}Accounts{% endtrans %}</th><th class="num">{% trans %}Monthly dues{% endtrans %}</th><th class="num">{% trans %}Balance{% endtrans %}</th></tr></thead>

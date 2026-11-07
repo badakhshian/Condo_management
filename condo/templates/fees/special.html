@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import csrf, post_button %}
 {% block title %}{{ sc.title }}{% endblock %}
 {% block content %}
@@ -41,7 +42,7 @@
   </form>
   {% if not sc.billed_at %}
   <div class="card inline-form"><span class="muted">{% trans %}Not billed yet, so it can still be deleted.{% endtrans %}</span>
-    {{ post_button(url_for('fees.delete_special', special_id=sc.id), _('Delete'), cls='btn danger small', confirm=_('Delete this special contribution?')) }}</div>
+    {{ icon_post('trash', url_for('fees.delete_special', special_id=sc.id), _('Delete'), confirm=_('Delete this special contribution?'), cls='danger') }}</div>
   {% endif %}
 </div>
 {% endif %}

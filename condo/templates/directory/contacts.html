@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{% trans title=spec.title %}{{ title }} · Directory{% endtrans %}{% endblock %}
-{% from "_icons.html" import icon_link, icon_post %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% block content %}
 {% include "directory/_tabs.html" %}
 <div class="head">
@@ -13,7 +13,7 @@
   <div class="actions">
     {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">{% if q or role %}{% trans n=emails|length %}Email these ({{ n }}){% endtrans %}{% else %}{% trans n=emails|length %}Email all ({{ n }}){% endtrans %}{% endif %}</a>{% endif %}
     <a class="btn" href="{{ url_for('directory.export', group=group, q=q, role=role) }}">{% trans %}Download CSV{% endtrans %}</a>
-    {% if current_user.is_admin %}<a class="btn primary" href="{{ url_for('owners.new_from_directory', group=group, back=here()) }}">{{ _('Add tenant') if group == 'tenants' else _('Add owner') }}</a>{% endif %}
+    {% if current_user.is_admin %}{{ icon_link('plus', url_for('owners.new_from_directory', group=group, back=here()), _('Add tenant') if group == 'tenants' else _('Add owner'), cls='primary') }}{% endif %}
   </div>
 </div>
 {% if units_without %}<div class="flash flash-info">{% trans units_without=units_without|map(attribute='number')|join(', ') %}No owner recorded yet for unit(s) {{ units_without }}.{% endtrans %}</div>{% endif %}

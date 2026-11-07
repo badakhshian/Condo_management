@@ -15,7 +15,7 @@
   <div class="actions">
     {% if emails %}<a class="btn" href="mailto:?bcc={{ emails|join(',') }}">{% trans emails=emails|length %}Email all ({{ emails }}){% endtrans %}</a>{% endif %}
     <a class="btn" href="{{ url_for('directory.export', group='accounts', q=q, role=role) }}">{% trans %}Download CSV{% endtrans %}</a>
-    <a class="btn primary" href="{{ url_for('residents.new', back=here()) }}">{% trans %}Add account{% endtrans %}</a>
+    {{ icon_link('plus', url_for('residents.new', back=here()), _('Add account'), cls='primary') }}
   </div>
 </div>
 <div class="card">

@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import csrf %}
 {% block title %}{% trans year=year %}Fees & contributions · {{ year }}{% endtrans %}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans %}Fees &amp; contributions{% endtrans %}</h1>
-  {% if current_user.can('accounting_edit') %}<a class="btn primary" href="{{ url_for('fees.new_special') }}">{% trans %}+ Special contribution{% endtrans %}</a>{% endif %}</div>
+  {% if current_user.can('accounting_edit') %}{{ icon_link('plus', url_for('fees.new_special'), _('Add a special contribution'), cls='primary') }}{% endif %}</div>
 
 <section class="card">
   <div class="card-head">

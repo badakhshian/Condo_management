@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon, icon_link, icon_post %}
 {% from "_macros.html" import post_button %}
 {% block title %}{% trans number=p.unit.number %}Payment · Unit {{ number }}{% endtrans %}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans %}Payment{% endtrans %} <span class="credit">{{ p.amount_cents|money }}</span></h1>
   {% if current_user.can('accounting_edit') and p.origin != 'sheet' %}
-    {{ post_button(url_for('billing.delete_payment', payment_id=p.id), _('Remove'), confirm=_('Remove this entry?')) }}
+    {{ icon_post('trash', url_for('billing.delete_payment', payment_id=p.id), _('Delete'), confirm=_('Remove this entry?'), cls='danger') }}
   {% endif %}</div>
 <div class="grid two wide-left">
   <section class="card">

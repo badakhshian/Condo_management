@@ -135,7 +135,7 @@ def test_board_member_manages_accounting(app, client):
     seed()
     login(client, "alice@test.com")
     page = client.get("/accounting/").data.decode()
-    assert "All units" in page and "Hydra" in page and "+ Cost" in page and "Add charge" in page
+    assert "All units" in page and "Hydra" in page and "Add cost" in page and "Add charge" in page
     assert client.get("/accounting/costs/new").status_code == 200
 
 

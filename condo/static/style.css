@@ -480,3 +480,14 @@ td.date-link a { font-weight: 600; }
 .badge.rt-scheduled { color: var(--ok); }
 .badge.rt-paused { color: var(--muted); }
 .suggest-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* Standard icon buttons: pencil = edit, trash = delete, plus = add */
+.icon-btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.icon-btn.primary:hover { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; }
+.head .icon-btn, .card-head .icon-btn { width: 40px; height: 40px; border-radius: 10px; }
+.head .icon-btn svg, .card-head .icon-btn svg { width: 22px; height: 22px; }
+.head .actions, .head > div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+h2 .icon-btn { width: 30px; height: 30px; }
+h2 .icon-btn svg { width: 16px; height: 16px; }
+.icon-btn.small { width: 28px; height: 28px; border-radius: 8px; }
+.icon-btn.small svg { width: 15px; height: 15px; }

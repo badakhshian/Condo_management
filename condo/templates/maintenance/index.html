@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% from "_macros.html" import status_badge, priority_badge %}
-{% from "_icons.html" import icon_post %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% block title %}{{ tabs[tab] }}{% endblock %}
 {% block content %}
 <div class="head"><h1>{% trans %}Projects &amp; Maintenance{% endtrans %}</h1>
-  {% if tab == 'projects' %}{% if can_add_projects %}<a class="btn primary" href="{{ url_for('maintenance.new', kind='project') }}">{% trans %}New project{% endtrans %}</a>{% endif %}
-  {% else %}<a class="btn primary" href="{{ url_for('maintenance.new') }}">{% trans %}New request{% endtrans %}</a>{% endif %}</div>
+  {% if tab == 'projects' %}{% if can_add_projects %}{{ icon_link('plus', url_for('maintenance.new', kind='project'), _('New project'), cls='primary') }}{% endif %}
+  {% else %}{{ icon_link('plus', url_for('maintenance.new'), _('New request'), cls='primary') }}{% endif %}</div>
 {% include "maintenance/_tabs.html" %}
 <nav class="tabs">
   {% for key, label in [('active', _('Active'))] + statuses.items()|list + [('all', _('All'))] %}

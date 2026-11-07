@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon_link, icon_post %}
 {% from "_macros.html" import balance, csrf, post_button %}
 {% block title %}{% trans label=period.label %}Accounting · {{ label }}{% endtrans %}{% endblock %}
 {% block content %}
@@ -8,7 +9,7 @@
     {% if current_user.can('accounting_edit') %}
     <a class="btn" href="{{ url_for('sheet.index') }}">{% trans %}Google Sheet{% endtrans %}</a>
     <a class="btn" href="{{ url_for('importer.upload') }}">{% trans %}Import from Excel{% endtrans %}</a>
-    <a class="btn" href="{{ url_for('billing.new_charge') }}">{% trans %}Add charge{% endtrans %}</a>
+    {{ icon_link('plus', url_for('billing.new_charge'), _('Add charge')) }}
     <a class="btn" href="{{ url_for('reimbursements.index') }}">{% trans %}Reimbursements{% endtrans %}{% if pending_reimbursements %} <span class="bell-count inline">{{ pending_reimbursements }}</span>{% endif %}</a>
     {% endif %}
   </div></div>
@@ -47,7 +48,7 @@
   <section class="card panel-in">
     <div class="card-head"><h2>{% trans %}Payments{% endtrans %} <span class="muted count">{{ payments|length }}</span></h2>
       <span class="credit">{{ paid_total|money }}</span>
-      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_payment') }}">{% trans %}+ Payment{% endtrans %}</a>{% endif %}</div>
+      {% if current_user.can('accounting_edit') %}{{ icon_link('plus', url_for('billing.new_payment'), _('Add payment'), cls='primary') }}{% endif %}</div>
     {% if payments %}<table>
       <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Details{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th></tr></thead>
       <tbody>{% for p in payments %}
@@ -62,7 +63,7 @@
   <section class="card panel-out">
     <div class="card-head"><h2>{% trans %}Costs{% endtrans %} <span class="muted count">{{ costs|length }}</span></h2>
       <span class="owed">{{ cost_total|money }}</span>
-      {% if current_user.can('accounting_edit') %}<a class="btn small primary" href="{{ url_for('billing.new_cost') }}">{% trans %}+ Cost{% endtrans %}</a>{% endif %}</div>
+      {% if current_user.can('accounting_edit') %}{{ icon_link('plus', url_for('billing.new_cost'), _('Add cost'), cls='primary') }}{% endif %}</div>
     {% if categories %}<div class="cat-chips">{% for label, amount in categories %}<span class="tag">{{ label }} {{ amount|money }}</span>{% endfor %}</div>{% endif %}
     {% if costs %}<table>
       <thead><tr><th>{% trans %}Date{% endtrans %}</th><th>{% trans %}Description{% endtrans %}</th><th class="num">{% trans %}Amount{% endtrans %}</th><th></th></tr></thead>
