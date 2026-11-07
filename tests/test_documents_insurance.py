@@ -186,11 +186,14 @@ def test_who_can_upload_and_see_household_insurance(app, client):
     assert client.get(f"/insurance/{pol.id}/file").status_code == 403  # another unit's certificate
 
 
-def test_directory_shows_insurance(admin_client):
-    o = Owner(unit=unit("101"), name="Alice", role="owner")
+def test_insurance_and_address_are_on_the_details_not_the_directory_list(admin_client):
+    o = Owner(unit=unit("101"), name="Alice", role="owner", mailing_address="1000 Rue Levert, Apt. 715")
     db.session.add(o)
     db.session.commit()
-    assert b"No insurance" in admin_client.get("/directory/owners").data
+    listing = admin_client.get("/directory/owners").data
+    assert b"Alice" in listing and b"No insurance" not in listing and b"Rue Levert" not in listing
+    assert b"No insurance" in admin_client.get(f"/units/{o.unit_id}").data
+    assert b"Rue Levert" in admin_client.get(f"/owners/{o.id}/edit").data
     assert b"Insured until" in admin_client.get("/directory/owners/export.csv").data
 
 

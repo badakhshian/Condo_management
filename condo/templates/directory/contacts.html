@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}{% trans title=spec.title %}{{ title }} · Directory{% endtrans %}{% endblock %}
-{% from "_macros.html" import insurance_badge %}
 {% from "_icons.html" import icon_link, icon_post %}
 {% block content %}
 {% include "directory/_tabs.html" %}
@@ -20,7 +19,7 @@
 {% if units_without %}<div class="flash flash-info">{% trans units_without=units_without|map(attribute='number')|join(', ') %}No owner recorded yet for unit(s) {{ units_without }}.{% endtrans %}</div>{% endif %}
 <div class="card">
 <table>
-  <thead><tr>{% if current_user.is_admin %}<th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th>{% endif %}<th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th>{% trans %}Mailing address{% endtrans %}</th><th>{% trans %}Insurance{% endtrans %}</th><th></th></tr></thead>
+  <thead><tr>{% if current_user.is_admin %}<th class="row-actions-h"><span class="sr-only">{% trans %}Actions{% endtrans %}</span></th>{% endif %}<th>{% trans %}Unit{% endtrans %}</th><th>{% trans %}Name{% endtrans %}</th><th>{% trans %}Email{% endtrans %}</th><th>{% trans %}Phone{% endtrans %}</th><th></th></tr></thead>
   <tbody>{% for o in people %}
     <tr>{% if current_user.is_admin %}<td class="row-actions"><div class="row-actions-box">
         {% if o.origin == 'sheet' %}<span class="tag" title="{{ _('Edit in the Google Sheet’s Owners tab') }}">{% trans %}from sheet{% endtrans %}</span>
@@ -42,10 +41,8 @@
         {% if o.notes %}<div class="excerpt">{{ o.notes }}</div>{% endif %}</td>
       <td>{% if o.email %}<a href="mailto:{{ o.email }}">{{ o.email }}</a>{% else %}—{% endif %}</td>
       <td>{% if o.phone %}<a href="{{ o.phone|tel }}" class="nowrap">{{ o.phone|phone }}</a>{% else %}—{% endif %}</td>
-      <td>{% if o.mailing_address %}{{ o.mailing_address|one_line }}{% else %}<span class="muted">{% trans %}In unit{% endtrans %}</span>{% endif %}</td>
-      <td>{% if o.needs_insurance %}{{ insurance_badge(o.insurance_state) }}{% if o.current_policy %}<div class="excerpt">{% trans valid_until=o.current_policy.valid_until|fdate('iso') %}until {{ valid_until }}{% endtrans %}</div>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
     </tr>
-  {% else %}<tr><td colspan="8" class="muted">{{ _('No matches.') if q or role else _('Nobody listed yet.') }}</td></tr>{% endfor %}</tbody>
+  {% else %}<tr><td colspan="6" class="muted">{{ _('No matches.') if q or role else _('Nobody listed yet.') }}</td></tr>{% endfor %}</tbody>
 </table>
 </div>
 {% endblock %}
