@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 15:01+0000\n"
+"POT-Creation-Date: 2026-11-08 15:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -262,6 +262,9 @@ msgid "<span class=\"muted\">No accounts</span>"
 msgstr ""
 
 msgid "<span class=\"muted\">Vacant</span>"
+msgstr ""
+
+msgid "A modern platform for smarter condominium management."
 msgstr ""
 
 msgid "A published vote can't be changed."
@@ -952,18 +955,6 @@ msgstr ""
 msgid "Company or store"
 msgstr ""
 
-msgid "Condo Management"
-msgstr ""
-
-msgid "Condo Management by DMBT"
-msgstr ""
-
-msgid "Condo Management is a product of DMBT. Tell us about your building."
-msgstr ""
-
-msgid "Condo Management · run by your board, built by DMBT"
-msgstr ""
-
 #, python-format
 msgid "Condo fee · %(year)s"
 msgstr ""
@@ -984,14 +975,6 @@ msgstr ""
 
 #, python-format
 msgid "Condo fees: the current rates end on %(end)s"
-msgstr ""
-
-msgid "Condo management by DMBT"
-msgstr ""
-
-msgid ""
-"Condo management by DMBT: accounting, repairs, documents, votes and more "
-"for owners and the board."
 msgstr ""
 
 msgid "Confirm and load"
@@ -1236,6 +1219,16 @@ msgid "Documents &amp; insurance"
 msgstr ""
 
 msgid "Documents: see all documents, including managers-only ones"
+msgstr ""
+
+msgid ""
+"Domora by DMBT Group: accounting, repairs, documents, votes and more for "
+"owners and the board."
+msgstr ""
+
+msgid ""
+"Domora is a product of DMBT Group: a modern platform for smarter "
+"condominium management. Tell us about your building."
 msgstr ""
 
 msgid "Done"
@@ -2603,6 +2596,9 @@ msgid ""
 "renovation."
 msgstr ""
 
+msgid "Property management, reimagined."
+msgstr ""
+
 msgid "Publish and notify voters"
 msgstr ""
 
@@ -3492,13 +3488,6 @@ msgstr ""
 msgid "Updates"
 msgstr ""
 
-msgid ""
-"Upkeep that comes back on a schedule, such as snow removal, gutter "
-"cleaning or inspections. Mark a visit as done and the next due date moves"
-" forward; the board is reminded two weeks before each one is due and two "
-"months before a contract ends."
-msgstr ""
-
 msgid "Upload"
 msgstr ""
 
@@ -3801,7 +3790,7 @@ msgstr ""
 msgid "by %(quote_decided_by)s, %(quote_decided_at)s"
 msgstr ""
 
-msgid "by DMBT"
+msgid "by DMBT Group"
 msgstr ""
 
 msgid "by share"

@@ -310,4 +310,4 @@ def test_installable_as_an_app_and_branded_dmbt(client):
     assert data["display"] == "standalone" and any(i["sizes"] == "512x512" for i in data["icons"])
     page = client.get("/login").data.decode()
     assert 'rel="manifest"' in page and "apple-touch-icon" in page
-    assert "by DMBT" in page and "support@dmbtgroup.com" in page
+    assert "Domora" in page and "by DMBT Group" in page and "support@dmbtgroup.com" in page

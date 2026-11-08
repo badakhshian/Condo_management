@@ -651,3 +651,4 @@ td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
 .status-pick select.chosen { border-color: var(--primary); color: var(--primary); font-weight: 600; }
 .status-pick select { min-width: 11rem; max-width: 16rem; }
 @media (max-width: 600px) { .filter-bar { gap: .6rem; } .status-pick, .status-pick select { width: 100%; max-width: none; } }
+.home-brand strong.wordmark { color: #B08A45; font-size: 1.3rem; letter-spacing: .08em; font-weight: 800; }

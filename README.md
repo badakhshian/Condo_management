@@ -1,4 +1,6 @@
-# Condo Management
+# Domora
+
+Property management, reimagined. Domora by DMBT Group: a modern platform for smarter condominium management.
 
 A web app for running a condominium. Managers use it to look after units, residents, billing and maintenance. Owners and tenants use it to check their account, report problems, read notices and book amenities.
 

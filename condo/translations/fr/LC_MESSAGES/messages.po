@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 15:01+0000\n"
+"POT-Creation-Date: 2026-11-08 15:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -255,6 +255,9 @@ msgstr "<span class=\"muted\">Aucun compte</span>"
 
 msgid "<span class=\"muted\">Vacant</span>"
 msgstr "<span class=\"muted\">Vacant</span>"
+
+msgid "A modern platform for smarter condominium management."
+msgstr "Une plateforme moderne pour une gestion de copropriété plus intelligente."
 
 msgid "A published vote can't be changed."
 msgstr "Un vote publié ne peut pas être modifié."
@@ -925,18 +928,6 @@ msgstr "Partie commune"
 msgid "Company or store"
 msgstr "Entreprise ou magasin"
 
-msgid "Condo Management"
-msgstr "Gestion de copropriété"
-
-msgid "Condo Management by DMBT"
-msgstr "Gestion de condo par DMBT"
-
-msgid "Condo Management is a product of DMBT. Tell us about your building."
-msgstr "Gestion de condo est un produit de DMBT. Parlez-nous de votre immeuble."
-
-msgid "Condo Management · run by your board, built by DMBT"
-msgstr "Gestion de condo · gérée par votre conseil, conçue par DMBT"
-
 #, python-format
 msgid "Condo fee · %(year)s"
 msgstr "Frais de condo · %(year)s"
@@ -954,12 +945,6 @@ msgstr "Frais de condo, paiements, réparations, documents et votes pour les cop
 #, python-format
 msgid "Condo fees: the current rates end on %(end)s"
 msgstr "Frais de condo : les tarifs actuels prennent fin le %(end)s"
-
-msgid "Condo management by DMBT"
-msgstr "Gestion de copropriété par DMBT"
-
-msgid "Condo management by DMBT: accounting, repairs, documents, votes and more for owners and the board."
-msgstr "Gestion de copropriété par DMBT : comptabilité, réparations, documents, votes et plus pour les copropriétaires et le conseil."
 
 msgid "Confirm and load"
 msgstr "Confirmer et charger"
@@ -1200,6 +1185,12 @@ msgstr "Documents et assurances"
 
 msgid "Documents: see all documents, including managers-only ones"
 msgstr "Documents : voir tous les documents, y compris ceux réservés aux gestionnaires"
+
+msgid "Domora by DMBT Group: accounting, repairs, documents, votes and more for owners and the board."
+msgstr "Domora par DMBT Group : comptabilité, réparations, documents, votes et plus pour les copropriétaires et le conseil."
+
+msgid "Domora is a product of DMBT Group: a modern platform for smarter condominium management. Tell us about your building."
+msgstr "Domora est un produit de DMBT Group : une plateforme moderne pour une gestion de copropriété plus intelligente. Parlez-nous de votre immeuble."
 
 msgid "Done"
 msgstr "Terminé"
@@ -2509,6 +2500,9 @@ msgstr "Projets et entretien"
 msgid "Projects are planned work for the building, such as a roof, windows or a renovation."
 msgstr "Les projets sont des travaux planifiés pour l’immeuble, comme la toiture, les fenêtres ou une rénovation."
 
+msgid "Property management, reimagined."
+msgstr "La gestion immobilière, réinventée."
+
 msgid "Publish and notify voters"
 msgstr "Publier et aviser les votants"
 
@@ -3359,9 +3353,6 @@ msgstr "Mettre à jour"
 msgid "Updates"
 msgstr "Suivi"
 
-msgid "Upkeep that comes back on a schedule, such as snow removal, gutter cleaning or inspections. Mark a visit as done and the next due date moves forward; the board is reminded two weeks before each one is due and two months before a contract ends."
-msgstr "L’entretien qui revient selon un calendrier, comme le déneigement, le nettoyage des gouttières ou les inspections. Marquez une visite comme faite et la prochaine échéance avance; le conseil reçoit un rappel deux semaines avant chaque échéance et deux mois avant la fin d’un contrat."
-
 msgid "Upload"
 msgstr "Téléverser"
 
@@ -3643,8 +3634,8 @@ msgstr "par %(owner_decision_by)s le %(owner_decision_at)s"
 msgid "by %(quote_decided_by)s, %(quote_decided_at)s"
 msgstr "par %(quote_decided_by)s, %(quote_decided_at)s"
 
-msgid "by DMBT"
-msgstr "par DMBT"
+msgid "by DMBT Group"
+msgstr "par DMBT Group"
 
 msgid "by share"
 msgstr "selon la quote-part"
