@@ -637,3 +637,17 @@ td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
 .home-nav .btn { white-space: nowrap; }
 @media (max-width: 600px) { .home-nav .btn { padding: .4rem .7rem; } .home-brand strong { font-size: .95rem; } }
 @media (max-width: 600px) { .home-head { padding: .8rem 1rem; gap: .5rem; } .home-brand { gap: .45rem; } .home-brand img { width: 34px; height: 34px; } .home-brand strong { font-size: .88rem; } }
+
+/* Compact list filter: Active / Done / All with counts, plus a status drop-down */
+.filter-bar { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; margin: 0 0 1rem; }
+.segmented { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.segmented a { display: inline-flex; align-items: center; gap: .45rem; padding: .35rem .9rem; border-radius: 7px; color: var(--muted); font-weight: 500; }
+.segmented a:hover { color: var(--text); text-decoration: none; }
+.segmented a.active { background: var(--primary); color: #fff; }
+.segmented .count { font-size: .75rem; font-weight: 700; min-width: 1.4rem; padding: 0 .35rem; border-radius: 99px; text-align: center;
+  background: var(--bg); color: var(--muted); }
+.segmented a.active .count { background: rgba(255, 255, 255, .25); color: #fff; }
+.status-pick select { width: auto; margin: 0; padding: .4rem 2rem .4rem .75rem; border-radius: 10px; background-color: var(--surface); }
+.status-pick select.chosen { border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.status-pick select { min-width: 11rem; max-width: 16rem; }
+@media (max-width: 600px) { .filter-bar { gap: .6rem; } .status-pick, .status-pick select { width: 100%; max-width: none; } }

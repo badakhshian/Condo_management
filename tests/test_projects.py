@@ -84,3 +84,22 @@ def test_residents_delete_only_their_own_untouched_request(app, admin_client):
     db.session.commit()
     admin_client.post(f"/maintenance/{mine.id}/delete")
     assert db.session.scalar(db.select(MaintenanceRequest)) is None
+
+
+def test_list_filter_is_active_done_all_with_a_status_dropdown(admin_client):
+    for title, status in (("Leak", "open"), ("Door", "in_progress"), ("Light", "resolved")):
+        db.session.add(MaintenanceRequest(title=title, description="x", category="Other", kind="maintenance", status=status,
+                                          submitted_by=db.session.scalar(db.select(User).where(User.email == "admin@test.com"))))
+    db.session.commit()
+    page = admin_client.get("/maintenance/?tab=maintenance").data.decode()
+    seg = page.split('class="segmented"')[1].split("</nav>")[0]
+    from condo.models import ACTIVE_STATUSES
+    reqs = db.session.scalars(db.select(MaintenanceRequest).where(MaintenanceRequest.kind == "maintenance")).all()
+    active = sum(r.status in ACTIVE_STATUSES for r in reqs)
+    assert f'Active <span class="count">{active}</span>' in seg and f'Done <span class="count">{len(reqs) - active}</span>' in seg \
+        and f'All <span class="count">{len(reqs)}</span>' in seg
+    assert '<option value="quote_review">' in page and 'class="tabs"' not in page.split("section-tabs")[-1]
+    body = lambda url: admin_client.get(url).data.decode().split("<tbody>")[1]
+    assert "Light" in body("/maintenance/?tab=maintenance&status=done") and "Leak" not in body("/maintenance/?tab=maintenance&status=done")
+    picked = admin_client.get("/maintenance/?tab=maintenance&status=in_progress").data.decode()
+    assert '<option value="in_progress" selected>' in picked and "Door" in picked.split("<tbody>")[1] and "Leak" not in picked.split("<tbody>")[1]

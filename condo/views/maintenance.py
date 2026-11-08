@@ -81,13 +81,19 @@ def index():
     base = _visible_requests()
     counts = tab_counts()
     stmt = base.where(MaintenanceRequest.kind == KIND_OF_TAB[tab]).order_by(MaintenanceRequest.created_at.desc())
+    sub = stmt.order_by(None).subquery()
+    in_tab = db.session.execute(db.select(sub.c.status, db.func.count()).group_by(sub.c.status)).all()
+    groups = {"active": sum(n for s_, n in in_tab if s_ in ACTIVE_STATUSES),
+              "done": sum(n for s_, n in in_tab if s_ not in ACTIVE_STATUSES), "all": sum(n for _, n in in_tab)}
     if status == "active":
         stmt = stmt.where(MaintenanceRequest.status.in_(ACTIVE_STATUSES))
+    elif status == "done":
+        stmt = stmt.where(MaintenanceRequest.status.not_in(ACTIVE_STATUSES))
     elif status in REQUEST_STATUSES:
         stmt = stmt.where(MaintenanceRequest.status == status)
     requests_ = db.session.scalars(stmt).all()
     return render_template("maintenance/index.html", requests=requests_, status=status, tab=tab, tabs=TABS,
-                           counts=counts, can_add_projects=can_add_projects(),
+                           counts=counts, groups=groups, can_add_projects=can_add_projects(),
                            statuses=REQUEST_STATUSES, priorities=REQUEST_PRIORITIES)
 
 

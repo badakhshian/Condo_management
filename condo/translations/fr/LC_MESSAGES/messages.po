@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-08 14:12+0000\n"
+"POT-Creation-Date: 2026-11-08 15:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -511,6 +511,9 @@ msgstr "Un autre compte utilise déjà cette adresse courriel."
 
 msgid "Any access"
 msgstr "Tout accès"
+
+msgid "Any status"
+msgstr "Tous les statuts"
 
 msgid "Anyone with the link → Viewer"
 msgstr "Tous les utilisateurs qui ont le lien → Lecteur"
@@ -2918,6 +2921,9 @@ msgstr "Quote-part"
 
 msgid "Sheet link saved. Preview a sync to check what it will load."
 msgstr "Lien de la feuille enregistré. Faites un aperçu de la synchronisation pour voir ce qui sera chargé."
+
+msgid "Show"
+msgstr "Afficher"
 
 msgid "Sign in"
 msgstr "Se connecter"
