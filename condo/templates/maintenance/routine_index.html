@@ -5,7 +5,6 @@
 <div class="head"><h1>{% trans %}Projects &amp; Maintenance{% endtrans %}</h1>
   {% if can_manage %}{{ icon_link('plus', url_for('maintenance.routine_new'), _('New routine task'), cls='primary') }}{% endif %}</div>
 {% include "maintenance/_tabs.html" %}
-<p class="muted">{% trans %}Upkeep that comes back on a schedule, such as snow removal, gutter cleaning or inspections. Mark a visit as done and the next due date moves forward; the board is reminded two weeks before each one is due and two months before a contract ends.{% endtrans %}</p>
 <div class="filter-bar">
   <nav class="segmented" aria-label="{{ _('Show') }}">
     <a href="{{ url_for('maintenance.index', tab='routine') }}" class="{{ 'active' if show != 'all' }}"{% if show != 'all' %} aria-current="true"{% endif %}>{% trans %}Active{% endtrans %} <span class="count">{{ groups.active }}</span></a>
