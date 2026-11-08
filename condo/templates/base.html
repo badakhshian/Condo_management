@@ -66,7 +66,7 @@
 {% if not current_user.is_staff %}{% set _ignored = nav_items.append(('amenities', url_for('amenities.index'), _('Amenities'), _('Amenities'), ep.startswith('amenities'))) %}{% endif %}
 {% set desktop_order = ['home', 'units', 'directory', 'accounting', 'reimburse', 'projects', 'vote', 'notices', 'documents', 'amenities'] %}
 <nav class="rail" aria-label="{{ _('Main menu') }}">
-  <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}">{{ condo_name|initials }}</a>
+  <a class="rail-mark" href="{{ url_for('dashboard.index') }}" title="{{ condo_name }}"><img src="{{ url_for('static', filename='brand/logo-96.png') }}" alt="{{ condo_name }}"></a>
   {% for key in desktop_order %}{% for it in nav_items if it[0] == key %}
   <a href="{{ it[1] }}" class="rail-item{{ ' active' if it[4] }}{{ ' pin' if nav_items.index(it) < 4 }}" title="{{ it[2] }}" aria-label="{{ it[2] }}"{% if it[4] %} aria-current="page"{% endif %}>{{ icon(it[0]) }}<span class="label">{{ it[2] }}</span><span class="short">{{ it[3] }}</span></a>
   {% endfor %}{% endfor %}
@@ -96,7 +96,7 @@ document.addEventListener('keydown', function (e) {
 });
 </script>
 <div class="page-top">
-  <a class="page-top-name" href="{{ url_for('dashboard.index') }}">{{ condo_name }}</a>
+  <a class="page-top-name" href="{{ url_for('dashboard.index') }}"><img src="{{ url_for('static', filename='brand/logo-96.png') }}" alt="" class="page-top-logo">{{ condo_name }}</a>
   <span class="page-top-right">{{ lang_switch() }}
   <a class="page-top-user" href="{{ url_for('auth.account') }}"><strong>{{ current_user.name }}</strong> <span class="tag">{{ current_user.role_label }}</span></a></span>
 </div>

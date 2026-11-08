@@ -538,3 +538,13 @@ td.row-del, th.row-del { width: 1%; padding-left: 0; text-align: right; }
 .site-footer a { color: var(--primary); }
 .site-footer .dot { color: var(--border); }
 @media (max-width: 760px) { .site-footer { padding-bottom: 110px; } .site-footer .dot { display: none; } }
+
+/* Application logo */
+.rail-mark { background: radial-gradient(circle at 35% 30%, #FFFDF8, #F6EDD6 75%) !important; box-shadow: inset 0 0 0 2px var(--gold-light), 0 2px 6px rgba(90, 30, 5, .2); overflow: hidden; }
+.rail-mark img { width: 72%; height: auto; display: block; }
+.page-top-name { display: inline-flex; align-items: center; gap: 8px; }
+.page-top-logo { width: 26px; height: auto; }
+.login h1 { display: flex; align-items: center; gap: 14px; }
+.login-logo { flex: none; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, #FFFDF8, #F6EDD6 75%); box-shadow: inset 0 0 0 2px var(--gold-light); }
+.login-logo img { width: 40px; height: auto; }
