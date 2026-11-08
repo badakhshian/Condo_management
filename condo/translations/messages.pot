@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-07 06:07+0000\n"
+"POT-Creation-Date: 2026-11-08 14:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -312,6 +312,9 @@ msgstr ""
 msgid "Accounting"
 msgstr ""
 
+msgid "Accounting &amp; condo fees"
+msgstr ""
+
 msgid "Accounting will now record it."
 msgstr ""
 
@@ -504,10 +507,18 @@ msgstr ""
 msgid "Announcement updated."
 msgstr ""
 
+msgid "Announcements and reminders reach everyone, each in their own language."
+msgstr ""
+
 msgid "Annual"
 msgstr ""
 
 msgid "Annual meeting minutes"
+msgstr ""
+
+msgid ""
+"Annual or monthly fees per unit, special contributions with deadlines, "
+"payments and costs with their full history."
 msgstr ""
 
 msgid "Annual total"
@@ -539,6 +550,9 @@ msgid "Approve cost"
 msgstr ""
 
 msgid "Approve repair"
+msgstr ""
+
+msgid "Approve the roof budget?"
 msgstr ""
 
 msgid "Approved"
@@ -890,6 +904,9 @@ msgstr ""
 msgid "Click one to fill in the form; adjust the dates and contractor, then save."
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Close request"
 msgstr ""
 
@@ -935,6 +952,15 @@ msgstr ""
 msgid "Condo Management"
 msgstr ""
 
+msgid "Condo Management by DMBT"
+msgstr ""
+
+msgid "Condo Management is a product of DMBT. Tell us about your building."
+msgstr ""
+
+msgid "Condo Management · run by your board, built by DMBT"
+msgstr ""
+
 #, python-format
 msgid "Condo fee · %(year)s"
 msgstr ""
@@ -946,6 +972,11 @@ msgstr ""
 msgid ""
 "Condo fees saved for %(start)s – %(end)s: %(total)s in total, %(monthly)s"
 " a month."
+msgstr ""
+
+msgid ""
+"Condo fees, payments, repairs, documents and votes for owners, residents "
+"and the board — in English and French, on any device."
 msgstr ""
 
 #, python-format
@@ -967,6 +998,9 @@ msgid "Confirm new password"
 msgstr ""
 
 msgid "Confirm one sync first."
+msgstr ""
+
+msgid "Contact"
 msgstr ""
 
 msgid "Contact the management office to link your account to a unit."
@@ -1094,6 +1128,9 @@ msgstr ""
 msgid "Decision recorded and the owner notified."
 msgstr ""
 
+msgid "Declaration, minutes, budgets and insurance certificates, always at hand."
+msgstr ""
+
 msgid "Decline"
 msgstr ""
 
@@ -1174,6 +1211,9 @@ msgstr ""
 msgid "Directory"
 msgstr ""
 
+msgid "Directory &amp; board"
+msgstr ""
+
 msgid "Directory → Board"
 msgstr ""
 
@@ -1187,6 +1227,9 @@ msgid "Document"
 msgstr ""
 
 msgid "Documents"
+msgstr ""
+
+msgid "Documents &amp; insurance"
 msgstr ""
 
 msgid "Documents: see all documents, including managers-only ones"
@@ -1353,6 +1396,9 @@ msgstr ""
 msgid "Every owner and tenant on file has valid insurance."
 msgstr ""
 
+msgid "Every owner gets their own account"
+msgstr ""
+
 msgid "Every unit's balance matches the sheet."
 msgstr ""
 
@@ -1368,6 +1414,9 @@ msgstr ""
 msgid "Everything"
 msgstr ""
 
+msgid "Everything your building needs"
+msgstr ""
+
 #, python-format
 msgid "Exists · fee %(monthly_fee_cents)s"
 msgstr ""
@@ -1376,6 +1425,9 @@ msgid "Expired"
 msgstr ""
 
 msgid "Expiring soon"
+msgstr ""
+
+msgid "Features"
 msgstr ""
 
 msgid "February"
@@ -2147,6 +2199,9 @@ msgstr ""
 msgid "Notices"
 msgstr ""
 
+msgid "Notices &amp; alerts"
+msgstr ""
+
 msgid "Notices: post and edit notices"
 msgstr ""
 
@@ -2172,6 +2227,9 @@ msgstr ""
 msgid ""
 "One home-insurance policy, including civil liability, covers the unit's "
 "owners together:"
+msgstr ""
+
+msgid "One place for the board to manage and for owners to stay informed."
 msgstr ""
 
 msgid "One policy covers all owners of the unit. None on file yet."
@@ -2283,8 +2341,21 @@ msgstr ""
 msgid "Owners of selected units"
 msgstr ""
 
+msgid ""
+"Owners vote online, weighted by each unit's share. Results are shown "
+"after the deadline."
+msgstr ""
+
 #, python-format
 msgid "Owners who can approve online: %(owner_accounts)s."
+msgstr ""
+
+msgid "Owners, residents and the board use the same sign-in."
+msgstr ""
+
+msgid ""
+"Owners, tenants and board roles, with each person's access to what they "
+"need."
 msgstr ""
 
 msgid "Ownership share"
@@ -2306,6 +2377,9 @@ msgid ""
 msgstr ""
 
 msgid "Paid for something for the building? Request it back with the receipt."
+msgstr ""
+
+msgid "Paid this month"
 msgstr ""
 
 msgid "Paid to"
@@ -2516,6 +2590,9 @@ msgid "Projects & Maintenance"
 msgstr ""
 
 msgid "Projects &amp; Maintenance"
+msgstr ""
+
+msgid "Projects &amp; maintenance"
 msgstr ""
 
 msgid ""
@@ -2761,6 +2838,11 @@ msgstr ""
 msgid "Requested by %(name)s"
 msgstr ""
 
+msgid ""
+"Requests, projects with budgets, and routine work like snow removal with "
+"reminders before it is due."
+msgstr ""
+
 msgid "Reserved"
 msgstr ""
 
@@ -2815,6 +2897,9 @@ msgid "Routine task deleted."
 msgstr ""
 
 msgid "Routine task updated."
+msgstr ""
+
+msgid "Sales"
 msgstr ""
 
 #, python-format
@@ -2935,6 +3020,9 @@ msgid "Sheet link saved. Preview a sync to check what it will load."
 msgstr ""
 
 msgid "Sign in"
+msgstr ""
+
+msgid "Sign in to your building"
 msgstr ""
 
 msgid "Sign-in account and password"
@@ -3101,6 +3189,11 @@ msgid ""
 msgstr ""
 
 msgid "The board asked the owner to get a quote."
+msgstr ""
+
+msgid ""
+"The board creates the accounts. Owners see their unit, their statement "
+"and the building's news."
 msgstr ""
 
 #, python-format
@@ -3521,6 +3614,9 @@ msgid ""
 "reimbursement."
 msgstr ""
 
+msgid "Want this for your building?"
+msgstr ""
+
 msgid "We couldn't find that page."
 msgstr ""
 
@@ -3624,6 +3720,9 @@ msgstr ""
 msgid "Your account is not linked to a unit; report it as a common-area issue."
 msgstr ""
 
+msgid "Your building,"
+msgstr ""
+
 msgid "Your decision"
 msgstr ""
 
@@ -3663,6 +3762,9 @@ msgid "a year"
 msgstr ""
 
 msgid "after"
+msgstr ""
+
+msgid "all in one place."
 msgstr ""
 
 msgid "and will be asked to choose their own password straight away"

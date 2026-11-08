@@ -50,7 +50,7 @@ def login():
 def logout():
     logout_user()
     flash(_("You have been signed out."), "info")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("dashboard.index"))
 
 
 @bp.before_app_request

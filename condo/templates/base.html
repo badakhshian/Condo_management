@@ -34,7 +34,7 @@
   <meta property="og:image" content="{{ url_for('static', filename='icons/icon-512.png', _external=True) }}">
 </head>
 {% macro lang_switch() %}<span class="lang-switch" role="group" aria-label="{{ _('Language / Langue') }}">{% for code, name in LANGUAGES.items() %}<a href="{{ url_for('auth.set_language', code=code, back=here()) }}" lang="{{ code }}" class="{{ 'active' if lang() == code }}" {% if lang() == code %}aria-current="true"{% endif %} title="{{ name }}">{{ code|upper }}</a>{% endfor %}</span>{% endmacro %}
-<body class="{{ 'with-rail' if current_user.is_authenticated }}">
+<body class="{{ 'with-rail' if current_user.is_authenticated }}{% block body_class %}{% endblock %}">
 {% if current_user.is_authenticated %}
 {% from "_icons.html" import icon %}
 {% set ep = request.endpoint or '' %}
@@ -107,6 +107,7 @@ document.addEventListener('keydown', function (e) {
   <a href="{{ url_for('directory.contacts', group='owners') }}">{% trans %}Directory → Owners{% endtrans %}</a> {% trans email=current_user.email %}with the email {{ email }},
   then give yourself your position in{% endtrans %} <a href="{{ url_for('directory.board') }}">{% trans %}Directory → Board{% endtrans %}</a>.</div>
 {% endif %}
+{% block shell %}
 {% if not current_user.is_authenticated %}<div class="public-top">{{ lang_switch() }}</div>{% endif %}
 <main class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -115,6 +116,8 @@ document.addEventListener('keydown', function (e) {
   {% if back and not hide_back %}<a class="back-link" href="{{ back.url }}">{% trans label=back.label %}← Back to {{ label }}{% endtrans %}</a>{% endif %}
   {% block content %}{% endblock %}
 </main>
+{% endblock %}
+{% block footer %}
 <footer class="site-footer">
   <span><strong>{% trans %}Condo Management{% endtrans %}</strong> {% trans %}by DMBT{% endtrans %}</span>
   <span class="dot" aria-hidden="true">·</span>
@@ -123,6 +126,6 @@ document.addEventListener('keydown', function (e) {
   <a href="tel:+16478739585">☏︎ +1 647 873 9585</a>
   <a href="https://dmbtgroup.com" target="_blank" rel="noopener">dmbtgroup.com</a>
 </footer>
-
+{% endblock %}
 </body>
 </html>

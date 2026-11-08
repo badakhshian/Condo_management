@@ -40,8 +40,26 @@ def test_parse_money_invalid(raw):
 # --- auth & permissions ------------------------------------------------------
 
 def test_requires_login(client):
-    resp = client.get("/")
+    resp = client.get("/units/")
     assert resp.status_code == 302 and "/login" in resp.headers["Location"]
+
+
+def test_home_page_for_visitors_with_sign_in(client):
+    page = client.get("/").data.decode()
+    assert "all in one place." in page and "Everything your building needs" in page
+    assert page.count('action="/login"') == 2 and 'name="csrf_token"' in page
+    assert "sales@dmbtgroup.com" in page and 'class="rail"' not in page
+    resp = client.post("/login", data={"email": "alice@test.com", "password": "password123"})
+    assert resp.headers["Location"] == "/"
+    assert "all in one place." not in client.get("/").data.decode()  # signed in: the dashboard
+    resp = client.post("/logout")
+    assert resp.headers["Location"] == "/"
+
+
+def test_home_page_in_french(client):
+    client.get("/language/fr")
+    page = client.get("/").data.decode()
+    assert '<html lang="fr">' in page and "Se connecter" in page and "Tout ce dont votre immeuble a besoin" in page
 
 
 def test_bad_login(client):
@@ -54,7 +72,7 @@ def test_inactive_user_cannot_login(app, client):
     db.session.commit()
     resp = login(client, "bob@test.com")
     assert b"deactivated" in resp.data
-    assert client.get("/").status_code == 302
+    assert client.get("/units/").status_code == 302
 
 
 def test_login_ignores_external_next(client):

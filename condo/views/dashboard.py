@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from flask import Blueprint, render_template
-from flask_login import current_user, login_required
+from flask_login import current_user
 
 from ..extensions import db
 from ..models import ACTIVE_STATUSES, Announcement, Booking, MaintenanceRequest, Owner, Unit
@@ -16,8 +16,9 @@ bp = Blueprint("dashboard", __name__)
 
 
 @bp.route("/")
-@login_required
 def index():
+    if not current_user.is_authenticated:  # the public home page, with sign-in
+        return render_template("home.html", year=datetime.now().year)
     now = datetime.now()
     announcements = db.session.scalars(
         db.select(Announcement).order_by(Announcement.pinned.desc(), Announcement.created_at.desc()).limit(5)
