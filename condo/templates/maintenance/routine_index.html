@@ -6,10 +6,12 @@
   {% if can_manage %}{{ icon_link('plus', url_for('maintenance.routine_new'), _('New routine task'), cls='primary') }}{% endif %}</div>
 {% include "maintenance/_tabs.html" %}
 <p class="muted">{% trans %}Upkeep that comes back on a schedule, such as snow removal, gutter cleaning or inspections. Mark a visit as done and the next due date moves forward; the board is reminded two weeks before each one is due and two months before a contract ends.{% endtrans %}</p>
-<nav class="tabs">
-  <a href="{{ url_for('maintenance.index', tab='routine') }}" class="{{ 'active' if show != 'all' }}">{% trans %}Active{% endtrans %}</a>
-  <a href="{{ url_for('maintenance.index', tab='routine', show='all') }}" class="{{ 'active' if show == 'all' }}">{% trans %}All{% endtrans %}</a>
-</nav>
+<div class="filter-bar">
+  <nav class="segmented" aria-label="{{ _('Show') }}">
+    <a href="{{ url_for('maintenance.index', tab='routine') }}" class="{{ 'active' if show != 'all' }}"{% if show != 'all' %} aria-current="true"{% endif %}>{% trans %}Active{% endtrans %} <span class="count">{{ groups.active }}</span></a>
+    <a href="{{ url_for('maintenance.index', tab='routine', show='all') }}" class="{{ 'active' if show == 'all' }}"{% if show == 'all' %} aria-current="true"{% endif %}>{% trans %}All{% endtrans %} <span class="count">{{ groups.all }}</span></a>
+  </nav>
+</div>
 <div class="card">
 <table>
   <thead><tr><th>{% trans %}Task{% endtrans %}</th><th>{% trans %}How often{% endtrans %}</th><th>{% trans %}Next due{% endtrans %}</th><th>{% trans %}Last done{% endtrans %}</th><th>{% trans %}Contractor{% endtrans %}</th></tr></thead>

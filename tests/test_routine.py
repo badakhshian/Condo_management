@@ -88,7 +88,8 @@ def test_pause_and_delete(admin_client):
                                                                  "category": "Common area", "next_due": "2026-11-15"})
     assert t.active is False
     assert "Snow removal" not in admin_client.get("/maintenance/?tab=routine").data.decode().split("<tbody>")[1]
-    assert "Snow removal" in admin_client.get("/maintenance/?tab=routine&show=all").data.decode()
+    page = admin_client.get("/maintenance/?tab=routine&show=all").data.decode()
+    assert "Snow removal" in page and 'Active <span class="count">0</span>' in page and 'All <span class="count">1</span>' in page
     admin_client.post(f"/maintenance/routine/{t.id}/delete")
     assert db.session.scalar(db.select(RoutineTask)) is None
 

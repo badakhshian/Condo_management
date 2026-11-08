@@ -536,7 +536,10 @@ def routine_index():
         stmt = stmt.where(RoutineTask.active.is_(True))
     tasks = db.session.scalars(stmt).all()
     counts = tab_counts()
+    groups = {"all": db.session.scalar(db.select(db.func.count(RoutineTask.id))),
+              "active": db.session.scalar(db.select(db.func.count(RoutineTask.id)).where(RoutineTask.active.is_(True)))}
     return render_template("maintenance/routine_index.html", tasks=tasks, tab="routine", tabs=TABS, counts=counts,
+                           groups=groups,
                            show=show, can_manage=can_manage_routine(), states=ROUTINE_STATE_LABELS,
                            suggestions=ROUTINE_SUGGESTIONS if can_manage_routine() and not db.session.scalar(
                                db.select(db.func.count(RoutineTask.id))) else [],
